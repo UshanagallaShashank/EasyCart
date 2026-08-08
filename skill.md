@@ -63,8 +63,7 @@ The long-term goal is to evolve EasyCart from an **online store builder** into a
 * Node.js
 * Express
 * JavaScript (ES Modules)
-* MongoDB
-* Mongoose
+* Database is provider-agnostic: MongoDB (Mongoose) or Supabase, selected at runtime via `DB_PROVIDER` in `.env`
 * REST API
 * JWT authentication
 * Zod validation
@@ -95,7 +94,7 @@ Never hardcode the application to a single AI provider.
 * Vitest
 * React Testing Library
 * Supertest
-* MongoDB test database
+* Tests run against a real (dev/test) database via `DB_PROVIDER` — MongoDB or Supabase
 
 ---
 
@@ -116,7 +115,7 @@ Service
    ↓
 Repository
    ↓
-MongoDB
+Database (MongoDB or Supabase, via DB_PROVIDER)
 ```
 
 * Routes define endpoints.
@@ -192,7 +191,7 @@ Every read, update, and delete operation must enforce tenant isolation.
 * Zod validation at API boundaries.
 * JWT authentication.
 * Role-based authorization.
-* Centralized error handling.
+* Centralized error handling that distinguishes known errors (4xx) from unexpected ones (5xx), and logs the real error server-side either way.
 * Specific error types only.
 * Database access through repositories.
 * Business logic through services.
