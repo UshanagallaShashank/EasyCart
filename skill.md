@@ -62,7 +62,7 @@ The long-term goal is to evolve EasyCart from an **online store builder** into a
 
 * Node.js
 * Express
-* TypeScript
+* JavaScript (ES Modules)
 * MongoDB
 * Mongoose
 * REST API
