@@ -4,12 +4,14 @@ import cors from 'cors';
 import { PORT } from './env.js';
 import { connect_db } from './db/db.js';
 import { health_router } from './routes/health-route.js';
+import { error_handler } from './middleware/error-handler.js';
 
 export function create_express_app() {
   const app = express();
   app.use(cors());
   app.use(express.json());
   app.use('/api', health_router);
+  app.use(error_handler);
   return app;
 }
 
