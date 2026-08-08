@@ -48,8 +48,8 @@ Do not build store creation, products, or anything from Phase 2+ inside this pha
 
 ### 1.1 — Project scaffolding
 
-- Initialize `backend/` (Node.js, Express, TypeScript) and `frontend/` (React, TypeScript, Tailwind, React Router).
-- Set up TypeScript configs, linting, and the layered folder structure from `skill.md`: `routes/ → middleware/ → controllers/ → services/ → repositories/ → db`.
+- Initialize `backend/` (Node.js, Express, JavaScript ES Modules) and `frontend/` (React, TypeScript, Tailwind, React Router).
+- Set up JS/TS configs, linting, and the layered folder structure from `skill.md`: `routes/ → middleware/ → controllers/ → services/ → repositories/ → db`.
 - Set up MongoDB connection (Mongoose) with a separate test database for Vitest/Supertest.
 - Set up environment variable loading; no secrets committed.
 - Verify: backend boots, connects to MongoDB, health check route responds.
