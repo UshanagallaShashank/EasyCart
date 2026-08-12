@@ -19,9 +19,23 @@ export const password_schema = z
     message: 'Password must not contain spaces'
   });
 
+export const username_schema = z
+  .string()
+  .trim()
+  .min(3, 'Username must be at least 3 characters')
+  .max(20, 'Username must not exceed 20 characters')
+  .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores');
+
+export const phone_number_schema = z
+  .string()
+  .trim()
+  .regex(/^\+?[0-9]{10,15}$/, 'Phone number must be 10 to 15 digits');
+
 export const signup_schema = z.object({
+  username: username_schema,
   email: email_schema,
-  password: password_schema
+  password: password_schema,
+  phone_number: phone_number_schema
 });
 
 export const login_schema = z.object({
