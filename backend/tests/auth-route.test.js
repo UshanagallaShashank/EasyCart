@@ -8,16 +8,16 @@ describe('Auth routes', () => {
     const response = await request(app)
       .post('/api/signup')
       .send({
-        username: 'new_user',
-        email: 'newuser@gmail.com',
-        password: 'StrongPass123!',
+        username: 'example_user',
+        email: 'example.user@gmail.com',
+        password: 'ExamplePass123!',
         phone_number: '9876543210'
       });
 
     expect(response.status).toBe(201);
     expect(response.body.message).toBe('User created successfully');
-    expect(response.body.user.username).toBe('new_user');
-    expect(response.body.user.email).toBe('newuser@gmail.com');
+    expect(response.body.user.username).toBe('example_user');
+    expect(response.body.user.email).toBe('example.user@gmail.com');
     expect(response.body.user.phone_number).toBe('9876543210');
     expect(response.body.token).toBeTruthy();
   });
@@ -27,9 +27,9 @@ describe('Auth routes', () => {
     const response = await request(app)
       .post('/api/signup')
       .send({
-        username: 'bad_user',
-        email: 'bad@yahoo.com',
-        password: 'StrongPass123!',
+        username: 'example_user',
+        email: 'example.user@yahoo.com',
+        password: 'ExamplePass123!',
         phone_number: '9876543210'
       });
 
