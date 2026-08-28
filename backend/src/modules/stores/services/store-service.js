@@ -8,6 +8,14 @@ export async function create_store_for_tenant(tenant_id, name, slug) {
   return save_store({ id: randomUUID(), tenant_id, name, slug, is_published: false });
 }
 
+export async function get_own_store(tenant_id) {
+  const store = await find_store_by_tenant_id(tenant_id);
+  if (!store) {
+    throw new AppError('Store not found', 404);
+  }
+  return store;
+}
+
 export async function update_store_settings(tenant_id, payload) {
   const parsed = validate_store_settings_input(payload);
   if (!parsed.success) {
