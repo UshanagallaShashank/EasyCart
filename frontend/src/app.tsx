@@ -1,10 +1,12 @@
-// Top-level route tree, filled in as features are built.
-import { Button } from '@/components/ui/button';
+import { Toaster } from '@/components/ui/sonner';
+import { AuthProvider } from '@/shared/auth/auth-provider';
+import { AppRoutes } from '@/routes/app-routes';
 
 export function App() {
   return (
-    <div className="flex min-h-svh items-center justify-center">
-      <Button>EasyCart</Button>
-    </div>
+    <AuthProvider>
+      <AppRoutes />
+      <Toaster />
+    </AuthProvider>
   );
 }

@@ -36,4 +36,15 @@ describe('Store settings', () => {
     const response = await request(app).patch('/api/stores/me').send({ theme: 'dark' });
     expect(response.status).toBe(401);
   });
+
+  it('fetches the owner\'s own store', async () => {
+    const response = await request(app).get('/api/stores/me').set('Authorization', `Bearer ${token}`);
+    expect(response.status).toBe(200);
+    expect(response.body.store.name).toBe('Settings Test Store');
+  });
+
+  it('rejects an unauthenticated request to get own store', async () => {
+    const response = await request(app).get('/api/stores/me');
+    expect(response.status).toBe(401);
+  });
 });
