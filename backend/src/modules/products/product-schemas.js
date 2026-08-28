@@ -12,7 +12,8 @@ export const product_schema = z.object({
   images: z.array(z.string().url()).optional(),
   variants: z.array(variant_schema).optional(),
   stock_quantity: z.number().int().nonnegative().optional(),
-  low_stock_threshold: z.number().int().nonnegative().optional()
+  low_stock_threshold: z.number().int().nonnegative().optional(),
+  is_active: z.boolean().optional()
 });
 
 export function validate_product_input(data) {

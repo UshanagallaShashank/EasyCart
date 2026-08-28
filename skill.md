@@ -548,7 +548,7 @@ AI features additionally require evaluation fixtures and measurable evaluation r
 
 # Current Development Rule
 
-As of 2026-08-28, Phases 1-3 (Foundation, Store, Products) are being built together as one combined push, by explicit decision — not the full roadmap. Phases 4+ still follow the one-phase-at-a-time rule below.
+As of 2026-08-28, Phases 1-3 (Foundation, Store, Products) were built together as one combined push, by explicit decision. As of 2026-08-28, Phases 4-5 (Shopping, Orders & Payments) are now also being built together as one combined push, since together they form the MVP's single purchase lifecycle and can't be meaningfully verified apart from each other. Phases 6+ still follow the one-phase-at-a-time rule below.
 
 When starting a phase not already in progress:
 

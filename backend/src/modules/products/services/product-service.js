@@ -7,6 +7,8 @@ import {
   find_products_by_tenant,
   find_product_by_id,
   find_product_by_sku,
+  find_active_products_by_tenant,
+  find_active_product_by_id,
   save_product,
   update_product,
   delete_product
@@ -65,6 +67,18 @@ export async function update_product_details(tenant_id, id, payload) {
 export async function remove_product(tenant_id, id) {
   await get_product(tenant_id, id);
   await delete_product(id, tenant_id);
+}
+
+export async function search_public_products(tenant_id, { search, category_id } = {}) {
+  return find_active_products_by_tenant(tenant_id, { search, category_id });
+}
+
+export async function get_public_product(tenant_id, id) {
+  const product = await find_active_product_by_id(id, tenant_id);
+  if (!product) {
+    throw new AppError('Product not found', 404);
+  }
+  return product;
 }
 
 export async function adjust_stock(tenant_id, id, delta) {
