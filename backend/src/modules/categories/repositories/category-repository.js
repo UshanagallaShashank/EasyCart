@@ -21,6 +21,15 @@ export async function find_category_by_id(id, tenant_id) {
   return Category.findOne({ id, tenant_id }).lean();
 }
 
+export async function find_category_by_name(name, tenant_id) {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('categories').select('*').eq('name', name).eq('tenant_id', tenant_id).maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+  return Category.findOne({ name, tenant_id }).lean();
+}
+
 export async function save_category(category) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from('categories').insert([category]).select().single();

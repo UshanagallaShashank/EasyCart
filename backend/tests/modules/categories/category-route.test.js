@@ -54,4 +54,17 @@ describe('Category routes', () => {
     const del_b = await request(app).delete(`/api/categories/${id}`).set('Authorization', `Bearer ${token_b}`);
     expect(del_b.status).toBe(404);
   });
+
+  it('rejects a duplicate category name for the same tenant', async () => {
+    await request(app).post('/api/categories').set('Authorization', `Bearer ${token_a}`).send({ name: 'Dairy' });
+    const second = await request(app).post('/api/categories').set('Authorization', `Bearer ${token_a}`).send({ name: 'Dairy' });
+    expect(second.status).toBe(409);
+    expect(second.body.error).toBe('Category name already in use');
+  });
+
+  it('allows the same category name for a different tenant', async () => {
+    await request(app).post('/api/categories').set('Authorization', `Bearer ${token_a}`).send({ name: 'Frozen' });
+    const other_tenant = await request(app).post('/api/categories').set('Authorization', `Bearer ${token_b}`).send({ name: 'Frozen' });
+    expect(other_tenant.status).toBe(201);
+  });
 });
