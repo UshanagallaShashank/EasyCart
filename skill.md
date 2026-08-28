@@ -548,11 +548,9 @@ AI features additionally require evaluation fixtures and measurable evaluation r
 
 # Current Development Rule
 
-Always work on the **current phase only**.
+As of 2026-08-28, Phases 1-3 (Foundation, Store, Products) are being built together as one combined push, by explicit decision — not the full roadmap. Phases 4+ still follow the one-phase-at-a-time rule below.
 
-Do not build the entire roadmap upfront.
-
-When starting a new phase:
+When starting a phase not already in progress:
 
 ```text
 Understand
