@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { JWT_SECRET } from '../env.js';
 import { AppError } from '../utils/app-error.js';
 import { validate_signup_input } from '../utils/auth-schemas.js';
-import { hashPassword } from '../utils/hash.js';
+import { hash_password } from '../utils/hash.js';
 import { find_user_by_email, save_user } from '../repositories/user-repository.js';
 
 export async function create_user(payload) {
@@ -21,7 +21,7 @@ export async function create_user(payload) {
     throw new AppError('User already exists', 409);
   }
 
-  const password_hash = await hashPassword(payload.password);
+  const password_hash = await hash_password(payload.password);
   const user = {
     id: randomUUID(),
     username,
