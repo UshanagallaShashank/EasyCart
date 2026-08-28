@@ -73,3 +73,18 @@ create table products (
   updated_at timestamptz not null default now(),
   unique (tenant_id, sku)
 );
+
+-- 6. Orders table
+drop table if exists orders cascade;
+create table orders (
+  id text primary key,
+  tenant_id text not null references tenants(id),
+  customer_id text not null references users(id),
+  items jsonb not null default '[]',
+  total numeric not null,
+  status text not null default 'pending',
+  payment_status text not null default 'unpaid',
+  payment_method text not null default 'cash_on_delivery',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);

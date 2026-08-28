@@ -109,9 +109,46 @@ Do not build store creation, products, or anything from Phase 2+ inside this pha
 
 ---
 
-## Phases 2–11
+## Phase 4-5 — Shopping, Orders & Payments
 
-Defined in `skill.md` under "Development Phases." Do not subphase-break these yet — each gets its own subphase breakdown in this README when Phase 1 is verified complete and that phase actually starts. Building the breakdown for a future phase before the current one is done is out of scope (see `skill.md`'s "Current Development Rule").
+Goal: customers can browse, purchase, and track orders; owners can fulfill them. Combined per `skill.md`'s Current Development Rule since they form one inseparable purchase lifecycle.
+
+### 4.1 — Customer/role middleware fix
+
+- Add `require_any_role`, `resolve_public_tenant` middleware alongside (not replacing) `require_role`/`resolve_tenant`.
+- Verify: public storefront routes resolve tenant from slug without auth; customer-role routes reject tenant_owner tokens and vice versa.
+
+### 4.2 — Customer accounts
+
+- Customer registration/login reusing the users table with `role='customer'`, `tenant_id` always null.
+- Verify: customer JWT is rejected by every tenant_owner-only route; customer login rejects a tenant_owner's credentials.
+
+### 4.3 — Storefront product search, categories, product details
+
+- Public GET endpoints under `/api/stores/:slug/...` returning only active products of published stores.
+- Verify: unpublished/missing store 404s identically; inactive products never appear publicly.
+
+### 4.4 — Checkout
+
+- `POST /api/stores/:slug/checkout` takes cart items + payment_method, validates stock, creates an order.
+- Verify: insufficient stock rejects before any mutation; cross-tenant product references rejected.
+
+### 4.5 — Orders, order status, payment status
+
+- Orders table/model with embedded snapshot line items; owner status/payment-status endpoints; customer order history across tenants.
+- Verify: full MVP flow (register → store → product → publish → customer → checkout → order → status update → payment update → stock decremented) passes end to end in one test.
+
+### 4.6 — Phase 4-5 verification pass
+
+- Confirm tenant isolation on every new owner-facing order/product/category endpoint.
+- Confirm a customer's order history correctly spans multiple tenants.
+- Only after this passes: move to Phase 6 (Delivery).
+
+---
+
+## Phases 6–11
+
+Defined in `skill.md` under "Development Phases." Do not subphase-break these yet — each gets its own subphase breakdown in this README when Phase 4-5 is verified complete and that phase actually starts. Building the breakdown for a future phase before the current one is done is out of scope (see `skill.md`'s "Current Development Rule").
 
 ---
 

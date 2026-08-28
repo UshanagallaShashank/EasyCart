@@ -9,6 +9,8 @@ import { health_router } from './platform/health/health-route.js';
 import { store_router } from './modules/stores/routes/store-route.js';
 import { category_router } from './modules/categories/routes/category-route.js';
 import { product_router } from './modules/products/routes/product-route.js';
+import { customer_router } from './modules/customers/customer-route.js';
+import { order_router } from './modules/orders/routes/order-route.js';
 
 export function create_express_app() {
   const app = express();
@@ -19,6 +21,8 @@ export function create_express_app() {
   app.use('/api', store_router);
   app.use('/api', category_router);
   app.use('/api', product_router);
+  app.use('/api', customer_router);
+  app.use('/api', order_router);
   app.use(error_handler);
   return app;
 }

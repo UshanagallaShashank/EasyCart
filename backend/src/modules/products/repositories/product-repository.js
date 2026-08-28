@@ -21,6 +21,30 @@ export async function find_product_by_id(id, tenant_id) {
   return Product.findOne({ id, tenant_id }).lean();
 }
 
+export async function find_active_products_by_tenant(tenant_id, { search, category_id } = {}) {
+  if (DB_PROVIDER === 'supabase') {
+    let query = get_supabase().from('products').select('*').eq('tenant_id', tenant_id).eq('is_active', true);
+    if (category_id) query = query.eq('category_id', category_id);
+    if (search) query = query.ilike('name', `%${search}%`);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data;
+  }
+  const filter = { tenant_id, is_active: true };
+  if (category_id) filter.category_id = category_id;
+  if (search) filter.name = { $regex: search, $options: 'i' };
+  return Product.find(filter).lean();
+}
+
+export async function find_active_product_by_id(id, tenant_id) {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('products').select('*').eq('id', id).eq('tenant_id', tenant_id).eq('is_active', true).maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+  return Product.findOne({ id, tenant_id, is_active: true }).lean();
+}
+
 export async function find_product_by_sku(sku, tenant_id) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from('products').select('*').eq('sku', sku).eq('tenant_id', tenant_id).maybeSingle();
