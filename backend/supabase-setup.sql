@@ -107,6 +107,7 @@ create table coupons (
   discount_type text not null,
   discount_value numeric not null,
   is_active boolean not null default true,
+  expires_at timestamptz,
   created_at timestamptz not null default now(),
   unique (tenant_id, code)
 );

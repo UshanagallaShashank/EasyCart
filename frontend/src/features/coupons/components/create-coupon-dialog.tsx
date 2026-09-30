@@ -9,7 +9,7 @@ import { useCreateCoupon } from '../hooks/use-create-coupon';
 import { ApiError } from '@/shared/api/api-error';
 import type { CouponPayload } from '../types/coupon-types';
 
-const EMPTY_FORM: CouponPayload = { code: '', discount_type: 'flat', discount_value: 0 };
+const EMPTY_FORM: CouponPayload = { code: '', discount_type: 'flat', discount_value: 0, expires_at: null };
 
 export function CreateCouponDialog() {
   const [open, setOpen] = useState(false);
@@ -73,6 +73,23 @@ export function CreateCouponDialog() {
                 onChange={(e) => setForm((p) => ({ ...p, discount_value: Number(e.target.value) }))}
                 required
               />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="coupon-expires-at">Expiry date</Label>
+              <Input
+                id="coupon-expires-at"
+                type="date"
+                value={form.expires_at ? form.expires_at.split('T')[0] : ''}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    expires_at: e.target.value ? new Date(`${e.target.value}T23:59:59.999Z`).toISOString() : null
+                  }))
+                }
+              />
+              <span className="text-[11px] text-muted-foreground">
+                Optional. Coupon will expire at the end of this date.
+              </span>
             </div>
           </div>
           <DialogFooter>
