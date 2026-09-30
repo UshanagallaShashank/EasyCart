@@ -16,3 +16,11 @@ export function publishStore(): Promise<{ store: Store }> {
 export function unpublishStore(): Promise<{ store: Store }> {
   return apiRequest('/stores/me/unpublish', { method: 'POST' });
 }
+
+export function uploadStoreImage(payload: { file: string; type: 'logo' | 'banner' }): Promise<{ url: string; path: string }> {
+  return apiRequest('/stores/me/upload-image', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+

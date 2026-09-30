@@ -121,3 +121,14 @@ create table notifications (
   is_read boolean not null default false,
   created_at timestamptz not null default now()
 );
+
+-- 9. Storage bucket for store assets (logos and banners stored under user ID)
+insert into storage.buckets (id, name, public)
+values ('store-assets', 'store-assets', true)
+on conflict (id) do update set public = true;
+
+-- Policy to allow public read access to store assets
+create policy "Public Access to Store Assets"
+on storage.objects for select
+using (bucket_id = 'store-assets');
+
