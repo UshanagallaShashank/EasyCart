@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
+import { CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -20,10 +21,26 @@ export function CheckoutPage() {
   const checkoutMutation = useCheckout(slug!);
   const [fulfillmentMethod, setFulfillmentMethod] = useState<'pickup' | 'delivery'>('pickup');
   const [deliveryAddress, setDeliveryAddress] = useState('');
-  const [couponCode, setCouponCode] = useState('');
+  const [couponInput, setCouponInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState('');
 
   const deliveryFee = fulfillmentMethod === 'delivery' ? (store?.delivery_fee ?? 0) : 0;
   const grandTotal = total + deliveryFee;
+
+  function handleApplyCoupon() {
+    const trimmed = couponInput.trim();
+    if (!trimmed) {
+      toast.error('Please enter a coupon code');
+      return;
+    }
+    setAppliedCoupon(trimmed);
+    toast.success(`Coupon "${trimmed}" will be applied on checkout`);
+  }
+
+  function handleRemoveCoupon() {
+    setAppliedCoupon('');
+    setCouponInput('');
+  }
 
   function handlePlaceOrder() {
     checkoutMutation.mutate(
@@ -32,7 +49,7 @@ export function CheckoutPage() {
         payment_method: 'cash_on_delivery',
         fulfillment_method: fulfillmentMethod,
         delivery_address: fulfillmentMethod === 'delivery' ? deliveryAddress : undefined,
-        coupon_code: couponCode.trim() || undefined
+        coupon_code: appliedCoupon || undefined
       },
       { onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Checkout failed') }
     );
@@ -79,7 +96,38 @@ export function CheckoutPage() {
         )}
         <div className="flex flex-col gap-2">
           <Label htmlFor="coupon_code">Coupon code</Label>
-          <Input id="coupon_code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Optional" />
+          {appliedCoupon ? (
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+              <CheckCircle2 className="size-4 shrink-0 text-emerald-600" />
+              <span className="flex-1 text-sm font-medium text-emerald-700">"{appliedCoupon}" applied</span>
+              <button
+                type="button"
+                onClick={handleRemoveCoupon}
+                className="text-xs text-slate-400 hover:text-red-500 transition-colors"
+              >
+                Remove
+              </button>
+            </div>
+          ) : (
+            <div className="flex gap-2">
+              <Input
+                id="coupon_code"
+                value={couponInput}
+                onChange={(e) => setCouponInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleApplyCoupon()}
+                placeholder="Optional"
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleApplyCoupon}
+                disabled={!couponInput.trim()}
+              >
+                Apply
+              </Button>
+            </div>
+          )}
         </div>
         <Separator />
         <p className="font-medium tabular-nums">Total: Rs. {grandTotal.toFixed(2)}</p>

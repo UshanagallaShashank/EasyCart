@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { Home } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/empty-state';
@@ -7,10 +8,22 @@ import { useMyOrders } from '../hooks/use-my-orders';
 
 export function CustomerOrdersPage() {
   const { data: orders, isLoading } = useMyOrders();
+  // Read the last visited store slug so we can offer a "Go to Store" link
+  const lastSlug = sessionStorage.getItem('last_store_slug');
 
   return (
     <div className="flex flex-col gap-6 p-6">
-      <h1 className="font-heading text-2xl">My orders</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="font-heading text-2xl">My orders</h1>
+        {lastSlug && (
+          <Link
+            to={`/${lastSlug}`}
+            className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors"
+          >
+            <Home className="size-4" /> Go to Store
+          </Link>
+        )}
+      </div>
       {isLoading ? (
         <p className="text-muted-foreground">Loading…</p>
       ) : !orders?.length ? (
@@ -30,7 +43,7 @@ export function CustomerOrdersPage() {
             {orders.map((order) => (
               <TableRow key={order.id} className="hover:bg-secondary/30">
                 <TableCell>
-                  <Link to={`/customer/orders/${order.id}`} className="underline">{order.id.slice(0, 8)}</Link>
+                  <Link to={`/customer/orders/${order.id}`} className="underline">#{order.id.slice(0, 8)}</Link>
                 </TableCell>
                 <TableCell className="tabular-nums">Rs. {order.total.toFixed(2)}</TableCell>
                 <TableCell><Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge></TableCell>
