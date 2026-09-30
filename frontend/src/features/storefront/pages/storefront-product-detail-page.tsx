@@ -45,7 +45,7 @@ export function StorefrontProductDetailPage() {
         )}
         <h1 className="font-heading text-2xl">{product.name}</h1>
         <p className="text-muted-foreground">{product.description}</p>
-        <p className="text-xl font-medium tabular-nums">${price.toFixed(2)}</p>
+        <p className="text-xl font-medium tabular-nums">Rs. {price.toFixed(2)}</p>
         <Separator />
         {product.variants.length > 0 && (
           <Select value={variantLabel} onValueChange={setVariantLabel}>

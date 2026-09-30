@@ -34,7 +34,7 @@ export function ProductTable() {
           <TableRow key={product.id} className="hover:bg-secondary/30">
             <TableCell>{product.name}</TableCell>
             <TableCell>{product.sku}</TableCell>
-            <TableCell className="tabular-nums">${product.price.toFixed(2)}</TableCell>
+            <TableCell className="tabular-nums">Rs. {product.price.toFixed(2)}</TableCell>
             <TableCell className="tabular-nums">
               {product.stock_quantity}
               {product.stock_quantity <= product.low_stock_threshold && (

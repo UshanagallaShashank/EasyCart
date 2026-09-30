@@ -18,7 +18,7 @@ export function ProductCard({ product, slug }: { product: Product; slug: string 
           )}
         </div>
         <CardHeader><CardTitle className="text-base group-hover:text-sky-600 transition-colors">{product.name}</CardTitle></CardHeader>
-        <CardContent><p className="font-semibold text-slate-900 tabular-nums">${product.price.toFixed(2)}</p></CardContent>
+        <CardContent><p className="font-semibold text-slate-900 tabular-nums">Rs. {product.price.toFixed(2)}</p></CardContent>
       </Card>
     </Link>
   );

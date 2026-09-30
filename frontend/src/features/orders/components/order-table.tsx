@@ -30,7 +30,7 @@ export function OrderTable() {
                 {order.id.slice(0, 8)}
               </Link>
             </TableCell>
-            <TableCell className="tabular-nums">${order.total.toFixed(2)}</TableCell>
+            <TableCell className="tabular-nums">Rs. {order.total.toFixed(2)}</TableCell>
             <TableCell><Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge></TableCell>
             <TableCell><Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge></TableCell>
             <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>

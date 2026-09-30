@@ -40,17 +40,17 @@ export function CustomerOrderDetailPage() {
             <TableRow key={i} className="hover:bg-secondary/30">
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.variant_label ?? '—'}</TableCell>
-              <TableCell className="tabular-nums">${item.price.toFixed(2)}</TableCell>
+              <TableCell className="tabular-nums">Rs. {item.price.toFixed(2)}</TableCell>
               <TableCell className="tabular-nums">{item.quantity}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
       {order.discount_amount > 0 && (
-        <p className="text-success text-sm tabular-nums">Coupon {order.coupon_code}: -${order.discount_amount.toFixed(2)}</p>
+        <p className="text-success text-sm tabular-nums">Coupon {order.coupon_code}: -Rs. {order.discount_amount.toFixed(2)}</p>
       )}
-      {order.delivery_fee > 0 && <p className="text-muted-foreground text-sm tabular-nums">Delivery fee: ${order.delivery_fee.toFixed(2)}</p>}
-      <p className="font-medium tabular-nums">Total: ${order.total.toFixed(2)}</p>
+      {order.delivery_fee > 0 && <p className="text-muted-foreground text-sm tabular-nums">Delivery fee: Rs. {order.delivery_fee.toFixed(2)}</p>}
+      <p className="font-medium tabular-nums">Total: Rs. {order.total.toFixed(2)}</p>
     </div>
   );
 }
