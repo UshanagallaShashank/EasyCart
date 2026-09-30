@@ -52,7 +52,8 @@ export async function create_user(payload) {
       id: saved_user.id,
       username: saved_user.username,
       email: saved_user.email,
-      phone_number: saved_user.phone_number
+      phone_number: saved_user.phone_number,
+      role: saved_user.role
     },
     tenant,
     token
@@ -79,7 +80,8 @@ export async function login_user(payload) {
       id: user.id,
       username: user.username,
       email: user.email,
-      phone_number: user.phone_number
+      phone_number: user.phone_number,
+      role: user.role
     },
     token
   };

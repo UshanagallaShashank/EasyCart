@@ -39,6 +39,8 @@ create table stores (
   logo_url text,
   banner_url text,
   theme text not null default 'default',
+  delivery_fee numeric not null default 0,
+  promotion_banner_text text,
   is_published boolean not null default false,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -85,6 +87,37 @@ create table orders (
   status text not null default 'pending',
   payment_status text not null default 'unpaid',
   payment_method text not null default 'cash_on_delivery',
+  fulfillment_method text not null default 'pickup',
+  delivery_address text,
+  delivery_fee numeric not null default 0,
+  fulfillment_status text not null default 'not_started',
+  assigned_to text,
+  coupon_code text,
+  discount_amount numeric not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
+);
+
+-- 7. Coupons table
+drop table if exists coupons cascade;
+create table coupons (
+  id text primary key,
+  tenant_id text not null references tenants(id),
+  code text not null,
+  discount_type text not null,
+  discount_value numeric not null,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  unique (tenant_id, code)
+);
+
+-- 8. Notifications table
+drop table if exists notifications cascade;
+create table notifications (
+  id text primary key,
+  tenant_id text not null references tenants(id),
+  type text not null,
+  message text not null,
+  is_read boolean not null default false,
+  created_at timestamptz not null default now()
 );

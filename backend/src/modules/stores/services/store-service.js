@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { AppError } from '../../../platform/shared/app-error.js';
 import { validate_store_settings_input } from '../store-schemas.js';
 import { find_store_by_tenant_id, find_store_by_slug, save_store, update_store } from '../repositories/store-repository.js';
+import { find_tenant_by_id } from '../../tenants/repositories/tenant-repository.js';
 
 export async function create_store_for_tenant(tenant_id, name, slug) {
   return save_store({ id: randomUUID(), tenant_id, name, slug, is_published: false });
@@ -41,5 +42,17 @@ export async function get_public_store_by_slug(slug) {
   if (!store || !store.is_published) {
     throw new AppError('Store not found', 404);
   }
-  return { name: store.name, slug: store.slug, logo_url: store.logo_url, banner_url: store.banner_url, theme: store.theme };
+  const tenant = await find_tenant_by_id(store.tenant_id);
+  if (!tenant || tenant.status === 'suspended') {
+    throw new AppError('Store not found', 404);
+  }
+  return {
+    name: store.name,
+    slug: store.slug,
+    logo_url: store.logo_url,
+    banner_url: store.banner_url,
+    theme: store.theme,
+    delivery_fee: store.delivery_fee,
+    promotion_banner_text: store.promotion_banner_text
+  };
 }

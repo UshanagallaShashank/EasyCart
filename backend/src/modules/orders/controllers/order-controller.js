@@ -1,4 +1,11 @@
-import { list_orders_for_tenant, get_order_for_tenant, update_order_status, update_order_payment_status } from '../services/order-service.js';
+import {
+  list_orders_for_tenant,
+  get_order_for_tenant,
+  update_order_status,
+  update_order_payment_status,
+  update_order_fulfillment_status,
+  update_order_assignment
+} from '../services/order-service.js';
 
 export async function handle_list_orders(req, res, next) {
   try {
@@ -30,6 +37,24 @@ export async function handle_update_order_status(req, res, next) {
 export async function handle_update_payment_status(req, res, next) {
   try {
     const order = await update_order_payment_status(req.tenant_id, req.params.id, req.body);
+    res.status(200).json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_update_fulfillment_status(req, res, next) {
+  try {
+    const order = await update_order_fulfillment_status(req.tenant_id, req.params.id, req.body);
+    res.status(200).json({ order });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_update_assignment(req, res, next) {
+  try {
+    const order = await update_order_assignment(req.tenant_id, req.params.id, req.body);
     res.status(200).json({ order });
   } catch (err) {
     next(err);

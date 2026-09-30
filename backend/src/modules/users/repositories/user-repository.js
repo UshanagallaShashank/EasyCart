@@ -1,7 +1,10 @@
 // Reads and writes user rows for whichever database is configured.
 import { get_supabase } from '../../../platform/db/db.js';
 import { DB_PROVIDER } from '../../../env.js';
+import { chunk_array } from '../../../platform/shared/chunk-array.js';
 import { User } from './user-model.js';
+
+const SUPABASE_IN_CHUNK_SIZE = 100;
 
 export async function find_user_by_email(email) {
   const normalized = String(email).toLowerCase();
@@ -68,6 +71,31 @@ export async function save_user(user) {
   });
 
   return created_user.toObject();
+}
+
+export async function find_user_by_id(id) {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('users').select('*').eq('id', id).maybeSingle();
+    if (error && error.code !== 'PGRST116') throw error;
+    return data;
+  }
+  return User.findOne({ id }).lean();
+}
+
+export async function find_users_by_ids(ids) {
+  if (!ids.length) return [];
+  if (DB_PROVIDER === 'supabase') {
+    const chunks = chunk_array(ids, SUPABASE_IN_CHUNK_SIZE);
+    const results = await Promise.all(
+      chunks.map(async (chunk) => {
+        const { data, error } = await get_supabase().from('users').select('*').in('id', chunk);
+        if (error) throw error;
+        return data;
+      })
+    );
+    return results.flat();
+  }
+  return User.find({ id: { $in: ids } }).lean();
 }
 
 export async function set_user_tenant_id(id, tenant_id) {

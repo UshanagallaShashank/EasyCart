@@ -20,3 +20,12 @@ export async function find_orders_by_customer(customer_id) {
   }
   return Order.find({ customer_id }).lean();
 }
+
+export async function find_orders_by_customer_and_tenant(customer_id, tenant_id) {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('orders').select('*').eq('customer_id', customer_id).eq('tenant_id', tenant_id);
+    if (error) throw error;
+    return data;
+  }
+  return Order.find({ customer_id, tenant_id }).lean();
+}

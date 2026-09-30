@@ -11,6 +11,10 @@ import { category_router } from './modules/categories/routes/category-route.js';
 import { product_router } from './modules/products/routes/product-route.js';
 import { customer_router } from './modules/customers/customer-route.js';
 import { order_router } from './modules/orders/routes/order-route.js';
+import { admin_router } from './modules/admin/routes/admin-route.js';
+import { tenant_customer_router } from './modules/tenant-customers/routes/tenant-customer-route.js';
+import { coupon_router } from './modules/coupons/routes/coupon-route.js';
+import { notification_router } from './modules/notifications/routes/notification-route.js';
 
 export function create_express_app() {
   const app = express();
@@ -23,6 +27,10 @@ export function create_express_app() {
   app.use('/api', product_router);
   app.use('/api', customer_router);
   app.use('/api', order_router);
+  app.use('/api', admin_router);
+  app.use('/api', tenant_customer_router);
+  app.use('/api', coupon_router);
+  app.use('/api', notification_router);
   app.use(error_handler);
   return app;
 }
