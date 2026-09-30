@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --watch src/server-main.js",
     "start": "node src/server-main.js",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:clear": "node scripts/clear-supabase-data.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
