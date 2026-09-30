@@ -60,46 +60,20 @@ export function ProductFormDialog({ product, trigger }: { product?: Product; tri
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl max-w-[95vw] p-5 gap-3">
         <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>{isEditing ? 'Edit product' : 'New product'}</DialogTitle>
+          <DialogHeader className="pb-1">
+            <DialogTitle className="text-base font-bold">{isEditing ? 'Edit product' : 'New product'}</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-4 py-4">
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="p-name">Name</Label>
-              <Input id="p-name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 py-2">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="p-name" className="text-xs font-semibold">Name</Label>
+              <Input id="p-name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required className="h-9 text-xs" />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="p-description">Description</Label>
-              <Input id="p-description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
-            </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="p-price">Price (Rs.)</Label>
-              <Input id="p-price" type="number" step="0.01" min={0} placeholder="0.00" value={form.price === 0 && !isEditing ? '' : form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value === '' ? 0 : Number(e.target.value) }))} required />
-            </div>
-            <ProductImageField
-              value={form.images?.[0] ?? ''}
-              onChange={(url) => setForm((p) => ({ ...p, images: url ? [url] : [] }))}
-            />
-            <details className="text-xs text-muted-foreground">
-              <summary className="cursor-pointer hover:text-foreground select-none">
-                SKU (optional)
-              </summary>
-              <div className="pt-2">
-                <Input
-                  id="p-sku"
-                  placeholder="Auto-generated if empty"
-                  value={form.sku}
-                  onChange={(e) => setForm((p) => ({ ...p, sku: e.target.value }))}
-                  className="text-xs h-8"
-                />
-              </div>
-            </details>
-            <div className="flex flex-col gap-2">
-              <Label>Category</Label>
+            <div className="flex flex-col gap-1.5">
+              <Label className="text-xs font-semibold">Category</Label>
               <Select value={form.category_id ?? 'none'} onValueChange={(v) => setForm((p) => ({ ...p, category_id: v === 'none' ? undefined : v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
                   {categories?.map((c) => (
@@ -108,17 +82,50 @@ export function ProductFormDialog({ product, trigger }: { product?: Product; tri
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="p-stock">Stock quantity</Label>
-              <Input id="p-stock" type="number" min={0} placeholder="0" value={form.stock_quantity === 0 && !isEditing ? '' : form.stock_quantity} onChange={(e) => setForm((p) => ({ ...p, stock_quantity: e.target.value === '' ? 0 : Number(e.target.value) }))} />
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="p-price" className="text-xs font-semibold">Price (Rs.)</Label>
+              <Input id="p-price" type="number" step="0.01" min={0} placeholder="0.00" value={form.price === 0 && !isEditing ? '' : form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value === '' ? 0 : Number(e.target.value) }))} required className="h-9 text-xs" />
             </div>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="p-threshold">Low stock threshold</Label>
-              <Input id="p-threshold" type="number" min={0} placeholder="5" value={form.low_stock_threshold === 0 && !isEditing ? '' : form.low_stock_threshold} onChange={(e) => setForm((p) => ({ ...p, low_stock_threshold: e.target.value === '' ? 0 : Number(e.target.value) }))} />
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="p-stock" className="text-xs font-semibold">Stock quantity</Label>
+                <Input id="p-stock" type="number" min={0} placeholder="0" value={form.stock_quantity === 0 && !isEditing ? '' : form.stock_quantity} onChange={(e) => setForm((p) => ({ ...p, stock_quantity: e.target.value === '' ? 0 : Number(e.target.value) }))} className="h-9 text-xs" />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="p-threshold" className="text-xs font-semibold">Low stock alert</Label>
+                <Input id="p-threshold" type="number" min={0} placeholder="5" value={form.low_stock_threshold === 0 && !isEditing ? '' : form.low_stock_threshold} onChange={(e) => setForm((p) => ({ ...p, low_stock_threshold: e.target.value === '' ? 0 : Number(e.target.value) }))} className="h-9 text-xs" />
+              </div>
+            </div>
+            <div className="sm:col-span-2 flex flex-col gap-1.5">
+              <Label htmlFor="p-description" className="text-xs font-semibold">Description</Label>
+              <Input id="p-description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} placeholder="Brief product description" className="h-9 text-xs" />
+            </div>
+            <div className="sm:col-span-2 flex flex-col gap-1.5">
+              <ProductImageField
+                value={form.images?.[0] ?? ''}
+                onChange={(url) => setForm((p) => ({ ...p, images: url ? [url] : [] }))}
+              />
+              <details className="text-[11px] text-muted-foreground mt-0.5">
+                <summary className="cursor-pointer hover:text-foreground select-none">
+                  SKU (optional): {form.sku || 'Auto-generated'}
+                </summary>
+                <div className="pt-1.5">
+                  <Input
+                    id="p-sku"
+                    placeholder="Auto-generated if empty"
+                    value={form.sku}
+                    onChange={(e) => setForm((p) => ({ ...p, sku: e.target.value }))}
+                    className="text-xs h-8"
+                  />
+                </div>
+              </details>
             </div>
           </div>
-          <DialogFooter>
-            <Button type="submit" disabled={isPending}>
+          <DialogFooter className="mt-2 pt-2 border-t flex items-center justify-end gap-2">
+            <Button type="button" variant="outline" size="sm" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" size="sm" disabled={isPending} className="bg-[#0077C8] hover:bg-[#0064AA] text-white">
               {isPending ? 'Saving…' : isEditing ? 'Save changes' : 'Create product'}
             </Button>
           </DialogFooter>
