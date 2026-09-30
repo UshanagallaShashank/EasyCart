@@ -10,6 +10,8 @@ const store_schema = new mongoose.Schema(
     logo_url: { type: String, default: null },
     banner_url: { type: String, default: null },
     theme: { type: String, default: 'default' },
+    delivery_fee: { type: Number, default: 0 },
+    promotion_banner_text: { type: String, default: null },
     is_published: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
