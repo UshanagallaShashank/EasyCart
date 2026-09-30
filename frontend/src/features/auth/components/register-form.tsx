@@ -1,65 +1,39 @@
+// Merchant registration form with store details and credentials
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useRegister } from '../hooks/use-register';
 import { ApiError } from '@/shared/api/api-error';
 import type { RegisterPayload } from '../types/auth-types';
+import { StoreIdentityFields } from './store-identity-fields';
+import { UserCredentialFields } from './user-credential-fields';
+import { EmailField } from './email-field';
+import { PasswordField } from './password-field';
+import { PasswordStrengthBar } from './password-strength-bar';
+import { SocialAuthButtons } from './social-auth-buttons';
 
-const EMPTY_FORM: RegisterPayload = {
-  username: '',
-  email: '',
-  password: '',
-  phone_number: '',
-  store_name: '',
-  slug: ''
-};
+const INIT: RegisterPayload = { username: '', email: '', password: '', phone_number: '', store_name: '', slug: '' };
 
 export function RegisterForm() {
-  const [form, setForm] = useState<RegisterPayload>(EMPTY_FORM);
+  const [form, setForm] = useState<RegisterPayload>(INIT);
   const register = useRegister();
-
-  function set<K extends keyof RegisterPayload>(key: K, value: RegisterPayload[K]) {
-    setForm((prev) => ({ ...prev, [key]: value }));
-  }
+  const set = (k: keyof RegisterPayload, v: string) => setForm((p) => ({ ...p, [k]: v }));
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    register.mutate(form, {
-      onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Registration failed')
-    });
+    register.mutate(form, { onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Registration failed') });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="store_name">Store name</Label>
-        <Input id="store_name" value={form.store_name} onChange={(e) => set('store_name', e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="slug">Store URL slug</Label>
-        <Input id="slug" value={form.slug} onChange={(e) => set('slug', e.target.value)} placeholder="my-store" required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="username">Username</Label>
-        <Input id="username" value={form.username} onChange={(e) => set('username', e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="phone_number">Phone number</Label>
-        <Input id="phone_number" value={form.phone_number} onChange={(e) => set('phone_number', e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" value={form.password} onChange={(e) => set('password', e.target.value)} required />
-      </div>
-      <Button type="submit" disabled={register.isPending}>
-        {register.isPending ? 'Creating account…' : 'Create account'}
-      </Button>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+      <StoreIdentityFields storeName={form.store_name} slug={form.slug} onUpdate={set} />
+      <UserCredentialFields username={form.username} phone={form.phone_number} onUpdate={set} />
+      <EmailField value={form.email} onChange={(v) => set('email', v)} />
+      <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
+      <PasswordStrengthBar password={form.password} />
+      <button type="submit" disabled={register.isPending} className="w-full h-10 mt-1 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
+        {register.isPending ? 'Launching store…' : 'Create Store'}
+      </button>
+      <SocialAuthButtons mode="sign up" />
     </form>
   );
 }

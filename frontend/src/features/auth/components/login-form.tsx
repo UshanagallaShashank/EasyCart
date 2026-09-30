@@ -1,10 +1,11 @@
+// Merchant login form with custom fields and social options
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useLogin } from '../hooks/use-login';
 import { ApiError } from '@/shared/api/api-error';
+import { EmailField } from './email-field';
+import { PasswordField } from './password-field';
+import { SocialAuthButtons } from './social-auth-buttons';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -13,25 +14,24 @@ export function LoginForm() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    login.mutate(
-      { email, password },
-      { onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Login failed') }
-    );
+    login.mutate({ email, password }, {
+      onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Login failed')
+    });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3.5">
+      <EmailField value={email} onChange={setEmail} />
+      <PasswordField value={password} onChange={setPassword} />
+      <div className="flex justify-end -mt-1">
+        <a href="#forgot" onClick={(e) => { e.preventDefault(); toast.info('Password reset instructions sent'); }} className="text-[11px] text-sky-600 hover:text-sky-700 font-medium">
+          Forgot password?
+        </a>
       </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Password</Label>
-        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-      </div>
-      <Button type="submit" disabled={login.isPending}>
-        {login.isPending ? 'Logging in…' : 'Log in'}
-      </Button>
+      <button type="submit" disabled={login.isPending} className="w-full h-10 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
+        {login.isPending ? 'Signing in…' : 'Sign In'}
+      </button>
+      <SocialAuthButtons mode="sign in" />
     </form>
   );
 }
