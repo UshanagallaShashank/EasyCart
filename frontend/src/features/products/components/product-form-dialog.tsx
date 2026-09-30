@@ -75,7 +75,7 @@ export function ProductFormDialog({ product, trigger }: { product?: Product; tri
               <Input id="p-description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="p-price">Price</Label>
+              <Label htmlFor="p-price">Price (Rs.)</Label>
               <Input id="p-price" type="number" step="0.01" min={0} placeholder="0.00" value={form.price === 0 && !isEditing ? '' : form.price} onChange={(e) => setForm((p) => ({ ...p, price: e.target.value === '' ? 0 : Number(e.target.value) }))} required />
             </div>
             <ProductImageField

@@ -85,4 +85,36 @@ describe('Coupon routes', () => {
     const del_b = await request(app).delete(`/api/coupons/${id}`).set('Authorization', `Bearer ${token_b}`);
     expect(del_b.status).toBe(404);
   });
+
+  it('sets expiry date and computes status based on date', async () => {
+    // 1. Future expiry date -> active
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const createFuture = await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${token_a}`)
+      .send({ code: 'FUTURE7', discount_type: 'percent', discount_value: 10, expires_at: futureDate });
+    expect(createFuture.status).toBe(201);
+    expect(createFuture.body.coupon.status).toBe('active');
+    expect(createFuture.body.coupon.is_active).toBe(true);
+    expect(createFuture.body.coupon.is_expired).toBe(false);
+
+    // 2. Past expiry date -> expired and inactive
+    const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const createPast = await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${token_a}`)
+      .send({ code: 'EXPIRED1', discount_type: 'flat', discount_value: 5, expires_at: pastDate });
+    expect(createPast.status).toBe(201);
+    expect(createPast.body.coupon.status).toBe('expired');
+    expect(createPast.body.coupon.is_expired).toBe(true);
+    expect(createPast.body.coupon.is_active).toBe(false);
+
+    // 3. Trying to activate an expired coupon returns 400
+    const activateExpired = await request(app)
+      .patch(`/api/coupons/${createPast.body.coupon.id}`)
+      .set('Authorization', `Bearer ${token_a}`)
+      .send({ is_active: true });
+    expect(activateExpired.status).toBe(400);
+    expect(activateExpired.body.error).toContain('Cannot activate an expired coupon');
+  });
 });
