@@ -15,7 +15,7 @@ export function CustomerOrderDetailPage() {
   return (
     <div className="flex flex-col gap-6 p-6">
       <Link to="/customer/orders" className="text-muted-foreground text-sm underline">← Back to orders</Link>
-      <h1 className="font-heading text-2xl">Order {order.id.slice(0, 8)}</h1>
+      <h1 className="font-heading text-2xl">Order #{order.id.slice(0, 8)}</h1>
       <div className="flex flex-wrap gap-2">
         <Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge>
         <Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge>

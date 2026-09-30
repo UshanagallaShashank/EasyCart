@@ -1,5 +1,6 @@
 // Customer storefront layout with unified header, footer, and store resolution.
 import { useParams, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CartProvider } from '@/features/cart/cart-provider';
 import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
@@ -10,6 +11,11 @@ import { StorefrontNotFound } from '@/features/storefront/components/storefront-
 export function StorefrontLayout() {
   const { slug } = useParams<{ slug: string }>();
   const { data: store, isLoading, isError } = usePublicStore(slug!);
+
+  // Remember which store the customer last visited so My Orders can link back home
+  useEffect(() => {
+    if (slug) sessionStorage.setItem('last_store_slug', slug);
+  }, [slug]);
 
   if (isLoading) {
     return (
