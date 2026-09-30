@@ -32,6 +32,23 @@ describe('Store settings', () => {
     expect(response.body.store.theme).toBe('dark');
   });
 
+  it('accepts an empty string for logo_url and banner_url, matching what the settings form submits when they are unset', async () => {
+    const response = await request(app)
+      .patch('/api/stores/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ logo_url: '', banner_url: '', delivery_fee: 4.5 });
+    expect(response.status).toBe(200);
+    expect(response.body.store.delivery_fee).toBe(4.5);
+  });
+
+  it('still rejects a genuinely invalid URL', async () => {
+    const response = await request(app)
+      .patch('/api/stores/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ logo_url: 'not-a-url' });
+    expect(response.status).toBe(400);
+  });
+
   it('rejects an unauthenticated request', async () => {
     const response = await request(app).patch('/api/stores/me').send({ theme: 'dark' });
     expect(response.status).toBe(401);

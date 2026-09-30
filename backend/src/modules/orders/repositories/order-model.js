@@ -16,6 +16,13 @@ const order_schema = new mongoose.Schema(
     status: { type: String, enum: ['pending', 'confirmed', 'fulfilled', 'cancelled'], default: 'pending' },
     payment_status: { type: String, enum: ['unpaid', 'paid'], default: 'unpaid' },
     payment_method: { type: String, default: 'cash_on_delivery' },
+    fulfillment_method: { type: String, enum: ['pickup', 'delivery'], default: 'pickup' },
+    delivery_address: { type: String, default: null },
+    delivery_fee: { type: Number, default: 0 },
+    fulfillment_status: { type: String, default: 'not_started' },
+    assigned_to: { type: String, default: null },
+    coupon_code: { type: String, default: null },
+    discount_amount: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },

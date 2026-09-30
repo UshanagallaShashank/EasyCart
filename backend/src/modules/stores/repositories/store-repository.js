@@ -1,7 +1,10 @@
 // Reads and writes store rows for whichever database is configured.
 import { get_supabase } from '../../../platform/db/db.js';
 import { DB_PROVIDER } from '../../../env.js';
+import { chunk_array } from '../../../platform/shared/chunk-array.js';
 import { Store } from './store-model.js';
+
+const SUPABASE_IN_CHUNK_SIZE = 100;
 
 export async function find_store_by_tenant_id(tenant_id) {
   if (DB_PROVIDER === 'supabase') {
@@ -10,6 +13,22 @@ export async function find_store_by_tenant_id(tenant_id) {
     return data;
   }
   return Store.findOne({ tenant_id }).lean();
+}
+
+export async function find_stores_by_tenant_ids(tenant_ids) {
+  if (!tenant_ids.length) return [];
+  if (DB_PROVIDER === 'supabase') {
+    const chunks = chunk_array(tenant_ids, SUPABASE_IN_CHUNK_SIZE);
+    const results = await Promise.all(
+      chunks.map(async (chunk) => {
+        const { data, error } = await get_supabase().from('stores').select('*').in('tenant_id', chunk);
+        if (error) throw error;
+        return data;
+      })
+    );
+    return results.flat();
+  }
+  return Store.find({ tenant_id: { $in: tenant_ids } }).lean();
 }
 
 export async function find_store_by_slug(slug) {

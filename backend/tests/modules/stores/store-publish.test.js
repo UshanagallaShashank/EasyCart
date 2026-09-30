@@ -40,6 +40,22 @@ describe('Store publish/unpublish', () => {
     expect(preview.body.store.id).toBeUndefined();
   });
 
+  it('includes delivery_fee in the public preview, so checkout can apply it without an authenticated lookup', async () => {
+    await request(app).patch('/api/stores/me').set('Authorization', `Bearer ${token}`).send({ delivery_fee: 3 });
+    const preview = await request(app).get(`/api/stores/${slug}`);
+    expect(preview.body.store.delivery_fee).toBe(3);
+  });
+
+  it('includes promotion_banner_text in the public preview, and allows clearing it', async () => {
+    await request(app).patch('/api/stores/me').set('Authorization', `Bearer ${token}`).send({ promotion_banner_text: 'Free shipping!' });
+    const preview = await request(app).get(`/api/stores/${slug}`);
+    expect(preview.body.store.promotion_banner_text).toBe('Free shipping!');
+
+    await request(app).patch('/api/stores/me').set('Authorization', `Bearer ${token}`).send({ promotion_banner_text: '' });
+    const preview_cleared = await request(app).get(`/api/stores/${slug}`);
+    expect(preview_cleared.body.store.promotion_banner_text).toBe('');
+  });
+
   it('unpublishes and hides it again', async () => {
     const unpublish = await request(app).post('/api/stores/me/unpublish').set('Authorization', `Bearer ${token}`);
     expect(unpublish.status).toBe(200);
