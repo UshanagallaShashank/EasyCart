@@ -44,7 +44,7 @@ export function ProductTable() {
                 <span className="text-xs text-muted-foreground italic">No image</span>
               )}
             </TableCell>
-            <TableCell className="tabular-nums">${product.price.toFixed(2)}</TableCell>
+            <TableCell className="tabular-nums">Rs. {product.price.toFixed(2)}</TableCell>
             <TableCell className="tabular-nums">
               {product.stock_quantity}
               {product.stock_quantity <= product.low_stock_threshold && (

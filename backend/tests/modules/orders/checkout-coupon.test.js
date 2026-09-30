@@ -145,4 +145,37 @@ describe('Checkout with coupon', () => {
     expect(response.body.order.coupon_code).toBe(null);
     expect(response.body.order.discount_amount).toBe(0);
   });
+
+  it('rejects an expired coupon at checkout', async () => {
+    const { slug, owner_token, customer_token, product_id } = await setup_published_store_with_product(app, 100);
+    const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${owner_token}`)
+      .send({ code: 'EXPIRED10', discount_type: 'percent', discount_value: 10, expires_at: pastDate });
+
+    const response = await request(app)
+      .post(`/api/stores/${slug}/checkout`)
+      .set('Authorization', `Bearer ${customer_token}`)
+      .send({ items: [{ product_id, quantity: 1 }], payment_method: 'cash_on_delivery', coupon_code: 'EXPIRED10' });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain('Coupon has expired');
+  });
+
+  it('allows checkout with a valid non-expired coupon', async () => {
+    const { slug, owner_token, customer_token, product_id } = await setup_published_store_with_product(app, 100);
+    const futureDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${owner_token}`)
+      .send({ code: 'VALID15', discount_type: 'percent', discount_value: 15, expires_at: futureDate });
+
+    const response = await request(app)
+      .post(`/api/stores/${slug}/checkout`)
+      .set('Authorization', `Bearer ${customer_token}`)
+      .send({ items: [{ product_id, quantity: 1 }], payment_method: 'cash_on_delivery', coupon_code: 'VALID15' });
+    expect(response.status).toBe(201);
+    expect(response.body.order.discount_amount).toBe(15);
+    expect(response.body.order.total).toBe(85);
+  });
 });

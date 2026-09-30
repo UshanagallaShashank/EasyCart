@@ -25,7 +25,7 @@ export function ProductCard({ product, slug }: { product: Product; slug: string 
             {product.description && <p className="mt-1 line-clamp-1 text-xs text-slate-500">{product.description}</p>}
           </div>
           <div className="mt-3 flex items-center justify-between pt-2 border-t border-slate-100">
-            <span className="font-heading text-base font-bold text-slate-900">${product.price.toFixed(2)}</span>
+            <span className="font-heading text-base font-bold text-slate-900">Rs. {product.price.toFixed(2)}</span>
             <span className="flex size-7 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition-colors group-hover:bg-sky-600 group-hover:text-white">
               <ArrowUpRight className="size-3.5" />
             </span>

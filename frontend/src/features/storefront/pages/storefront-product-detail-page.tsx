@@ -23,7 +23,7 @@ export function StorefrontProductDetailPage() {
         <div className="flex flex-col justify-center">
           <span className="text-xs font-bold uppercase tracking-wider text-sky-600">Product Details</span>
           <h1 className="mt-1 font-heading text-2xl font-bold text-slate-900 sm:text-3xl">{product.name}</h1>
-          <p className="mt-3 text-2xl font-bold text-slate-900 tabular-nums">${product.price.toFixed(2)}</p>
+          <p className="mt-3 text-2xl font-bold text-slate-900 tabular-nums">Rs. {product.price.toFixed(2)}</p>
           <p className="mt-4 text-sm text-slate-600 leading-relaxed">{product.description}</p>
           <div className="mt-6 border-t border-slate-200/80 pt-6">
             <ProductDetailActions product={product} />

@@ -9,6 +9,7 @@ const coupon_schema = new mongoose.Schema(
     discount_type: { type: String, enum: ['flat', 'percent'], required: true },
     discount_value: { type: Number, required: true },
     is_active: { type: Boolean, default: true },
+    expires_at: { type: Date, default: null },
     created_at: { type: Date, default: Date.now }
   },
   { collection: 'coupons' }
