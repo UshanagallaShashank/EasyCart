@@ -62,7 +62,7 @@ export function CreateCouponDialog() {
               </Select>
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="coupon-value">{form.discount_type === 'percent' ? 'Percent off' : 'Amount off ($)'}</Label>
+              <Label htmlFor="coupon-value">{form.discount_type === 'percent' ? 'Percent off' : 'Amount off (Rs.)'}</Label>
               <Input
                 id="coupon-value"
                 type="number"

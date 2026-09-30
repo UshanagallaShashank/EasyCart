@@ -10,7 +10,7 @@ export function CartSummary({ slug }: { slug: string }) {
   return (
     <div className="flex flex-col gap-3">
       <Separator />
-      <p className="text-lg font-medium tabular-nums">Total: ${total.toFixed(2)}</p>
+      <p className="text-lg font-medium tabular-nums">Total: Rs. {total.toFixed(2)}</p>
       <Button disabled={lines.length === 0} onClick={() => navigate(`/${slug}/checkout`)}>
         Checkout
       </Button>

@@ -27,7 +27,7 @@ export function CartLineRow({ line }: { line: CartLine }) {
         onChange={(e) => updateQuantity(line.product_id, Number(e.target.value), line.variant_label)}
         className="w-20"
       />
-      <p className="w-20 text-right tabular-nums">${(line.price * line.quantity).toFixed(2)}</p>
+      <p className="w-20 text-right tabular-nums">Rs. {(line.price * line.quantity).toFixed(2)}</p>
       <Button variant="ghost" size="sm" onClick={() => removeItem(line.product_id, line.variant_label)}>
         Remove
       </Button>

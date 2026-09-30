@@ -53,7 +53,7 @@ export function CheckoutPage() {
         {lines.map((line) => (
           <div key={`${line.product_id}-${line.variant_label ?? ''}`} className="flex justify-between text-sm">
             <span>{line.name} × {line.quantity}</span>
-            <span className="tabular-nums">${(line.price * line.quantity).toFixed(2)}</span>
+            <span className="tabular-nums">Rs. {(line.price * line.quantity).toFixed(2)}</span>
           </div>
         ))}
         <Separator />
@@ -76,7 +76,7 @@ export function CheckoutPage() {
         {fulfillmentMethod === 'delivery' && (
           <div className="flex justify-between text-sm">
             <span>Delivery fee</span>
-            <span className="tabular-nums">${deliveryFee.toFixed(2)}</span>
+            <span className="tabular-nums">Rs. {deliveryFee.toFixed(2)}</span>
           </div>
         )}
         <div className="flex flex-col gap-2">
@@ -84,7 +84,7 @@ export function CheckoutPage() {
           <Input id="coupon_code" value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Optional" />
         </div>
         <Separator />
-        <p className="font-medium tabular-nums">Total: ${grandTotal.toFixed(2)}</p>
+        <p className="font-medium tabular-nums">Total: Rs. {grandTotal.toFixed(2)}</p>
         <p className="text-muted-foreground text-sm">Payment method: Cash on delivery</p>
         <Button onClick={handlePlaceOrder} disabled={checkoutMutation.isPending || !canPlaceOrder}>
           {checkoutMutation.isPending ? 'Placing order…' : 'Place order'}

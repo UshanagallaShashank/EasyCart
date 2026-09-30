@@ -38,7 +38,7 @@ export function CouponTable() {
             <TableRow key={coupon.id} className="hover:bg-secondary/30">
               <TableCell className="font-medium font-mono text-sm">{coupon.code}</TableCell>
               <TableCell className="tabular-nums font-semibold">
-                {coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : `$${coupon.discount_value.toFixed(2)}`}
+                {coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : `Rs. ${coupon.discount_value.toFixed(2)}`}
               </TableCell>
               <TableCell className="text-xs text-muted-foreground">
                 {coupon.expires_at ? (

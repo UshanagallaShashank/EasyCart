@@ -29,7 +29,7 @@ export function TenantCustomerTable() {
             </TableCell>
             <TableCell>{customer.email ?? '—'}</TableCell>
             <TableCell className="tabular-nums">{customer.order_count}</TableCell>
-            <TableCell className="tabular-nums">${customer.lifetime_total.toFixed(2)}</TableCell>
+            <TableCell className="tabular-nums">Rs. {customer.lifetime_total.toFixed(2)}</TableCell>
           </TableRow>
         ))}
       </TableBody>
