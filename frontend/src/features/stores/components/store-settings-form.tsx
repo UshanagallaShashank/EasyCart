@@ -1,13 +1,11 @@
+// Store settings form wrapper assembling branding and operations cards
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUpdateStore } from '../hooks/use-update-store';
 import { ApiError } from '@/shared/api/api-error';
 import type { Store, StoreSettingsPayload } from '../types/store-types';
+import { StoreBrandingCard } from './store-branding-card';
+import { StoreOperationsCard } from './store-operations-card';
 
 export function StoreSettingsForm({ store }: { store: Store }) {
   const [form, setForm] = useState<StoreSettingsPayload>({
@@ -19,66 +17,20 @@ export function StoreSettingsForm({ store }: { store: Store }) {
     promotion_banner_text: store.promotion_banner_text ?? ''
   });
   const update = useUpdateStore();
+  const set = (k: keyof StoreSettingsPayload, v: unknown) => setForm((p) => ({ ...p, [k]: v }));
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     update.mutate(form, {
-      onSuccess: () => toast.success('Store settings saved'),
+      onSuccess: () => toast.success('Store settings saved successfully'),
       onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to save settings')
     });
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex max-w-md flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="name">Store name</Label>
-        <Input id="name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
-      </div>
-      <h2 className="text-muted-foreground text-sm font-medium">Appearance</h2>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="logo_url">Logo URL</Label>
-        <Input id="logo_url" value={form.logo_url} onChange={(e) => setForm((p) => ({ ...p, logo_url: e.target.value }))} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="banner_url">Banner URL</Label>
-        <Input id="banner_url" value={form.banner_url} onChange={(e) => setForm((p) => ({ ...p, banner_url: e.target.value }))} />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label>Theme</Label>
-        <Select value={form.theme} onValueChange={(value) => setForm((p) => ({ ...p, theme: value as Store['theme'] }))}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
-          <SelectContent>
-            <SelectItem value="default">Default</SelectItem>
-            <SelectItem value="light">Light</SelectItem>
-            <SelectItem value="dark">Dark</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-      <h2 className="text-muted-foreground text-sm font-medium">Delivery</h2>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="delivery_fee">Delivery fee</Label>
-        <Input
-          id="delivery_fee"
-          type="number"
-          min={0}
-          step="0.01"
-          value={form.delivery_fee}
-          onChange={(e) => setForm((p) => ({ ...p, delivery_fee: Number(e.target.value) }))}
-        />
-      </div>
-      <h2 className="text-muted-foreground text-sm font-medium">Promotion</h2>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="promotion_banner_text">Banner text</Label>
-        <Textarea
-          id="promotion_banner_text"
-          value={form.promotion_banner_text}
-          onChange={(e) => setForm((p) => ({ ...p, promotion_banner_text: e.target.value }))}
-          placeholder="e.g. Free shipping this week only!"
-        />
-      </div>
-      <Button type="submit" disabled={update.isPending}>
-        {update.isPending ? 'Saving…' : 'Save settings'}
-      </Button>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <StoreBrandingCard form={form} onUpdate={set} />
+      <StoreOperationsCard form={form} onUpdate={set} isPending={update.isPending} />
     </form>
   );
 }
