@@ -5,10 +5,20 @@ import { Button } from '@/components/ui/button';
 import { useCart } from '../cart-context';
 import { CartLineRow } from '../components/cart-line-row';
 import { CartSummary } from '../components/cart-summary';
+import { usePublicProducts } from '@/features/storefront/hooks/use-public-products';
 
 export function CartPage() {
   const { slug } = useParams<{ slug: string }>();
   const { lines } = useCart();
+  // Fetch all store products so we can fill in any missing images in cart lines
+  const { data: products } = usePublicProducts(slug!);
+
+  // Enrich cart lines with images from the storefront product list when line.image is missing
+  const enrichedLines = lines.map((line) => {
+    if (line.image) return line;
+    const product = products?.find((p) => p.id === line.product_id);
+    return product?.images?.[0] ? { ...line, image: product.images[0] } : line;
+  });
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-6 px-6 pt-6">
@@ -25,7 +35,7 @@ export function CartPage() {
       ) : (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
           <div className="flex flex-col gap-3 md:col-span-2">
-            {lines.map((line) => <CartLineRow key={`${line.product_id}-${line.variant_label ?? ''}`} line={line} />)}
+            {enrichedLines.map((line) => <CartLineRow key={`${line.product_id}-${line.variant_label ?? ''}`} line={line} />)}
           </div>
           <div className="md:col-span-1">
             <CartSummary slug={slug!} />
