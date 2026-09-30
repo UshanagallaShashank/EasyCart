@@ -27,7 +27,8 @@ export interface ProductPayload {
   name: string;
   description?: string;
   price: number;
-  sku: string;
+  sku?: string;
+  images?: string[];
   category_id?: string;
   stock_quantity?: number;
   low_stock_threshold?: number;

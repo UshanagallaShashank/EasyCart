@@ -22,7 +22,7 @@ export function ProductTable() {
       <TableHeader>
         <TableRow>
           <TableHead>Name</TableHead>
-          <TableHead>SKU</TableHead>
+          <TableHead>Image</TableHead>
           <TableHead>Price</TableHead>
           <TableHead>Stock</TableHead>
           <TableHead>Active</TableHead>
@@ -32,8 +32,18 @@ export function ProductTable() {
       <TableBody>
         {products.map((product) => (
           <TableRow key={product.id} className="hover:bg-secondary/30">
-            <TableCell>{product.name}</TableCell>
-            <TableCell>{product.sku}</TableCell>
+            <TableCell className="font-medium">{product.name}</TableCell>
+            <TableCell>
+              {product.images?.[0] ? (
+                <img
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="size-10 rounded-lg object-cover border bg-muted/20"
+                />
+              ) : (
+                <span className="text-xs text-muted-foreground italic">No image</span>
+              )}
+            </TableCell>
             <TableCell className="tabular-nums">${product.price.toFixed(2)}</TableCell>
             <TableCell className="tabular-nums">
               {product.stock_quantity}

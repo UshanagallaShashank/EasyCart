@@ -22,15 +22,19 @@ async function assert_category_ownership(tenant_id, category_id) {
   }
 }
 
-async function assert_sku_available(tenant_id, sku) {
+async function assert_sku_available(tenant_id, sku, exclude_id = null) {
   const existing = await find_product_by_sku(sku, tenant_id);
-  if (existing) {
+  if (existing && existing.id !== exclude_id) {
     throw new AppError('SKU already in use', 409);
   }
 }
 
 export async function create_product(tenant_id, payload) {
-  const parsed = validate_product_input(payload);
+  const data = { ...payload };
+  if (!data.sku?.trim()) {
+    data.sku = `SKU-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+  }
+  const parsed = validate_product_input(data);
   if (!parsed.success) {
     throw new AppError(parsed.error.issues.map((issue) => issue.message).join(', '), 400);
   }
@@ -59,7 +63,7 @@ export async function update_product_details(tenant_id, id, payload) {
   await get_product(tenant_id, id);
   await assert_category_ownership(tenant_id, parsed.data.category_id);
   if (parsed.data.sku) {
-    await assert_sku_available(tenant_id, parsed.data.sku);
+    await assert_sku_available(tenant_id, parsed.data.sku, id);
   }
   return update_product(id, tenant_id, parsed.data);
 }

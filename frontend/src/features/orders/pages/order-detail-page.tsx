@@ -13,7 +13,8 @@ export function OrderDetailPage() {
   if (!order) return <p className="text-muted-foreground">Order not found.</p>;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="max-w-7xl mx-auto w-full flex flex-col gap-6">
       <Link to="/dashboard/orders" className="text-muted-foreground text-sm underline">← Back to orders</Link>
       <h1 className="font-heading text-2xl">Order {order.id.slice(0, 8)}</h1>
       <div className="flex flex-wrap items-end gap-6">
@@ -49,6 +50,7 @@ export function OrderDetailPage() {
       </Table>
       {order.delivery_fee > 0 && <p className="text-muted-foreground text-sm tabular-nums">Delivery fee: ${order.delivery_fee.toFixed(2)}</p>}
       <p className="font-medium tabular-nums">Total: ${order.total.toFixed(2)}</p>
+      </div>
     </div>
   );
 }
