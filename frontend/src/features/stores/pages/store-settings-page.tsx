@@ -11,6 +11,7 @@ export function StoreSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <h1 className="font-heading text-2xl">Store settings</h1>
       <PublishToggle store={store} />
       <StoreSettingsForm store={store} />
     </div>

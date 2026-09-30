@@ -5,5 +5,6 @@ import { useAuth } from '@/shared/auth/auth-context';
 export function RequireAuth() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'tenant_owner') return <Navigate to="/login" replace />;
   return <Outlet />;
 }

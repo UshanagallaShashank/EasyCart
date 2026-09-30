@@ -3,6 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useOrder } from '../hooks/use-order';
 import { OrderStatusControls } from '../components/order-status-controls';
+import { OrderAssignmentField } from '../components/order-assignment-field';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -14,8 +15,18 @@ export function OrderDetailPage() {
   return (
     <div className="flex flex-col gap-6">
       <Link to="/dashboard/orders" className="text-muted-foreground text-sm underline">← Back to orders</Link>
-      <h1 className="text-lg font-medium">Order {order.id.slice(0, 8)}</h1>
-      <OrderStatusControls order={order} />
+      <h1 className="font-heading text-2xl">Order {order.id.slice(0, 8)}</h1>
+      <div className="flex flex-wrap items-end gap-6">
+        <OrderStatusControls order={order} />
+        <OrderAssignmentField order={order} />
+      </div>
+      <div className="text-muted-foreground text-sm">
+        {order.fulfillment_method === 'delivery' ? (
+          <p>Delivery to: {order.delivery_address}</p>
+        ) : (
+          <p>Pickup at store</p>
+        )}
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -27,16 +38,17 @@ export function OrderDetailPage() {
         </TableHeader>
         <TableBody>
           {order.items.map((item, i) => (
-            <TableRow key={i}>
+            <TableRow key={i} className="hover:bg-secondary/30">
               <TableCell>{item.name}</TableCell>
               <TableCell>{item.variant_label ?? '—'}</TableCell>
-              <TableCell>${item.price.toFixed(2)}</TableCell>
-              <TableCell>{item.quantity}</TableCell>
+              <TableCell className="tabular-nums">${item.price.toFixed(2)}</TableCell>
+              <TableCell className="tabular-nums">{item.quantity}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <p className="font-medium">Total: ${order.total.toFixed(2)}</p>
+      {order.delivery_fee > 0 && <p className="text-muted-foreground text-sm tabular-nums">Delivery fee: ${order.delivery_fee.toFixed(2)}</p>}
+      <p className="font-medium tabular-nums">Total: ${order.total.toFixed(2)}</p>
     </div>
   );
 }

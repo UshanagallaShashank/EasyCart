@@ -1,13 +1,15 @@
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AppLogo } from '@/components/app-logo';
 import { LoginForm } from '../components/login-form';
 
 export function LoginPage() {
   return (
-    <div className="flex min-h-svh items-center justify-center p-4">
+    <div className="bg-secondary/30 flex min-h-svh flex-col items-center justify-center p-4">
+      <AppLogo className="mb-6" />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>Log in to your store</CardTitle>
+          <CardTitle className="text-xl">Log in to your store</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <LoginForm />

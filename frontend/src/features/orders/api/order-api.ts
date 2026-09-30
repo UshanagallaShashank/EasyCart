@@ -16,3 +16,11 @@ export function updateOrderStatus(id: string, status: Order['status']): Promise<
 export function updateOrderPaymentStatus(id: string, payment_status: Order['payment_status']): Promise<{ order: Order }> {
   return apiRequest(`/orders/${id}/payment-status`, { method: 'PATCH', body: JSON.stringify({ payment_status }) });
 }
+
+export function updateOrderFulfillmentStatus(id: string, fulfillment_status: Order['fulfillment_status']): Promise<{ order: Order }> {
+  return apiRequest(`/orders/${id}/fulfillment-status`, { method: 'PATCH', body: JSON.stringify({ fulfillment_status }) });
+}
+
+export function updateOrderAssignment(id: string, assigned_to: string | null): Promise<{ order: Order }> {
+  return apiRequest(`/orders/${id}/assignment`, { method: 'PATCH', body: JSON.stringify({ assigned_to }) });
+}

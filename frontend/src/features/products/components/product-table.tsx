@@ -2,6 +2,8 @@ import { toast } from 'sonner';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/empty-state';
+import { getStockTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
 import { useProducts } from '../hooks/use-products';
 import { useDeleteProduct } from '../hooks/use-delete-product';
 import { ProductFormDialog } from './product-form-dialog';
@@ -13,7 +15,7 @@ export function ProductTable() {
   const remove = useDeleteProduct();
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (!products?.length) return <p className="text-muted-foreground">No products yet.</p>;
+  if (!products?.length) return <EmptyState message="No products yet." />;
 
   return (
     <Table>
@@ -29,14 +31,14 @@ export function ProductTable() {
       </TableHeader>
       <TableBody>
         {products.map((product) => (
-          <TableRow key={product.id}>
+          <TableRow key={product.id} className="hover:bg-secondary/30">
             <TableCell>{product.name}</TableCell>
             <TableCell>{product.sku}</TableCell>
-            <TableCell>${product.price.toFixed(2)}</TableCell>
-            <TableCell>
+            <TableCell className="tabular-nums">${product.price.toFixed(2)}</TableCell>
+            <TableCell className="tabular-nums">
               {product.stock_quantity}
               {product.stock_quantity <= product.low_stock_threshold && (
-                <Badge variant="destructive" className="ml-2">Low stock</Badge>
+                <Badge className={`ml-2 ${STATUS_TONE_CLASSNAME[getStockTone(product.stock_quantity, product.low_stock_threshold)]}`}>Low stock</Badge>
               )}
             </TableCell>
             <TableCell>{product.is_active ? 'Yes' : 'No'}</TableCell>

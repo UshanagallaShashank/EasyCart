@@ -12,7 +12,7 @@ export function useLogin() {
     mutationFn: (payload: LoginPayload) => loginOwner(payload),
     onSuccess: (data) => {
       login(data.user, data.token);
-      navigate('/dashboard');
+      navigate(data.user.role === 'platform_admin' ? '/admin' : '/dashboard');
     }
   });
 }
