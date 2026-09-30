@@ -1,9 +1,17 @@
 import { useState, useRef, type DragEvent, type ChangeEvent } from 'react';
 import { toast } from 'sonner';
-import { Upload, Image as ImageIcon, Trash2, Loader2, CloudCheck, Link2 } from 'lucide-react';
+import { Upload, Image as ImageIcon, Trash2, Loader2, CloudCheck, Link2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from '@/components/ui/dialog';
 import { useUploadStoreImage } from '../hooks/use-upload-store-image';
 import { ApiError } from '@/shared/api/api-error';
 
@@ -15,6 +23,13 @@ interface StoreImageFieldProps {
   onUploadSuccess?: (url: string) => void;
   helperText?: string;
   aspect?: 'square' | 'banner';
+}
+
+interface PendingUpload {
+  file: File;
+  dataUrl: string;
+  name: string;
+  size: string;
 }
 
 export function StoreImageField({
@@ -29,6 +44,8 @@ export function StoreImageField({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [showUrlInput, setShowUrlInput] = useState(false);
+  const [pendingUpload, setPendingUpload] = useState<PendingUpload | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const upload = useUploadStoreImage();
 
   function handleFileSelect(file: File) {
@@ -45,19 +62,19 @@ export function StoreImageField({
     const reader = new FileReader();
     reader.onload = () => {
       const dataUrl = reader.result as string;
-      upload.mutate(
-        { file: dataUrl, type },
-        {
-          onSuccess: (data) => {
-            onChange(data.url);
-            onUploadSuccess?.(data.url);
-            toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} uploaded to Supabase under your user ID!`);
-          },
-          onError: (err) => {
-            toast.error(err instanceof ApiError ? err.message : 'Failed to upload image to Supabase');
-          }
-        }
-      );
+      const sizeKb = (file.size / 1024).toFixed(1);
+      const sizeFormatted =
+        file.size > 1024 * 1024
+          ? `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+          : `${sizeKb} KB`;
+
+      // Open confirmation modal before uploading
+      setPendingUpload({
+        file,
+        dataUrl,
+        name: file.name,
+        size: sizeFormatted
+      });
     };
     reader.onerror = () => {
       toast.error('Failed to read the selected file');
@@ -65,11 +82,42 @@ export function StoreImageField({
     reader.readAsDataURL(file);
   }
 
+  function handleConfirmUpload() {
+    if (!pendingUpload) return;
+
+    upload.mutate(
+      { file: pendingUpload.dataUrl, type },
+      {
+        onSuccess: (data) => {
+          onChange(data.url);
+          onUploadSuccess?.(data.url);
+          toast.success(`${type === 'logo' ? 'Logo' : 'Banner'} uploaded to Supabase under your user ID!`);
+          setPendingUpload(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        },
+        onError: (err) => {
+          toast.error(err instanceof ApiError ? err.message : 'Failed to upload image to Supabase');
+        }
+      }
+    );
+  }
+
+  function handleCancelUpload() {
+    setPendingUpload(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function handleConfirmDelete() {
+    onChange('');
+    onUploadSuccess?.('');
+    setShowDeleteConfirm(false);
+    toast.success(`Store ${type === 'logo' ? 'logo' : 'banner'} removed`);
+  }
+
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       handleFileSelect(file);
-      // Reset input value so re-selecting the same file triggers change
       e.target.value = '';
     }
   }
@@ -158,10 +206,7 @@ export function StoreImageField({
                       variant="ghost"
                       size="xs"
                       className="text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        onChange('');
-                        onUploadSuccess?.('');
-                      }}
+                      onClick={() => setShowDeleteConfirm(true)}
                       disabled={upload.isPending}
                     >
                       <Trash2 className="size-3" />
@@ -203,10 +248,7 @@ export function StoreImageField({
                       variant="ghost"
                       size="xs"
                       className="text-destructive hover:bg-destructive/10"
-                      onClick={() => {
-                        onChange('');
-                        onUploadSuccess?.('');
-                      }}
+                      onClick={() => setShowDeleteConfirm(true)}
                       disabled={upload.isPending}
                     >
                       <Trash2 className="size-3" />
@@ -275,6 +317,180 @@ export function StoreImageField({
           </span>
         </div>
       )}
+
+      {/* Upload Confirmation Modal */}
+      <Dialog
+        open={Boolean(pendingUpload)}
+        onOpenChange={(open) => {
+          if (!open && !upload.isPending) {
+            handleCancelUpload();
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="size-4 text-sky-600" />
+              <span>Confirm {type === 'logo' ? 'Logo' : 'Banner'} Upload</span>
+            </DialogTitle>
+            <DialogDescription>
+              Please review your selected image before uploading to Supabase.
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingUpload && (
+            <div className="flex flex-col gap-3 py-2">
+              <div className="flex items-center justify-center p-3 rounded-xl border bg-slate-50/80 overflow-hidden">
+                {aspect === 'square' ? (
+                  <div className="size-28 rounded-lg overflow-hidden border bg-white shadow-xs flex items-center justify-center">
+                    <img
+                      src={pendingUpload.dataUrl}
+                      alt="Upload Preview"
+                      className="size-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-32 w-full rounded-lg overflow-hidden border bg-white shadow-xs">
+                    <img
+                      src={pendingUpload.dataUrl}
+                      alt="Upload Preview"
+                      className="size-full object-cover"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-slate-200/80 bg-white p-3 text-xs flex flex-col gap-1.5">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-medium">File name:</span>
+                  <span className="font-semibold text-slate-800 truncate max-w-[200px]" title={pendingUpload.name}>
+                    {pendingUpload.name}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-medium">File size:</span>
+                  <span className="font-semibold text-slate-800">{pendingUpload.size}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-medium">Destination:</span>
+                  <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                    <CloudCheck className="size-3.5" />
+                    Supabase Storage
+                  </span>
+                </div>
+              </div>
+
+              <p className="text-xs text-muted-foreground">
+                Clicking <strong>Confirm & Upload</strong> will store this image in your Supabase bucket and link it to your store.
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancelUpload}
+              disabled={upload.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              onClick={handleConfirmUpload}
+              disabled={upload.isPending}
+              className="bg-sky-600 hover:bg-sky-700 text-white"
+            >
+              {upload.isPending ? (
+                <>
+                  <Loader2 className="size-3.5 animate-spin" />
+                  Uploading…
+                </>
+              ) : (
+                <>
+                  <Upload className="size-3.5" />
+                  Confirm & Upload
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete / Remove Confirmation Modal */}
+      <Dialog
+        open={showDeleteConfirm}
+        onOpenChange={(open) => {
+          if (!open) setShowDeleteConfirm(false);
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="size-4 text-destructive" />
+              <span>Remove {type === 'logo' ? 'Logo' : 'Banner'}?</span>
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove your store {type === 'logo' ? 'logo' : 'banner'}?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex flex-col gap-3 py-2">
+            {value && (
+              <div className="flex items-center justify-center p-3 rounded-xl border bg-slate-50/80 overflow-hidden">
+                {aspect === 'square' ? (
+                  <div className="size-20 rounded-lg overflow-hidden border bg-white shadow-xs">
+                    <img
+                      src={value}
+                      alt={label}
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '';
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-24 w-full rounded-lg overflow-hidden border bg-white shadow-xs">
+                    <img
+                      src={value}
+                      alt={label}
+                      className="size-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = '';
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="rounded-lg border border-amber-200/80 bg-amber-50/50 p-3 text-xs text-amber-900 flex items-start gap-2">
+              <AlertTriangle className="size-4 shrink-0 text-amber-600 mt-0.5" />
+              <span>
+                This will unlink the {type === 'logo' ? 'logo' : 'banner'} from your store and storefront. You can upload a new one at any time.
+              </span>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={handleConfirmDelete}
+            >
+              <Trash2 className="size-3.5" />
+              Yes, Remove
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

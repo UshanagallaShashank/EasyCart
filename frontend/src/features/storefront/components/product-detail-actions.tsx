@@ -24,7 +24,7 @@ export function ProductDetailActions({ product }: { product: Product }) {
       {product.variants.length > 0 && (
         <Select value={variantLabel} onValueChange={setVariantLabel}>
           <SelectTrigger className="w-56 bg-white"><SelectValue placeholder="Select variant" /></SelectTrigger>
-          <SelectContent>{product.variants.map((v) => <SelectItem key={v.label} value={v.label}>{v.label} (${v.price.toFixed(2)})</SelectItem>)}</SelectContent>
+          <SelectContent>{product.variants.map((v) => <SelectItem key={v.label} value={v.label}>{v.label} (Rs. {v.price.toFixed(2)})</SelectItem>)}</SelectContent>
         </Select>
       )}
       <div className="flex items-center gap-3">
