@@ -12,7 +12,6 @@ import { useCart } from '@/features/cart/cart-context';
 import { useCheckout } from '../hooks/use-checkout';
 import { ApiError } from '@/shared/api/api-error';
 import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
-import { StorefrontHeader } from '@/features/storefront/components/storefront-header';
 
 export function CheckoutPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -46,8 +45,7 @@ export function CheckoutPage() {
   const canPlaceOrder = fulfillmentMethod === 'pickup' || deliveryAddress.trim().length > 0;
 
   return (
-    <div className="flex flex-col gap-6">
-      <StorefrontHeader store={store} slug={slug!} />
+    <div className="mx-auto flex max-w-lg flex-col gap-6 px-6 pt-6">
       <div className="flex max-w-md flex-col gap-4 p-6">
         <h1 className="font-heading text-2xl">Checkout</h1>
         {lines.map((line) => (

@@ -3,13 +3,18 @@ import { z } from 'zod';
 
 const variant_schema = z.object({ label: z.string(), sku: z.string(), price: z.number().positive(), stock: z.number().int().nonnegative() });
 
+const image_item_schema = z.string().refine(
+  (s) => s.startsWith('http://') || s.startsWith('https://') || s.startsWith('data:image/') || s.startsWith('/'),
+  { message: 'Invalid image URL or format' }
+);
+
 export const product_schema = z.object({
   name: z.string().trim().min(1).max(120),
   description: z.string().optional(),
   price: z.number().positive('Price must be positive'),
-  sku: z.string().min(1),
+  sku: z.string().min(1).optional(),
   category_id: z.string().optional(),
-  images: z.array(z.string().url()).optional(),
+  images: z.array(image_item_schema).optional(),
   variants: z.array(variant_schema).optional(),
   stock_quantity: z.number().int().nonnegative().optional(),
   low_stock_threshold: z.number().int().nonnegative().optional(),
