@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUpdateStore } from '../hooks/use-update-store';
 import { ApiError } from '@/shared/api/api-error';
@@ -13,7 +14,9 @@ export function StoreSettingsForm({ store }: { store: Store }) {
     name: store.name,
     logo_url: store.logo_url ?? '',
     banner_url: store.banner_url ?? '',
-    theme: store.theme
+    theme: store.theme,
+    delivery_fee: store.delivery_fee,
+    promotion_banner_text: store.promotion_banner_text ?? ''
   });
   const update = useUpdateStore();
 
@@ -31,6 +34,7 @@ export function StoreSettingsForm({ store }: { store: Store }) {
         <Label htmlFor="name">Store name</Label>
         <Input id="name" value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} />
       </div>
+      <h2 className="text-muted-foreground text-sm font-medium">Appearance</h2>
       <div className="flex flex-col gap-2">
         <Label htmlFor="logo_url">Logo URL</Label>
         <Input id="logo_url" value={form.logo_url} onChange={(e) => setForm((p) => ({ ...p, logo_url: e.target.value }))} />
@@ -49,6 +53,28 @@ export function StoreSettingsForm({ store }: { store: Store }) {
             <SelectItem value="dark">Dark</SelectItem>
           </SelectContent>
         </Select>
+      </div>
+      <h2 className="text-muted-foreground text-sm font-medium">Delivery</h2>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="delivery_fee">Delivery fee</Label>
+        <Input
+          id="delivery_fee"
+          type="number"
+          min={0}
+          step="0.01"
+          value={form.delivery_fee}
+          onChange={(e) => setForm((p) => ({ ...p, delivery_fee: Number(e.target.value) }))}
+        />
+      </div>
+      <h2 className="text-muted-foreground text-sm font-medium">Promotion</h2>
+      <div className="flex flex-col gap-2">
+        <Label htmlFor="promotion_banner_text">Banner text</Label>
+        <Textarea
+          id="promotion_banner_text"
+          value={form.promotion_banner_text}
+          onChange={(e) => setForm((p) => ({ ...p, promotion_banner_text: e.target.value }))}
+          placeholder="e.g. Free shipping this week only!"
+        />
       </div>
       <Button type="submit" disabled={update.isPending}>
         {update.isPending ? 'Saving…' : 'Save settings'}

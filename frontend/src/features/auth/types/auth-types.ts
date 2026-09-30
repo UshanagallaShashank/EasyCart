@@ -4,6 +4,7 @@ export interface User {
   username: string;
   email: string;
   phone_number: string;
+  role: 'tenant_owner' | 'platform_admin';
 }
 
 export interface Tenant {

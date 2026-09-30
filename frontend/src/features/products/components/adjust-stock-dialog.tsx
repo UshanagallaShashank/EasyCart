@@ -39,7 +39,7 @@ export function AdjustStockDialog({ product, trigger }: { product: Product; trig
           <div className="flex flex-col gap-2 py-4">
             <Label htmlFor="delta">Change (use a negative number to remove stock)</Label>
             <Input id="delta" type="number" value={delta} onChange={(e) => setDelta(Number(e.target.value))} required />
-            <p className="text-muted-foreground text-sm">Current: {product.stock_quantity} → New: {product.stock_quantity + delta}</p>
+            <p className="text-muted-foreground text-sm tabular-nums">Current: {product.stock_quantity} → New: {product.stock_quantity + delta}</p>
           </div>
           <DialogFooter>
             <Button type="submit" disabled={adjust.isPending}>
