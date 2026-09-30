@@ -1,5 +1,5 @@
 // Owns auth state, hydrates from storage, and wires the global 401 handler.
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { AuthContext } from './auth-context';
@@ -26,12 +26,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
   }
 
-  useEffect(() => {
-    setUnauthorizedHandler(() => {
-      logout();
-      navigate('/login');
-    });
-  }, []);
+  setUnauthorizedHandler(() => {
+    logout();
+    navigate('/login');
+  });
 
   return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
 }

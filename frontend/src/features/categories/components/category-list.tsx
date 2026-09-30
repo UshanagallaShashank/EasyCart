@@ -1,6 +1,7 @@
 import { Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { EmptyState } from '@/components/empty-state';
 import { useCategories } from '../hooks/use-categories';
 import { useDeleteCategory } from '../hooks/use-delete-category';
 import { ApiError } from '@/shared/api/api-error';
@@ -10,12 +11,12 @@ export function CategoryList() {
   const remove = useDeleteCategory();
 
   if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (!categories?.length) return <p className="text-muted-foreground">No categories yet.</p>;
+  if (!categories?.length) return <EmptyState message="No categories yet." />;
 
   return (
     <ul className="flex max-w-sm flex-col gap-2">
       {categories.map((category) => (
-        <li key={category.id} className="flex items-center justify-between rounded-md border px-3 py-2">
+        <li key={category.id} className="hover:bg-secondary/30 flex items-center justify-between rounded-md border px-3 py-2">
           <span>{category.name}</span>
           <Button
             variant="ghost"

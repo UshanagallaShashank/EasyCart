@@ -7,6 +7,8 @@ export interface Store {
   logo_url: string | null;
   banner_url: string | null;
   theme: 'default' | 'light' | 'dark';
+  delivery_fee: number;
+  promotion_banner_text: string | null;
   is_published: boolean;
   created_at: string;
   updated_at: string;
@@ -17,4 +19,6 @@ export interface StoreSettingsPayload {
   logo_url?: string;
   banner_url?: string;
   theme?: 'default' | 'light' | 'dark';
+  delivery_fee?: number;
+  promotion_banner_text?: string;
 }
