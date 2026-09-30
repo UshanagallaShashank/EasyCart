@@ -4,6 +4,7 @@ import { AppError } from '../../../platform/shared/app-error.js';
 import { validate_store_settings_input } from '../store-schemas.js';
 import { find_store_by_tenant_id, find_store_by_slug, save_store, update_store } from '../repositories/store-repository.js';
 import { find_tenant_by_id } from '../../tenants/repositories/tenant-repository.js';
+import { upload_store_asset_to_supabase } from './store-storage-service.js';
 
 export async function create_store_for_tenant(tenant_id, name, slug) {
   return save_store({ id: randomUUID(), tenant_id, name, slug, is_published: false });
@@ -56,3 +57,15 @@ export async function get_public_store_by_slug(slug) {
     promotion_banner_text: store.promotion_banner_text
   };
 }
+
+export async function upload_store_image({ user_id, tenant_id, file, type }) {
+  if (!file) {
+    throw new AppError('Image file data is required', 400);
+  }
+  if (!user_id) {
+    throw new AppError('User ID is required', 401);
+  }
+  const cleanType = type === 'banner' ? 'banner' : 'logo';
+  return upload_store_asset_to_supabase({ user_id, file, type: cleanType });
+}
+

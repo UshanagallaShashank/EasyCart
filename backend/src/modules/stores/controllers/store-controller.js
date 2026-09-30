@@ -1,4 +1,4 @@
-import { get_own_store, update_store_settings, set_store_published, get_public_store_by_slug } from '../services/store-service.js';
+import { get_own_store, update_store_settings, set_store_published, get_public_store_by_slug, upload_store_image } from '../services/store-service.js';
 
 export async function handle_get_own_store(req, res, next) {
   try {
@@ -13,6 +13,21 @@ export async function handle_update_store_settings(req, res, next) {
   try {
     const store = await update_store_settings(req.tenant_id, req.body);
     res.status(200).json({ store });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_upload_store_image(req, res, next) {
+  try {
+    const { file, type } = req.body;
+    const result = await upload_store_image({
+      user_id: req.user.id,
+      tenant_id: req.tenant_id,
+      file,
+      type
+    });
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }

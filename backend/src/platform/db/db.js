@@ -20,6 +20,9 @@ export async function connect_db() {
 
 // Use this in services/repositories when DB_PROVIDER is "supabase"
 export function get_supabase() {
+  if (!supabase && SUPABASE_URL && SUPABASE_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
   return supabase;
 }
 
