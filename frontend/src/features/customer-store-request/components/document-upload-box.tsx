@@ -77,7 +77,7 @@ export function DocumentUploadBox({ label, hint, onChange }: DocumentUploadBoxPr
           className="flex h-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-200 bg-white px-3 text-center transition-colors hover:border-sky-400 hover:bg-sky-50/40 focus-within:border-sky-500"
         >
           <UploadCloud className="size-5 text-sky-500" />
-          <span className="text-xs font-medium text-slate-700">Click to upload</span>
+          <span className="text-xs font-semibold text-slate-700">Click to upload (PDF or Image)</span>
           <span className="text-[11px] text-slate-400">{hint} · max {MAX_DOCUMENT_MB}MB</span>
         </label>
       )}

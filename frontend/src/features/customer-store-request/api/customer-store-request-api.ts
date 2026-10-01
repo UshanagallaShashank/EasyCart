@@ -4,6 +4,8 @@ import type { BusinessAddress } from '../lib/business-address';
 export interface CustomerStoreRequestPayload {
   store_name: string;
   slug: string;
+  store_type?: string;
+  store_description?: string;
   business_address: BusinessAddress;
   /** Documents as base64 data URLs */
   id_proof: string;
@@ -17,6 +19,8 @@ export interface CustomerStoreRequestData {
   status: 'pending' | 'active' | 'rejected';
   created_at: string;
   business_address: string | null;
+  store_type?: string | null;
+  store_description?: string | null;
   id_proof_url?: string | null;
   business_proof_url?: string | null;
   documents?: Array<{

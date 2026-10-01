@@ -20,6 +20,24 @@ function toSlug(text: string) {
     .replace(/^-+|-+$/g, '');
 }
 
+import { useQuery } from '@tanstack/react-query';
+import { fetchPublicStoreCategories } from '@/features/admin/api/admin-api';
+
+export const STORE_TYPES = [
+  'Others',
+  'Grocery & Supermarket',
+  'Fashion & Apparel',
+  'Electronics & Gadgets',
+  'Health & Beauty',
+  'Home & Living / Furniture',
+  'Jewelry & Accessories',
+  'Books & Stationery',
+  'Artisanal & Handicrafts',
+  'Restaurant & Food',
+  'Bakery',
+  'General Retail'
+];
+
 export function CustomerStoreRequestPage() {
   const { user } = useCustomerAuth();
   const { slug: storeSlug } = useParams<{ slug: string }>();
@@ -28,7 +46,24 @@ export function CustomerStoreRequestPage() {
   const { data: request, isLoading } = useMyStoreRequest();
   const submitRequest = useSubmitStoreRequest();
 
+  const { data: categoriesData } = useQuery({
+    queryKey: ['public_store_categories'],
+    queryFn: fetchPublicStoreCategories
+  });
+
+  const rawCategories = categoriesData?.categories && categoriesData.categories.length > 0
+    ? categoriesData.categories
+    : STORE_TYPES;
+
+  const othersItem = rawCategories.find(c => c.toLowerCase().trim() === 'others' || c.toLowerCase().trim() === 'other') || 'Others';
+  const restCategories = rawCategories.filter(c => c !== othersItem && !c.toLowerCase().trim().includes('other'));
+
+  const availableStoreTypes = [othersItem, ...restCategories];
+
   const [storeName, setStoreName] = useState('');
+  const [storeType, setStoreType] = useState('');
+  const [customStoreType, setCustomStoreType] = useState('');
+  const [storeDescription, setStoreDescription] = useState('');
   const [slug, setSlug] = useState('');
   const [businessAddress, setBusinessAddress] = useState(EMPTY_ADDRESS);
   const [idProof, setIdProof] = useState<string | null>(null);
@@ -36,7 +71,12 @@ export function CustomerStoreRequestPage() {
   const [slugEdited, setSlugEdited] = useState(false);
 
   const nameId = useId();
+  const typeId = useId();
+  const customTypeId = useId();
+  const descriptionId = useId();
   const slugId = useId();
+
+  const isOtherType = storeType.toLowerCase().includes('other');
 
   function handleNameChange(val: string) {
     setStoreName(val);
@@ -52,8 +92,10 @@ export function CustomerStoreRequestPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!storeName.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof) {
-      toast.error('Please fill in every field, including a 6-digit PIN code, and upload both documents');
+    const finalStoreType = isOtherType ? customStoreType.trim() : storeType;
+
+    if (!storeName.trim() || !finalStoreType || (isOtherType && !customStoreType.trim()) || !storeDescription.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof) {
+      toast.error('Please fill in every field, including specifying your custom store category and PIN code, and upload both documents');
       return;
     }
 
@@ -61,6 +103,8 @@ export function CustomerStoreRequestPage() {
       {
         store_name: storeName.trim(),
         slug: slug.trim(),
+        store_type: finalStoreType,
+        store_description: storeDescription.trim(),
         business_address: {
           line1: businessAddress.line1.trim(),
           landmark: businessAddress.landmark.trim(),
@@ -130,10 +174,22 @@ export function CustomerStoreRequestPage() {
                 <span className="text-slate-500">Requested store</span>
                 <span className="font-semibold text-slate-900">{request.name}</span>
               </div>
+              {request.store_type && (
+                <div className="flex justify-between border-b border-slate-100 pb-2">
+                  <span className="text-slate-500">Store category</span>
+                  <span className="font-semibold text-sky-700 bg-sky-50 px-2.5 py-0.5 rounded-full text-xs border border-sky-200/60">{request.store_type}</span>
+                </div>
+              )}
               <div className="flex justify-between border-b border-slate-100 pb-2">
                 <span className="text-slate-500">Storefront URL</span>
                 <span className="font-mono text-xs font-semibold text-sky-700">/{request.slug}</span>
               </div>
+              {request.store_description && (
+                <div className="flex flex-col gap-1 border-b border-slate-100 pb-2">
+                  <span className="text-slate-500">Store description</span>
+                  <p className="text-xs text-slate-700">{request.store_description}</p>
+                </div>
+              )}
               {request.business_address && (
                 <div className="flex flex-col gap-1 border-b border-slate-100 pb-2">
                   <span className="text-slate-500">Business address</span>
@@ -231,20 +287,60 @@ export function CustomerStoreRequestPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={nameId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                  Store name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  id={nameId}
-                  type="text"
-                  required
-                  value={storeName}
-                  onChange={(e) => handleNameChange(e.target.value)}
-                  placeholder="e.g. Organic Greens Market"
-                  className="h-10 rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none placeholder:text-slate-400"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={nameId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    Store name <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id={nameId}
+                    type="text"
+                    required
+                    value={storeName}
+                    onChange={(e) => handleNameChange(e.target.value)}
+                    placeholder="e.g. Organic Greens Market"
+                    className="h-10 rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none placeholder:text-slate-400"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label htmlFor={typeId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    Store type / category <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    id={typeId}
+                    required
+                    value={storeType}
+                    onChange={(e) => setStoreType(e.target.value)}
+                    className="h-10 rounded-xl border border-slate-200 px-3.5 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none bg-white cursor-pointer"
+                  >
+                    <option value="" disabled>Select a store category...</option>
+                    {availableStoreTypes.map((type) => (
+                      <option key={type} value={type}>
+                        {type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
+
+              {isOtherType && (
+                <div className="flex flex-col gap-1.5 rounded-xl border border-sky-200 bg-sky-50/50 p-3.5">
+                  <label htmlFor={customTypeId} className="text-xs font-semibold uppercase tracking-wider text-sky-900">
+                    Specify your store type / category <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    id={customTypeId}
+                    type="text"
+                    required
+                    value={customStoreType}
+                    onChange={(e) => setCustomStoreType(e.target.value)}
+                    placeholder="e.g. Pet Supplies, Hardware Store, Musical Instruments..."
+                    className="h-10 rounded-xl border border-sky-300 bg-white px-3.5 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none placeholder:text-slate-400"
+                  />
+                  <p className="text-[11px] text-sky-700">Please provide your custom store category name.</p>
+                </div>
+              )}
 
               <div className="flex flex-col gap-1.5">
                 <label htmlFor={slugId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
@@ -265,9 +361,25 @@ export function CustomerStoreRequestPage() {
                 <p className="text-[11px] text-slate-500">This will be your public storefront link.</p>
               </div>
 
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor={descriptionId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                  Store description / purpose <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  id={descriptionId}
+                  required
+                  rows={3}
+                  value={storeDescription}
+                  onChange={(e) => setStoreDescription(e.target.value)}
+                  placeholder="Describe what your store is for (e.g. Selling fresh organic groceries, artisanal goods, clothing & accessories...)"
+                  className="rounded-xl border border-slate-200 p-3 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none placeholder:text-slate-400"
+                />
+                <p className="text-[11px] text-slate-500">Briefly explain what products or services your store will offer to customers.</p>
+              </div>
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <DocumentUploadBox label="ID proof" hint="Aadhaar, PAN, passport…" onChange={setIdProof} />
-                <DocumentUploadBox label="Business proof" hint="GST, licence, registration…" onChange={setBusinessProof} />
+                <DocumentUploadBox label="ID proof (PDF or Image)" hint="PDF, Aadhaar, PAN, passport…" onChange={setIdProof} />
+                <DocumentUploadBox label="Business proof (PDF or Image)" hint="PDF, GST, licence, registration…" onChange={setBusinessProof} />
               </div>
 
               <BusinessAddressFields value={businessAddress} onChange={setBusinessAddress} />
@@ -285,7 +397,7 @@ export function CustomerStoreRequestPage() {
               <Button
                 type="submit"
                 size="lg"
-                disabled={submitRequest.isPending || !storeName.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof}
+                disabled={submitRequest.isPending || !storeName.trim() || !storeType || (isOtherType && !customStoreType.trim()) || !storeDescription.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof}
                 className="w-full bg-sky-600 font-semibold text-white hover:bg-sky-700"
               >
                 <Store className="size-4 mr-2" />

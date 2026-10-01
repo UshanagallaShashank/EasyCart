@@ -50,3 +50,24 @@ export function getPlatformStats(): Promise<PlatformStats> {
 export function listPlatformUsers(): Promise<{ users: PlatformUser[] }> {
   return apiRequest('/admin/users');
 }
+
+export function fetchPublicStoreCategories(): Promise<{ categories: string[] }> {
+  return apiRequest('/store-categories');
+}
+
+export function fetchAdminStoreCategories(): Promise<{ categories: string[] }> {
+  return apiRequest('/admin/store-categories');
+}
+
+export function addAdminStoreCategory(name: string): Promise<{ success: boolean; categories: string[] }> {
+  return apiRequest('/admin/store-categories', {
+    method: 'POST',
+    body: JSON.stringify({ name })
+  });
+}
+
+export function removeAdminStoreCategory(name: string): Promise<{ success: boolean; categories: string[] }> {
+  return apiRequest(`/admin/store-categories/${encodeURIComponent(name)}`, {
+    method: 'DELETE'
+  });
+}
