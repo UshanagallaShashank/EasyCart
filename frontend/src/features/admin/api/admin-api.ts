@@ -1,8 +1,20 @@
 import { apiRequest } from '@/shared/api/api-client';
-import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser } from '../types/admin-types';
+import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser, StoreRequest } from '../types/admin-types';
 
 export function listTenants(): Promise<{ tenants: AdminTenant[] }> {
   return apiRequest('/admin/tenants');
+}
+
+export function listStoreRequests(): Promise<{ requests: StoreRequest[] }> {
+  return apiRequest('/admin/store-requests');
+}
+
+export function approveStoreRequest(id: string): Promise<{ success: boolean; message: string }> {
+  return apiRequest(`/admin/store-requests/${id}/approve`, { method: 'POST' });
+}
+
+export function rejectStoreRequest(id: string): Promise<{ success: boolean; message: string }> {
+  return apiRequest(`/admin/store-requests/${id}/reject`, { method: 'POST' });
 }
 
 export function suspendTenant(id: string): Promise<{ tenant: AdminTenant }> {

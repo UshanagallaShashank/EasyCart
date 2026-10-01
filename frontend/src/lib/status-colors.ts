@@ -22,8 +22,10 @@ export function getStockTone(quantity: number, threshold: number): StatusTone {
   return quantity <= threshold ? 'danger' : 'neutral';
 }
 
-export function getTenantStatusTone(status: 'active' | 'suspended'): StatusTone {
-  return status === 'active' ? 'success' : 'danger';
+export function getTenantStatusTone(status: string): StatusTone {
+  if (status === 'active') return 'success';
+  if (status === 'pending') return 'warning';
+  return 'danger';
 }
 
 export function getFulfillmentStatusTone(status: Order['fulfillment_status']): StatusTone {
