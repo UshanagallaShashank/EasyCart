@@ -1,12 +1,17 @@
 // Admin sign-up requests that must be refused before any database work happens.
 import request from 'supertest';
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { create_express_app } from '../../../src/server-main.js';
 
 const VALID = { username: 'root_admin', email: 'root@example.com', password: 'AdminPass123!', passcode: 'right-passcode' };
 
 describe('POST /api/admin/register guards', () => {
   const app = create_express_app();
+
+  // Start every test with no passcode, whatever the machine's .env file sets.
+  beforeEach(() => {
+    delete process.env.ADMIN_SIGNUP_PASSCODE;
+  });
 
   afterEach(() => {
     delete process.env.ADMIN_SIGNUP_PASSCODE;
