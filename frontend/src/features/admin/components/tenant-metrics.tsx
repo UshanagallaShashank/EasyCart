@@ -19,7 +19,7 @@ export function TenantMetrics({ activity }: { activity: AdminTenantDetail['activ
         <div key={m.label} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
           <div className="flex items-center gap-2"><span className={`flex size-7 shrink-0 items-center justify-center rounded-lg ${m.tone}`}><m.icon className="size-4" /></span><p className="truncate text-xs font-medium text-slate-500">{m.label}</p></div>
           <p className="mt-3 truncate font-heading text-xl font-bold text-slate-900 tabular-nums">{m.value}</p>
-          <p className="mt-0.5 truncate text-[11px] text-slate-400">{m.hint}</p>
+          <p className="mt-0.5 truncate text-xs text-slate-500">{m.hint}</p>
         </div>
       ))}
     </div>
