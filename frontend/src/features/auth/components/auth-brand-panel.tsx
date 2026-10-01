@@ -3,6 +3,7 @@ import { CheckCircle2 } from 'lucide-react';
 
 const COPY = {
   merchant: { headline: 'Run your shop online, without writing code.', points: ['Launch a store with its own link in minutes', 'Track orders, stock and customers in one place', 'Offer delivery or pickup, with cash on delivery'] },
+  admin: { headline: 'Platform administration.', points: ['See every store on EasyCart', 'Suspend or reactivate stores', 'Sign-up needs the passcode from the server environment'] },
   customer: { headline: 'Shop local, check out faster.', points: ['Track every order in one place', 'Check out without retyping your details', 'Cancel pending orders yourself'] }
 };
 
