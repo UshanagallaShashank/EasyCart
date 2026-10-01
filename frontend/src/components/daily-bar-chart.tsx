@@ -38,10 +38,12 @@ export function DailyBarChart({ title, headline, days, describe, highlightLast =
           </div>
         </div>
       </div>
-      <table className="sr-only">
+      <div className="sr-only">
+      <table>
         <caption>{title}</caption>
         <tbody>{days.map((d) => { const { value, detail } = describe(d); return <tr key={d.key}><th scope="row">{d.fullLabel}</th><td>{value}</td><td>{detail}</td></tr>; })}</tbody>
       </table>
+      </div>
     </section>
   );
 }

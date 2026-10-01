@@ -41,13 +41,13 @@ export function CustomerDetailPage() {
         <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
           <h2 className="px-5 pt-5 pb-2 text-sm font-semibold text-slate-900">Orders</h2>
           <Table>
-            <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-5">Order</TableHead><TableHead>Total</TableHead><TableHead>Status</TableHead><TableHead className="hidden sm:table-cell">Payment</TableHead><TableHead className="hidden sm:table-cell">Date</TableHead></TableRow></TableHeader>
+            <TableHeader><TableRow className="hover:bg-transparent"><TableHead className="pl-4 sm:pl-5">Order</TableHead><TableHead>Total</TableHead><TableHead className="hidden sm:table-cell">Status</TableHead><TableHead className="hidden sm:table-cell">Payment</TableHead><TableHead className="hidden sm:table-cell">Date</TableHead></TableRow></TableHeader>
             <TableBody>
               {customer.orders.map((o) => (
                 <TableRow key={o.id} onClick={() => navigate(`/dashboard/orders/${o.id}`)} className="cursor-pointer">
-                  <TableCell className="pl-5 font-medium"><Link to={`/dashboard/orders/${o.id}`} className="hover:text-sky-700">{shortOrderId(o.id)}</Link></TableCell>
+                  <TableCell className="pl-4 font-medium sm:pl-5"><Link to={`/dashboard/orders/${o.id}`} className="hover:text-sky-700">{shortOrderId(o.id)}</Link><div className="mt-1 sm:hidden"><StatusBadge tone={getOrderStatusTone(o.status)} value={o.status} /></div></TableCell>
                   <TableCell className="tabular-nums">{formatMoney(o.total)}</TableCell>
-                  <TableCell><StatusBadge tone={getOrderStatusTone(o.status)} value={o.status} /></TableCell>
+                  <TableCell className="hidden sm:table-cell"><StatusBadge tone={getOrderStatusTone(o.status)} value={o.status} /></TableCell>
                   <TableCell className="hidden sm:table-cell"><StatusBadge tone={getPaymentStatusTone(o.payment_status)} value={o.payment_status} /></TableCell>
                   <TableCell className="hidden text-slate-500 sm:table-cell">{formatOrderDate(o.created_at)}</TableCell>
                 </TableRow>

@@ -22,7 +22,7 @@ function TenantIdentity({ tenant }: { tenant: AdminTenant }) {
           target="_blank"
           rel="noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="truncate text-xs text-slate-500 hover:text-sky-700"
+          className="block truncate text-xs text-slate-500 hover:text-sky-700"
         >
           /{tenant.slug}
         </a>
@@ -60,7 +60,7 @@ export function TenantTable({
 
   return (
     <>
-      <ul className="flex flex-col gap-3 md:hidden">
+      <ul className="flex flex-col gap-3 xl:hidden">
         {tenants.map((t) => {
           const isSelected = selectedIds.includes(t.id);
           return (
@@ -72,7 +72,7 @@ export function TenantTable({
               }`}
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
+                <div className="flex min-w-0 items-center gap-3">
                   {onToggleSelect && (
                     <input
                       type="checkbox"
@@ -87,7 +87,7 @@ export function TenantTable({
                 </div>
                 <StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />
               </div>
-              <p className="mt-3 truncate text-sm text-slate-700">
+              <p className="mt-3 truncate text-sm text-slate-700" title={[t.owner_username, t.owner_email].filter(Boolean).join(' · ')}>
                 {[t.owner_username, t.owner_email].filter(Boolean).join(' · ') || 'Owner unknown'}
               </p>
               <div className="mt-3 flex items-center justify-between gap-4 border-t border-slate-100 pt-2 text-xs text-slate-600">
@@ -107,7 +107,7 @@ export function TenantTable({
         })}
       </ul>
 
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs xl:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/70 hover:bg-slate-50/70">
@@ -128,10 +128,9 @@ export function TenantTable({
               <TableHead className={onToggleSelectAll ? 'pl-2' : 'pl-5'}>Store</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Storefront</TableHead>
-              <TableHead className="text-right">Customers</TableHead>
+              <TableHead className="hidden text-right 2xl:table-cell">Customers</TableHead>
               <TableHead className="text-right">Revenue</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="hidden 2xl:table-cell">Created</TableHead>
               <TableHead className="pr-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -157,14 +156,14 @@ export function TenantTable({
                       />
                     </TableCell>
                   )}
-                  <TableCell className={`max-w-xs py-3 ${onToggleSelect ? 'pl-2' : 'pl-5'}`}>
+                  <TableCell className={`max-w-60 py-3 ${onToggleSelect ? 'pl-2' : 'pl-5'}`}>
                     <TenantIdentity tenant={t} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="max-w-56">
                     {t.owner_username || t.owner_email ? (
                       <>
-                        <p className="text-slate-900">{t.owner_username ?? '—'}</p>
-                        <p className="text-xs text-slate-500">{t.owner_email ?? '—'}</p>
+                        <p className="truncate text-slate-900">{t.owner_username ?? '—'}</p>
+                        <p className="truncate text-xs text-slate-500" title={t.owner_email ?? undefined}>{t.owner_email ?? '—'}</p>
                       </>
                     ) : (
                       <span className="text-slate-400">Owner unknown</span>
@@ -172,17 +171,15 @@ export function TenantTable({
                   </TableCell>
                   <TableCell>
                     <StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />
+                    <p className="mt-1 text-xs text-slate-500" title={t.is_published ? 'The owner has switched their shop on' : 'The owner has not switched their shop on yet'}>{t.is_published ? 'Published' : 'Not published'}</p>
                   </TableCell>
-                  <TableCell className="text-slate-600">
-                    {t.is_published ? 'Published' : 'Not published'}
-                  </TableCell>
-                  <TableCell className="text-right font-medium text-slate-700 tabular-nums">
+                  <TableCell className="hidden text-right font-medium text-slate-700 tabular-nums 2xl:table-cell">
                     {t.customer_count ?? 0}
                   </TableCell>
                   <TableCell className="text-right font-semibold text-slate-900 tabular-nums">
                     {formatMoney(t.revenue ?? 0)}
                   </TableCell>
-                  <TableCell className="text-slate-500">
+                  <TableCell className="hidden text-slate-500 2xl:table-cell">
                     {formatOrderDate(t.created_at)}
                   </TableCell>
                   <TableCell className="pr-5 text-right" onClick={(e) => e.stopPropagation()}>
