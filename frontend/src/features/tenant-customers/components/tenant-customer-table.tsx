@@ -49,14 +49,14 @@ export function TenantCustomerTable() {
       {visible.length > 0 && (
         <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
           <Table>
-            <TableHeader><TableRow className="bg-slate-50/70 hover:bg-slate-50/70"><TableHead className="pl-5">Customer</TableHead><TableHead>Orders</TableHead><TableHead>Lifetime spend</TableHead><TableHead>Last order</TableHead><TableHead className="w-10" /></TableRow></TableHeader>
+            <TableHeader><TableRow className="bg-slate-50/70 hover:bg-slate-50/70"><TableHead className="pl-5">Customer</TableHead><TableHead>Orders</TableHead><TableHead>Lifetime spend</TableHead><TableHead className="hidden lg:table-cell">Last order</TableHead><TableHead className="w-10" /></TableRow></TableHeader>
             <TableBody>
               {visible.map((c) => (
                 <TableRow key={c.customer_id} onClick={() => navigate(`/dashboard/customers/${c.customer_id}`)} className="group cursor-pointer">
-                  <TableCell className="py-3 pl-5"><div className="flex items-center gap-3"><CustomerAvatar id={c.customer_id} name={display_name(c)} /><div className="min-w-0"><Link to={`/dashboard/customers/${c.customer_id}`} className="font-semibold text-slate-900 hover:text-sky-700">{display_name(c)}</Link><p className="truncate text-xs text-slate-500">{c.email ?? '—'}</p></div></div></TableCell>
+                  <TableCell className="max-w-64 py-3 pl-5"><div className="flex min-w-0 items-center gap-3"><CustomerAvatar id={c.customer_id} name={display_name(c)} /><div className="min-w-0"><Link to={`/dashboard/customers/${c.customer_id}`} className="block truncate font-semibold text-slate-900 hover:text-sky-700">{display_name(c)}</Link><p className="truncate text-xs text-slate-500" title={c.email ?? undefined}>{c.email ?? '—'}</p></div></div></TableCell>
                   <TableCell className="tabular-nums">{c.order_count}</TableCell>
                   <TableCell className="font-medium tabular-nums">{formatMoney(c.lifetime_total)}</TableCell>
-                  <TableCell className="text-slate-500">{c.last_order_at ? formatOrderDate(c.last_order_at) : '—'}</TableCell>
+                  <TableCell className="hidden text-slate-500 lg:table-cell">{c.last_order_at ? formatOrderDate(c.last_order_at) : '—'}</TableCell>
                   <TableCell><ChevronRight className="size-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-sky-500" /></TableCell>
                 </TableRow>
               ))}

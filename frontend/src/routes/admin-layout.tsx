@@ -14,7 +14,7 @@ export function AdminLayout() {
       <aside className="hidden h-full w-64 shrink-0 lg:block"><AdminSidebar /></aside>
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AdminTopBar onOpenMenu={() => setMenuOpen(true)} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-x-clip overflow-y-auto">
           <div className="mx-auto w-full max-w-7xl p-4 md:p-8"><Suspense fallback={<PageLoading />}><Outlet /></Suspense></div>
         </main>
       </div>
