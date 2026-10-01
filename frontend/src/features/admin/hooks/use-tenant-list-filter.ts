@@ -1,15 +1,16 @@
-// Search text, status filter, and sort order for the platform admin store list.
+// Search text, status filter (kept in the URL), and sort order for the platform admin store list.
 import { useState } from 'react';
+import { useUrlFilter } from '@/hooks/use-url-filter';
 import type { AdminTenant } from '../types/admin-types';
 
-export type TenantFilter = 'all' | 'active' | 'suspended' | 'unpublished';
+export type TenantFilter = 'all' | 'live' | 'unpublished' | 'suspended';
 export type TenantSort = 'newest' | 'oldest' | 'name';
 
 const FILTER_TESTS: Record<TenantFilter, (t: AdminTenant) => boolean> = {
   all: () => true,
-  active: (t) => t.status === 'active',
-  suspended: (t) => t.status === 'suspended',
-  unpublished: (t) => !t.is_published
+  live: (t) => t.status === 'active' && t.is_published,
+  unpublished: (t) => t.status === 'active' && !t.is_published,
+  suspended: (t) => t.status === 'suspended'
 };
 
 const SORTERS: Record<TenantSort, (a: AdminTenant, b: AdminTenant) => number> = {
@@ -20,11 +21,11 @@ const SORTERS: Record<TenantSort, (a: AdminTenant, b: AdminTenant) => number> = 
 
 export function useTenantListFilter(tenants: AdminTenant[]) {
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState<TenantFilter>('all');
+  const [filter, setFilter] = useUrlFilter<TenantFilter>('status', ['all', 'live', 'unpublished', 'suspended'], 'all');
   const [sort, setSort] = useState<TenantSort>('newest');
   const term = search.trim().toLowerCase();
   const visible = tenants.filter((t) => FILTER_TESTS[filter](t) && `${t.name} ${t.slug} ${t.owner_email ?? ''} ${t.owner_username ?? ''}`.toLowerCase().includes(term)).sort(SORTERS[sort]);
-  const labels: Record<TenantFilter, string> = { all: 'All', active: 'Active', suspended: 'Suspended', unpublished: 'Not published' };
+  const labels: Record<TenantFilter, string> = { all: 'All', live: 'Live', unpublished: 'Not published', suspended: 'Suspended' };
   const options = (Object.keys(FILTER_TESTS) as TenantFilter[]).map((f) => ({ value: f, label: labels[f], count: tenants.filter(FILTER_TESTS[f]).length }));
 
   return { search, setSearch, filter, setFilter, sort, setSort, visible, options };
