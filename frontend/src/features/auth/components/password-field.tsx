@@ -1,35 +1,23 @@
-// Password input field with toggleable show/hide eye button
+// Labelled password input with a show/hide toggle.
 import { useState } from 'react';
 import { Lock, Eye, EyeOff } from 'lucide-react';
+import { AuthTextField } from './auth-text-field';
 
 interface PasswordFieldProps {
   value: string;
   onChange: (val: string) => void;
-  placeholder?: string;
+  label?: string;
+  isNew?: boolean;
   id?: string;
 }
 
-export function PasswordField({ value, onChange, placeholder = 'Password', id = 'password' }: PasswordFieldProps) {
+export function PasswordField({ value, onChange, label = 'Password', isNew = false, id = 'password' }: PasswordFieldProps) {
   const [show, setShow] = useState(false);
-  return (
-    <div className="relative flex items-center">
-      <Lock className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
-      <input
-        id={id}
-        type={show ? 'text' : 'password'}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        required
-        className="w-full text-xs h-10 pl-10 pr-10 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all placeholder:text-slate-400"
-      />
-      <button
-        type="button"
-        onClick={() => setShow(!show)}
-        className="absolute right-3 text-slate-400 hover:text-slate-600 focus:outline-none"
-      >
-        {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-      </button>
-    </div>
+  const toggle = (
+    <button type="button" onClick={() => setShow(!show)} aria-label={show ? 'Hide password' : 'Show password'} className="flex size-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+      {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+    </button>
   );
+
+  return <AuthTextField id={id} label={label} icon={Lock} type={show ? 'text' : 'password'} value={value} onChange={onChange} placeholder={isNew ? 'At least 8 characters' : 'Your password'} autoComplete={isNew ? 'new-password' : 'current-password'} trailing={toggle} />;
 }

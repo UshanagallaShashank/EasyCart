@@ -1,116 +1,44 @@
-import { toast } from 'sonner';
+// Store list for platform admins: cards on phones, a table on larger screens.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/empty-state';
-import { getTenantStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
-import { useTenants } from '../hooks/use-tenants';
-import { useSuspendTenant } from '../hooks/use-suspend-tenant';
-import { useReactivateTenant } from '../hooks/use-reactivate-tenant';
-import { ApiError } from '@/shared/api/api-error';
+import { StatusBadge } from '@/components/status-badge';
+import { getTenantStatusTone } from '@/lib/status-colors';
+import { formatOrderDate } from '@/features/orders/lib/order-rules';
+import { TenantAction } from './tenant-action';
 import type { AdminTenant } from '../types/admin-types';
 
-// The suspend / reactivate button, shared by the phone cards and the table.
-function TenantAction({ tenant }: { tenant: AdminTenant }) {
-  const suspend = useSuspendTenant();
-  const reactivate = useReactivateTenant();
-
-  if (tenant.status === 'active') {
-    return (
-      <Button
-        variant="destructive"
-        size="sm"
-        disabled={suspend.isPending}
-        onClick={() =>
-          suspend.mutate(tenant.id, {
-            onSuccess: () => toast.success(`${tenant.name} suspended`),
-            onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to suspend tenant')
-          })
-        }
-      >
-        Suspend
-      </Button>
-    );
-  }
-
+function TenantIdentity({ tenant }: { tenant: AdminTenant }) {
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      disabled={reactivate.isPending}
-      onClick={() =>
-        reactivate.mutate(tenant.id, {
-          onSuccess: () => toast.success(`${tenant.name} reactivated`),
-          onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to reactivate tenant')
-        })
-      }
-    >
-      Reactivate
-    </Button>
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-bold text-slate-600">{tenant.name.charAt(0).toUpperCase()}</span>
+      <div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tenant.name}</p><a href={`/${tenant.slug}`} target="_blank" rel="noreferrer" className="truncate text-xs text-slate-500 hover:text-sky-700">/{tenant.slug}</a></div>
+    </div>
   );
 }
 
-export function TenantTable() {
-  const { data: tenants, isLoading } = useTenants();
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (!tenants?.length) return <EmptyState message="No tenants yet." />;
-
+export function TenantTable({ tenants }: { tenants: AdminTenant[] }) {
   return (
     <>
-      {/* Phones: one card per store */}
       <ul className="flex flex-col gap-3 md:hidden">
-        {tenants.map((tenant) => (
-          <li key={tenant.id} className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs">
-            <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{tenant.name}</p>
-                <p className="text-sm text-muted-foreground">/{tenant.slug}</p>
-              </div>
-              <Badge className={STATUS_TONE_CLASSNAME[getTenantStatusTone(tenant.status)]}>{tenant.status}</Badge>
-            </div>
-            <p className="mt-2 truncate text-sm">{tenant.owner_username ?? '—'}</p>
-            <p className="truncate text-xs text-muted-foreground">{tenant.owner_email ?? '—'}</p>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {tenant.is_published ? 'Published' : 'Not published'} · Created {new Date(tenant.created_at).toLocaleDateString()}
-            </p>
-            <div className="mt-3">
-              <TenantAction tenant={tenant} />
-            </div>
+        {tenants.map((t) => (
+          <li key={t.id} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+            <div className="flex items-start justify-between gap-3"><TenantIdentity tenant={t} /><StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} /></div>
+            <p className="mt-3 truncate text-sm text-slate-700">{[t.owner_username, t.owner_email].filter(Boolean).join(' · ') || 'Owner unknown'}</p>
+            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3"><p className="text-xs text-slate-500">{t.is_published ? 'Published' : 'Not published'} · {formatOrderDate(t.created_at)}</p><TenantAction tenant={t} /></div>
           </li>
         ))}
       </ul>
-
-      {/* Tablets and larger: table */}
-      <div className="hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Store</TableHead>
-              <TableHead>Owner</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Published</TableHead>
-              <TableHead>Created</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
+          <TableHeader><TableRow className="bg-slate-50/70 hover:bg-slate-50/70"><TableHead className="pl-5">Store</TableHead><TableHead>Owner</TableHead><TableHead>Status</TableHead><TableHead>Storefront</TableHead><TableHead>Created</TableHead><TableHead className="pr-5 text-right">Actions</TableHead></TableRow></TableHeader>
           <TableBody>
-            {tenants.map((tenant) => (
-              <TableRow key={tenant.id} className="hover:bg-secondary/30">
-                <TableCell>
-                  <p className="font-medium">{tenant.name}</p>
-                  <p className="text-sm text-muted-foreground">/{tenant.slug}</p>
-                </TableCell>
-                <TableCell>
-                  <p>{tenant.owner_username ?? '—'}</p>
-                  <p className="text-sm text-muted-foreground">{tenant.owner_email ?? '—'}</p>
-                </TableCell>
-                <TableCell><Badge className={STATUS_TONE_CLASSNAME[getTenantStatusTone(tenant.status)]}>{tenant.status}</Badge></TableCell>
-                <TableCell>{tenant.is_published ? 'Yes' : 'No'}</TableCell>
-                <TableCell>{new Date(tenant.created_at).toLocaleDateString()}</TableCell>
-                <TableCell className="text-right">
-                  <TenantAction tenant={tenant} />
-                </TableCell>
+            {tenants.map((t) => (
+              <TableRow key={t.id}>
+                <TableCell className="max-w-xs py-3 pl-5"><TenantIdentity tenant={t} /></TableCell>
+                <TableCell>{t.owner_username || t.owner_email ? <><p className="text-slate-900">{t.owner_username ?? '—'}</p><p className="text-xs text-slate-500">{t.owner_email ?? '—'}</p></> : <span className="text-slate-400">Owner unknown</span>}</TableCell>
+                <TableCell><StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} /></TableCell>
+                <TableCell className="text-slate-600">{t.is_published ? 'Published' : 'Not published'}</TableCell>
+                <TableCell className="text-slate-500">{formatOrderDate(t.created_at)}</TableCell>
+                <TableCell className="pr-5 text-right"><TenantAction tenant={t} /></TableCell>
               </TableRow>
             ))}
           </TableBody>

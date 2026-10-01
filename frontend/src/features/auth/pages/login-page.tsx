@@ -1,26 +1,17 @@
-// Merchant login page with floating card on serene sky background
+// Merchant login page.
 import { Link } from 'react-router-dom';
+import { AuthLayout } from '../components/auth-layout';
 import { LoginForm } from '../components/login-form';
-import { AuthCard } from '@/features/auth/components/auth-card';
-import { AuthSkyBackground } from '../components/auth-sky-background';
-import { AuthCardHeader } from '../components/auth-card-header';
 
 export function LoginPage() {
   return (
-    <div className="relative min-h-svh flex flex-col justify-between p-6 overflow-hidden">
-      <AuthSkyBackground />
-      <main className="w-full flex items-center justify-center my-auto py-8">
-        <AuthCard>
-          <AuthCardHeader title="Sign in to Easy Cart" subtitle="Your effortless shopping companion." />
-          <LoginForm />
-          <p className="text-center text-xs text-slate-500 pt-1">
-            Don't have a store? <Link to="/register" className="text-sky-600 font-semibold hover:underline">Create one</Link>
-          </p>
-        </AuthCard>
-      </main>
-      <footer className="text-center text-[11px] text-slate-400 py-2">
-        EasyCart &copy; 2026. All rights reserved.
-      </footer>
-    </div>
+    <AuthLayout
+      variant="merchant"
+      title="Welcome back"
+      subtitle="Sign in to manage your store."
+      footer={<>New to EasyCart? <Link to="/register" className="font-semibold text-sky-700 hover:underline">Create your store</Link></>}
+    >
+      <LoginForm />
+    </AuthLayout>
   );
 }
