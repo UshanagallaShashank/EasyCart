@@ -2,7 +2,7 @@
 import { AppError } from '../../../platform/shared/app-error.js';
 import { find_all_tenants, find_tenant_by_id, update_tenant_status, update_many_tenant_statuses } from '../../tenants/repositories/tenant-repository.js';
 import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repository.js';
-import { find_users_by_ids } from '../../users/repositories/user-repository.js';
+import { find_users_by_ids, update_user_role_and_tenant } from '../../users/repositories/user-repository.js';
 import { orders_snapshot } from './admin-data-cache.js';
 import { platform_stats_cache } from './platform-stats-service.js';
 
@@ -98,4 +98,60 @@ export async function bulk_suspend_tenants(tenant_ids) {
 export async function bulk_reactivate_tenants(tenant_ids) {
   clear_tenants_cache();
   return update_many_tenant_statuses(tenant_ids, 'active');
+}
+
+export async function list_store_requests() {
+  const all_tenants = await find_all_tenants();
+  const requests = all_tenants.filter((t) => t.status === 'pending' || t.status === 'rejected');
+  const owner_ids = requests.map((t) => t.owner_id);
+  const tenant_ids = requests.map((t) => t.id);
+
+  const [owners, stores] = await Promise.all([
+    find_users_by_ids(owner_ids),
+    find_stores_by_tenant_ids(tenant_ids)
+  ]);
+
+  const owner_by_id = new Map(owners.map((u) => [u.id, u]));
+  const store_by_tenant = new Map(stores.map((s) => [s.tenant_id, s]));
+
+  return requests.map((t) => {
+    const owner = owner_by_id.get(t.owner_id);
+    const store = store_by_tenant.get(t.id);
+    return {
+      id: t.id,
+      name: t.name,
+      slug: t.slug,
+      status: t.status,
+      created_at: t.created_at,
+      description: store?.promotion_banner_text ?? null,
+      customer: owner
+        ? {
+            id: owner.id,
+            username: owner.username,
+            email: owner.email,
+            phone_number: owner.phone_number
+          }
+        : null
+    };
+  });
+}
+
+export async function approve_store_request(tenant_id) {
+  const tenant = await find_tenant_by_id(tenant_id);
+  if (!tenant) throw new AppError('Tenant request not found', 404);
+  if (tenant.status === 'active') throw new AppError('Store is already active', 400);
+
+  await update_tenant_status(tenant_id, 'active');
+  await update_user_role_and_tenant(tenant.owner_id, 'tenant_owner', tenant.id);
+  clear_tenants_cache();
+  return { success: true, message: `Store "${tenant.name}" approved successfully` };
+}
+
+export async function reject_store_request(tenant_id) {
+  const tenant = await find_tenant_by_id(tenant_id);
+  if (!tenant) throw new AppError('Tenant request not found', 404);
+
+  await update_tenant_status(tenant_id, 'rejected');
+  clear_tenants_cache();
+  return { success: true, message: `Store "${tenant.name}" request rejected` };
 }

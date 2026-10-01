@@ -9,7 +9,7 @@ import { DashboardLayout, AdminLayout, StorefrontLayout } from './lazy-layouts';
 import { LoginPage, RegisterPage, AdminLoginPage, AdminRegisterPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-pages';
 import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage } from './lazy-dashboard-pages';
 import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage } from './lazy-admin-pages';
-import { StorefrontHomePage, StorefrontProductsPage, StorefrontProductDetailPage, CartPage, CheckoutPage, CustomerOrdersPage, CustomerOrderDetailPage } from './lazy-shop-pages';
+import { StorefrontHomePage, StorefrontProductsPage, StorefrontProductDetailPage, CartPage, CheckoutPage, CustomerOrdersPage, CustomerOrderDetailPage, CustomerStoreRequestPage } from './lazy-shop-pages';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -58,6 +58,7 @@ export function AppRoutes() {
       <Route element={<RequireCustomerAuth />}>
         <Route path="/customer/orders" element={<CustomerOrdersPage />} />
         <Route path="/customer/orders/:id" element={<CustomerOrderDetailPage />} />
+        <Route path="/customer/store-request" element={<CustomerStoreRequestPage />} />
       </Route>
 
       <Route path="/:slug" element={<StorefrontLayout />}>
