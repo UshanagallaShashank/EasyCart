@@ -2,9 +2,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatusBadge } from '@/components/status-badge';
-import { getTenantStatusTone } from '@/lib/status-colors';
 import { formatOrderDate, formatMoney } from '@/features/orders/lib/order-rules';
 import { TenantAction } from './tenant-action';
+import { SortableHead } from './sortable-head';
+import { get_store_state } from '../lib/get-store-state';
+import type { TenantSort } from '../hooks/use-tenant-list-filter';
 import type { AdminTenant } from '../types/admin-types';
 
 function TenantIdentity({ tenant }: { tenant: AdminTenant }) {
@@ -38,6 +40,8 @@ interface TenantTableProps {
   onToggleSelectAll?: () => void;
   isAllSelected?: boolean;
   isSomeSelected?: boolean;
+  sort?: TenantSort;
+  onSortChange?(sort: TenantSort): void;
 }
 
 export function TenantTable({
@@ -46,7 +50,9 @@ export function TenantTable({
   onToggleSelect,
   onToggleSelectAll,
   isAllSelected = false,
-  isSomeSelected = false
+  isSomeSelected = false,
+  sort,
+  onSortChange
 }: TenantTableProps) {
   const navigate = useNavigate();
 
@@ -85,7 +91,7 @@ export function TenantTable({
                   )}
                   <TenantIdentity tenant={t} />
                 </div>
-                <StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />
+                <StatusBadge tone={get_store_state(t).tone} value={get_store_state(t).label} />
               </div>
               <p className="mt-3 truncate text-sm text-slate-700" title={[t.owner_username, t.owner_email].filter(Boolean).join(' · ')}>
                 {[t.owner_username, t.owner_email].filter(Boolean).join(' · ') || 'Owner unknown'}
@@ -96,7 +102,7 @@ export function TenantTable({
               </div>
               <div className="mt-2 flex items-center justify-between border-t border-slate-100 pt-3">
                 <p className="text-xs text-slate-500">
-                  {t.is_published ? 'Published' : 'Not published'} · {formatOrderDate(t.created_at)}
+                  Created {formatOrderDate(t.created_at)}
                 </p>
                 <div onClick={(e) => e.stopPropagation()}>
                   <TenantAction tenant={t} />
@@ -125,12 +131,12 @@ export function TenantTable({
                   />
                 </TableHead>
               )}
-              <TableHead className={onToggleSelectAll ? 'pl-2' : 'pl-5'}>Store</TableHead>
+              <SortableHead label="Store" sorts={['name']} ascending={['name']} current={sort} onSort={onSortChange} className={onToggleSelectAll ? 'pl-2' : 'pl-5'} />
               <TableHead>Owner</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="hidden text-right 2xl:table-cell">Customers</TableHead>
-              <TableHead className="text-right">Revenue</TableHead>
-              <TableHead className="hidden 2xl:table-cell">Created</TableHead>
+              <TableHead>State</TableHead>
+              <SortableHead label="Customers" sorts={['customers']} current={sort} onSort={onSortChange} className="text-right" />
+              <SortableHead label="Revenue" sorts={['revenue']} current={sort} onSort={onSortChange} className="text-right" />
+              <SortableHead label="Created" sorts={['newest', 'oldest']} ascending={['oldest']} current={sort} onSort={onSortChange} className="hidden 2xl:table-cell" />
               <TableHead className="pr-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -156,10 +162,10 @@ export function TenantTable({
                       />
                     </TableCell>
                   )}
-                  <TableCell className={`max-w-60 py-3 ${onToggleSelect ? 'pl-2' : 'pl-5'}`}>
+                  <TableCell className={`max-w-52 py-3 2xl:max-w-60 ${onToggleSelect ? 'pl-2' : 'pl-5'}`}>
                     <TenantIdentity tenant={t} />
                   </TableCell>
-                  <TableCell className="max-w-56">
+                  <TableCell className="max-w-44 2xl:max-w-56">
                     {t.owner_username || t.owner_email ? (
                       <>
                         <p className="truncate text-slate-900">{t.owner_username ?? '—'}</p>
@@ -169,11 +175,10 @@ export function TenantTable({
                       <span className="text-slate-400">Owner unknown</span>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />
-                    <p className="mt-1 text-xs text-slate-500" title={t.is_published ? 'The owner has switched their shop on' : 'The owner has not switched their shop on yet'}>{t.is_published ? 'Published' : 'Not published'}</p>
+                  <TableCell title={get_store_state(t).hint}>
+                    <StatusBadge tone={get_store_state(t).tone} value={get_store_state(t).label} />
                   </TableCell>
-                  <TableCell className="hidden text-right font-medium text-slate-700 tabular-nums 2xl:table-cell">
+                  <TableCell className="text-right font-medium text-slate-700 tabular-nums">
                     {t.customer_count ?? 0}
                   </TableCell>
                   <TableCell className="text-right font-semibold text-slate-900 tabular-nums">
