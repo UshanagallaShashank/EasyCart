@@ -1,6 +1,6 @@
 // Platform admin store list: counts, filters, search, sort, pagination, multi-select bulk actions, and CSV export.
-import { useState, useMemo, useEffect } from 'react';
-import { Download, CheckSquare, ShieldAlert, ShieldCheck, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { Download, CheckSquare, ShieldAlert, ShieldCheck, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -16,46 +16,17 @@ import { TenantStats } from '../components/tenant-stats';
 import { TenantTable } from '../components/tenant-table';
 import { TenantSortSelect } from '../components/tenant-sort-select';
 import { AdminPageTitle } from '../components/page-title';
-
-function getPageNumbers(current: number, total: number): (number | string)[] {
-  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
-  if (current <= 4) return [1, 2, 3, 4, 5, '...', total];
-  if (current >= total - 3) return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
-  return [1, '...', current - 1, current, current + 1, '...', total];
-}
+import { usePagination } from '@/components/pagination/use-pagination';
+import { PaginationBar } from '@/components/pagination/pagination-bar';
 
 export function TenantsPage() {
   const { data: tenants, isLoading } = useTenants();
   const { search, setSearch, filter, setFilter, sort, setSort, visible, options } = useTenantListFilter(tenants ?? []);
 
-  // Pagination state
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(15);
-
-  // Multi-select state
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const bulkSuspend = useBulkSuspendTenants();
   const bulkReactivate = useBulkReactivateTenants();
-
-  // Reset page and selection when filters change
-  useEffect(() => {
-    setPage(1);
-  }, [search, filter, sort]);
-
-  const totalPages = pageSize === -1 ? 1 : Math.max(1, Math.ceil(visible.length / pageSize));
-
-  // Ensure page is valid when visible count changes
-  useEffect(() => {
-    if (page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, totalPages]);
-
-  const startIndex = pageSize === -1 ? 0 : (page - 1) * pageSize;
-  const endIndex = pageSize === -1 ? visible.length : Math.min(startIndex + pageSize, visible.length);
-  const paginatedTenants = useMemo(() => {
-    return pageSize === -1 ? visible : visible.slice(startIndex, endIndex);
-  }, [visible, startIndex, endIndex, pageSize]);
+  const { page, setPage, pageSize, setPageSize, totalPages, start, end, pageItems: paginatedTenants } = usePagination(visible, `${search}|${filter}|${sort}`);
 
   // Selection helpers for the current page
   const isAllSelected = paginatedTenants.length > 0 && paginatedTenants.every((t) => selectedIds.includes(t.id));
@@ -174,80 +145,7 @@ export function TenantsPage() {
             isSomeSelected={isSomeSelected}
           />
 
-          {/* Pagination controls */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-2 pt-1 text-sm text-slate-600">
-            <div className="flex items-center gap-3">
-              <span>
-                Showing <strong className="font-semibold text-slate-900">{startIndex + 1}</strong>–
-                <strong className="font-semibold text-slate-900">{endIndex}</strong> of{' '}
-                <strong className="font-semibold text-slate-900">{visible.length}</strong> stores
-              </span>
-              <div className="flex items-center gap-1.5 ml-2">
-                <span className="text-xs text-slate-500">Rows per page:</span>
-                <select
-                  value={pageSize}
-                  onChange={(e) => {
-                    setPageSize(Number(e.target.value));
-                    setPage(1);
-                  }}
-                  className="h-8 rounded-lg border border-slate-200 bg-white px-2 text-xs font-medium text-slate-700 shadow-2xs focus:border-sky-500 focus:outline-none"
-                >
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={25}>25</option>
-                  <option value={50}>50</option>
-                  <option value={100}>100</option>
-                  <option value={-1}>All ({visible.length})</option>
-                </select>
-              </div>
-            </div>
-
-            {pageSize !== -1 && totalPages > 1 && (
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  className="h-8 px-2.5 text-xs"
-                >
-                  <ChevronLeft className="size-3.5 mr-0.5" /> Prev
-                </Button>
-
-                <div className="flex items-center gap-1">
-                  {getPageNumbers(page, totalPages).map((p, idx) =>
-                    typeof p === 'number' ? (
-                      <button
-                        key={idx}
-                        onClick={() => setPage(p)}
-                        className={`size-8 rounded-lg text-xs font-medium transition-colors ${
-                          p === page
-                            ? 'bg-sky-600 text-white shadow-xs'
-                            : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ) : (
-                      <span key={idx} className="px-1 text-slate-400 text-xs">
-                        {p}
-                      </span>
-                    )
-                  )}
-                </div>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  className="h-8 px-2.5 text-xs"
-                >
-                  Next <ChevronRight className="size-3.5 ml-0.5" />
-                </Button>
-              </div>
-            )}
-          </div>
+          <PaginationBar page={page} totalPages={totalPages} pageSize={pageSize} start={start} end={end} total={visible.length} noun="stores" onPageChange={setPage} onPageSizeChange={setPageSize} />
         </div>
       ) : (
         <EmptyState message={tenants?.length ? 'No stores match your filters.' : 'No stores yet.'} />
