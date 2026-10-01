@@ -6,6 +6,10 @@ import { useAuth } from '@/shared/auth/auth-context';
 import { useOrders } from '@/features/orders/hooks/use-orders';
 import { useProducts } from '@/features/products/hooks/use-products';
 import { useTenantCustomers } from '@/features/tenant-customers/hooks/use-tenant-customers';
+import { useOwnStore } from '@/features/stores/hooks/use-own-store';
+import { useCategories } from '@/features/categories/hooks/use-categories';
+import { SetupChecklist } from '../components/setup-checklist';
+import { get_setup_steps } from '../lib/get-setup-steps';
 import { StatCard } from '../components/stat-card';
 import { SalesChart } from '../components/sales-chart';
 import { RecentOrdersCard } from '../components/recent-orders-card';
@@ -18,6 +22,9 @@ export function OverviewPage() {
   const { data: orders } = useOrders();
   const { data: products } = useProducts();
   const { data: customers } = useTenantCustomers();
+  const { data: store } = useOwnStore();
+  const { data: categories } = useCategories();
+  const setupReady = Boolean(store && products && categories && orders);
 
   return (
     <PageBody>
@@ -28,6 +35,7 @@ export function OverviewPage() {
         </div>
         <QuickActions />
       </div>
+      {setupReady && <SetupChecklist steps={get_setup_steps({ store, productCount: products?.length, categoryCount: categories?.length, orderCount: orders?.length })} />}
       <StaggerList className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
         <StaggerItem><StatCard label="Revenue" value={orders && getRevenue(orders)} decimals={0} prefix="Rs. " icon={IndianRupee} tone="bg-emerald-50 text-emerald-600" hint="Excludes cancelled" /></StaggerItem>
         <StaggerItem><StatCard label="Orders" value={orders?.length} icon={ShoppingBag} tone="bg-sky-50 text-sky-600" hint="All time" /></StaggerItem>

@@ -1,11 +1,7 @@
 // Colored status pill that turns raw values like "ready_for_pickup" into readable labels.
 import { cn } from '@/lib/utils';
 import { STATUS_TONE_CLASSNAME, type StatusTone } from '@/lib/status-colors';
-
-function format_status_label(value: string): string {
-  const text = value.replaceAll('_', ' ');
-  return text.charAt(0).toUpperCase() + text.slice(1);
-}
+import { format_status_label } from '@/lib/format-status-label';
 
 export function StatusBadge({ tone, value, className }: { tone: StatusTone; value: string; className?: string }) {
   return (

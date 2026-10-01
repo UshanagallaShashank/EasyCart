@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/empty-state';
 import { getOrderStatusTone, getPaymentStatusTone } from '@/lib/status-colors';
 import { useOrders } from '../hooks/use-orders';
 import { formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
+import { OrderCard } from './order-card';
 import { OrderFilterTabs, type OrderFilter } from './order-filter-tabs';
 
 export function OrderTable() {
@@ -50,7 +51,11 @@ export function OrderTable() {
       {!visibleOrders.length ? (
         <EmptyState message={allOrders.length ? 'No orders match your filter.' : 'No orders yet.'} />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+        <>
+        <div className="flex flex-col gap-3 md:hidden">
+          {visibleOrders.map((order) => <OrderCard key={order.id} order={order} />)}
+        </div>
+        <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/70">
@@ -94,6 +99,7 @@ export function OrderTable() {
             </TableBody>
           </Table>
         </div>
+        </>
       )}
     </div>
   );
