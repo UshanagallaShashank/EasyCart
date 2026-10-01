@@ -8,8 +8,9 @@ export function App() {
     <AuthProvider>
       <CustomerAuthProvider>
         <AppRoutes />
-        <Toaster />
+        <Toaster position="top-center" />
       </CustomerAuthProvider>
+
     </AuthProvider>
   );
 }
