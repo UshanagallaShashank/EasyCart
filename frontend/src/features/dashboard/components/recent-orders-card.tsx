@@ -1,9 +1,10 @@
 // The five newest orders, linking to each order's page.
 import { Link } from 'react-router-dom';
 import { ArrowRight, ClipboardList } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/status-badge';
 import { EmptyState } from '@/components/empty-state';
-import { getOrderStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import { getOrderStatusTone } from '@/lib/status-colors';
+import { formatMoney, formatOrderDate, shortOrderId } from '@/features/orders/lib/order-rules';
 import type { Order } from '@/features/orders/types/order-types';
 
 export function RecentOrdersCard({ orders }: { orders: Order[] | undefined }) {
@@ -27,15 +28,15 @@ export function RecentOrdersCard({ orders }: { orders: Order[] | undefined }) {
             <li key={order.id}>
               <Link
                 to={`/dashboard/orders/${order.id}`}
-                className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-sky-50/60"
+                className="-mx-2 flex items-center justify-between gap-3 rounded-lg px-2 py-3 transition-colors hover:bg-slate-50"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-800">#{order.id.slice(0, 8)}</p>
-                  <p className="text-xs text-slate-400">{new Date(order.created_at).toLocaleDateString()}</p>
+                  <p className="text-sm font-medium text-slate-800">{shortOrderId(order.id)}</p>
+                  <p className="text-xs text-slate-400">{formatOrderDate(order.created_at)} · {order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge>
-                  <span className="w-24 text-right text-sm font-semibold tabular-nums">Rs. {order.total.toFixed(2)}</span>
+                  <StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} />
+                  <span className="w-20 text-right sm:w-28 text-sm font-semibold tabular-nums">{formatMoney(order.total)}</span>
                 </div>
               </Link>
             </li>

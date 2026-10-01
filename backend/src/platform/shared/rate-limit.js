@@ -1,9 +1,21 @@
-// Rate limiter applied to abuse-prone endpoints (login, registration, checkout).
+// Rate limiters. Both do nothing while running tests.
 import rateLimit from 'express-rate-limit';
 
 const no_op = (req, res, next) => next();
+const is_test = process.env.NODE_ENV === 'test';
 
-export const sensitive_route_limiter =
-  process.env.NODE_ENV === 'test'
-    ? no_op
-    : rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+// Strict limit for abuse-prone endpoints (login, registration, checkout).
+export const sensitive_route_limiter = is_test
+  ? no_op
+  : rateLimit({ windowMs: 15 * 60 * 1000, max: 20, standardHeaders: true, legacyHeaders: false });
+
+// Generous limit for every other API call, to stop one visitor from hammering the server.
+export const api_limiter = is_test
+  ? no_op
+  : rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: 600,
+      standardHeaders: true,
+      legacyHeaders: false,
+      message: { error: 'Too many requests, please slow down' }
+    });

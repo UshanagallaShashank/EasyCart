@@ -1,33 +1,15 @@
+import { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { PageLoading } from '@/components/page-loading';
 import { useAuth } from '@/shared/auth/auth-context';
 import { RequireAuth } from './require-auth';
 import { RequireAdmin } from './require-admin';
 import { RequireCustomerAuth } from './require-customer-auth';
-import { DashboardLayout } from './dashboard-layout';
-import { AdminLayout } from './admin-layout';
-import { StorefrontLayout } from './storefront-layout';
-import { LoginPage } from '@/features/auth/pages/login-page';
-import { RegisterPage } from '@/features/auth/pages/register-page';
-import { StoreSettingsPage } from '@/features/stores/pages/store-settings-page';
-import { CategoriesPage } from '@/features/categories/pages/categories-page';
-import { ProductsPage } from '@/features/products/pages/products-page';
-import { OrdersPage } from '@/features/orders/pages/orders-page';
-import { OrderDetailPage } from '@/features/orders/pages/order-detail-page';
-import { CustomerLoginPage } from '@/features/customer-auth/pages/customer-login-page';
-import { CustomerRegisterPage } from '@/features/customer-auth/pages/customer-register-page';
-import { OverviewPage } from '@/features/dashboard/pages/overview-page';
-import { CustomerOrdersPage } from '@/features/orders/pages/customer-orders-page';
-import { CustomerOrderDetailPage } from '@/features/orders/pages/customer-order-detail-page';
-import { StorefrontHomePage } from '@/features/storefront/pages/storefront-home-page';
-import { StorefrontProductsPage } from '@/features/storefront/pages/storefront-products-page';
-import { StorefrontProductDetailPage } from '@/features/storefront/pages/storefront-product-detail-page';
-import { StorefrontAddressPage } from '@/features/storefront/pages/storefront-address-page';
-import { CartPage } from '@/features/cart/pages/cart-page';
-import { CheckoutPage } from '@/features/checkout/pages/checkout-page';
-import { TenantsPage } from '@/features/admin/pages/tenants-page';
-import { CustomersPage } from '@/features/tenant-customers/pages/customers-page';
-import { CustomerDetailPage } from '@/features/tenant-customers/pages/customer-detail-page';
-import { CouponsPage } from '@/features/coupons/pages/coupons-page';
+import { DashboardLayout, AdminLayout, StorefrontLayout } from './lazy-layouts';
+import { LoginPage, RegisterPage, AdminLoginPage, AdminRegisterPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-pages';
+import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage } from './lazy-dashboard-pages';
+import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage } from './lazy-admin-pages';
+import { StorefrontHomePage, StorefrontProductsPage, StorefrontProductDetailPage, StorefrontAddressPage, CartPage, CheckoutPage, CustomerOrdersPage, CustomerOrderDetailPage, CustomerStoreRequestPage } from './lazy-shop-pages';
 
 function HomeRedirect() {
   const { user } = useAuth();
@@ -37,10 +19,13 @@ function HomeRedirect() {
 
 export function AppRoutes() {
   return (
+    <Suspense fallback={<PageLoading />}>
     <Routes>
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin/register" element={<AdminRegisterPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
@@ -58,7 +43,13 @@ export function AppRoutes() {
 
       <Route element={<RequireAdmin />}>
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<TenantsPage />} />
+          <Route index element={<AdminOverviewPage />} />
+          <Route path="stores" element={<TenantsPage />} />
+          <Route path="stores/:id" element={<TenantDetailPage />} />
+          <Route path="users" element={<UsersPage />} />
+          <Route path="insights/sales" element={<SalesInsightsPage />} />
+          <Route path="insights/growth" element={<GrowthInsightsPage />} />
+          <Route path="account" element={<AdminAccountPage />} />
         </Route>
       </Route>
 
@@ -67,6 +58,7 @@ export function AppRoutes() {
       <Route element={<RequireCustomerAuth />}>
         <Route path="/customer/orders" element={<CustomerOrdersPage />} />
         <Route path="/customer/orders/:id" element={<CustomerOrderDetailPage />} />
+        <Route path="/customer/store-request" element={<CustomerStoreRequestPage />} />
       </Route>
 
       <Route path="/:slug" element={<StorefrontLayout />}>
@@ -79,8 +71,10 @@ export function AppRoutes() {
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="orders" element={<CustomerOrdersPage />} />
           <Route path="orders/:id" element={<CustomerOrderDetailPage />} />
+          <Route path="store-request" element={<CustomerStoreRequestPage />} />
         </Route>
       </Route>
     </Routes>
+    </Suspense>
   );
 }

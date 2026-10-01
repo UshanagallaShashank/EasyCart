@@ -5,7 +5,14 @@ import { getToken as getCustomerToken } from '../customer-auth/token-storage';
 
 export type AuthType = 'owner' | 'customer';
 
-const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/api`;
+// A trailing slash on the address ("https://api.example.com/") would give "//api" paths, so drop it.
+function removeTrailingSlashes(address: string): string {
+  let result = address;
+  while (result.endsWith('/')) result = result.slice(0, -1);
+  return result;
+}
+
+const BASE_URL = `${removeTrailingSlashes(String(import.meta.env.VITE_API_BASE_URL))}/api`;
 
 const tokenGetters: Record<AuthType, () => string | null> = {
   owner: getOwnerToken,
