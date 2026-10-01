@@ -7,6 +7,8 @@ import { useTenants } from '../hooks/use-tenants';
 import { useTenantListFilter, type TenantFilter } from '../hooks/use-tenant-list-filter';
 import { TenantStats } from '../components/tenant-stats';
 import { TenantTable } from '../components/tenant-table';
+import { TenantSignupsChart } from '../components/tenant-signups-chart';
+import { RecentTenantsCard } from '../components/recent-tenants-card';
 
 export function TenantsPage() {
   const { data: tenants, isLoading } = useTenants();
@@ -19,6 +21,12 @@ export function TenantsPage() {
         <p className="mt-1 text-sm text-slate-500">Every business on EasyCart. Suspend a store to take it offline.</p>
       </div>
       {isLoading ? <Skeleton className="h-28 w-full rounded-2xl" /> : <TenantStats tenants={tenants ?? []} />}
+      {!isLoading && (
+        <div className="grid gap-5 lg:grid-cols-3">
+          <div className="lg:col-span-2"><TenantSignupsChart tenants={tenants ?? []} /></div>
+          <RecentTenantsCard tenants={tenants ?? []} />
+        </div>
+      )}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <FilterPills<TenantFilter> options={options} value={filter} onChange={setFilter} />
         <SearchField value={search} onChange={setSearch} placeholder="Search store or owner" />
