@@ -1,5 +1,4 @@
-// One order in the customer's order list.
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, Store, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getOrderStatusTone, getPaymentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
@@ -7,6 +6,10 @@ import type { Order } from '../types/order-types';
 import { formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
 
 export function CustomerOrderCard({ order }: { order: Order }) {
+  const { slug } = useParams<{ slug?: string }>();
+  const lastSlug = slug || sessionStorage.getItem('last_store_slug');
+  const targetPath = lastSlug ? `/${lastSlug}/orders/${order.id}` : `/customer/orders/${order.id}`;
+
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const firstItem = order.items[0];
   const otherItemsCount = order.items.length - 1;
@@ -14,7 +17,7 @@ export function CustomerOrderCard({ order }: { order: Order }) {
 
   return (
     <Link
-      to={`/customer/orders/${order.id}`}
+      to={targetPath}
       className="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-md"
     >
       <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-sky-50 text-sky-600">

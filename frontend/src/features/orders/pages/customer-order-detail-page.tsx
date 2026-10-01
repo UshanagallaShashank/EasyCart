@@ -14,12 +14,14 @@ import { OrderProgress } from '../components/order-progress';
 import { CancelOrderDialog } from '../components/cancel-order-dialog';
 
 export function CustomerOrderDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { id, slug } = useParams<{ id: string; slug?: string }>();
   const { data: order, isLoading, isError } = useMyOrder(id!);
   const [cancelOpen, setCancelOpen] = useState(false);
+  const lastSlug = slug || sessionStorage.getItem('last_store_slug');
+  const backPath = lastSlug ? `/${lastSlug}/orders` : '/customer/orders';
 
   const backLink = (
-    <Link to="/customer/orders" className="inline-flex items-center gap-1 text-xs font-medium text-sky-600 hover:text-sky-700">
+    <Link to={backPath} className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700">
       <ArrowLeft className="size-3.5" /> Back to orders
     </Link>
   );
