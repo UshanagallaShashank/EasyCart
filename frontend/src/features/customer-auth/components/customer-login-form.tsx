@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { useCustomerLogin } from '../hooks/use-customer-login';
 import { ApiError } from '@/shared/api/api-error';
+import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from '@/features/auth/components/email-field';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { SocialAuthButtons } from '@/features/auth/components/social-auth-buttons';
@@ -28,9 +29,7 @@ export function CustomerLoginForm() {
           Forgot password?
         </a>
       </div>
-      <button type="submit" disabled={login.isPending} className="w-full h-10 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
-        {login.isPending ? 'Logging in…' : 'Log in'}
-      </button>
+      <AuthSubmitButton isPending={login.isPending} pendingLabel="Logging in…">Log in</AuthSubmitButton>
       <SocialAuthButtons mode="sign in" />
     </form>
   );

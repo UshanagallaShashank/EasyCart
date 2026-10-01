@@ -8,3 +8,7 @@ export function getMyOrders(): Promise<{ orders: Order[] }> {
 export function getMyOrder(id: string): Promise<{ order: Order }> {
   return apiRequest(`/my-orders/${id}`, {}, 'customer');
 }
+
+export function cancelMyOrder(id: string): Promise<{ order: Order }> {
+  return apiRequest(`/my-orders/${id}/cancel`, { method: 'PATCH' }, 'customer');
+}

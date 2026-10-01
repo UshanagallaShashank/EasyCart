@@ -177,3 +177,32 @@
   border-color: rgba(2, 132, 199, 0.3);
 }
 
+
+/* Responsive safety nets that apply on every device */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  /* Never allow sideways scrolling of the whole page; wide tables scroll inside their own box. */
+  overflow-x: clip;
+}
+
+/* iPhones zoom the page when a focused input has text smaller than 16px, so keep inputs at 16px on phones. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Keep fixed bars clear of notches and the home indicator on phones that have them. */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

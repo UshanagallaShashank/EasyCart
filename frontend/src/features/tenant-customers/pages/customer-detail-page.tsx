@@ -13,7 +13,7 @@ export function CustomerDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full">
           <Skeleton className="h-64 w-full" />
         </div>
@@ -22,7 +22,7 @@ export function CustomerDetailPage() {
   }
   if (isError || !customer) {
     return (
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full">
           <p className="text-slate-500">Customer not found.</p>
         </div>
@@ -52,7 +52,7 @@ export function CustomerDetailPage() {
         }
         description="Customer profile and order history for your store."
       />
-      <div className="flex-1 overflow-y-auto p-6 md:p-8">
+      <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="max-w-7xl mx-auto w-full flex flex-col gap-6">
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover-card-glow p-5 flex flex-wrap items-center gap-6">
             <div className="flex items-center gap-4">

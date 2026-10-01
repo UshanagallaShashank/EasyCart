@@ -15,13 +15,13 @@ export function StorefrontProductsPage() {
   );
 
   return (
-    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-6 pt-6">
+    <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 pt-4 sm:px-6 sm:pt-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="font-heading text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">All Products</h1>
           <p className="text-xs text-slate-500 mt-1">{products?.length ?? 0} items available</p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
           <ProductSearchInput />
           <CategoryFilter slug={slug!} />
         </div>
