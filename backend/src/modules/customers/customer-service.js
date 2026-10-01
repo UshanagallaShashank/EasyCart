@@ -7,8 +7,10 @@ import { hash_password, check_password_matches } from '../../platform/shared/has
 import { sign_token } from '../../platform/shared/jwt.js';
 import { find_user_by_email, save_user } from '../users/repositories/user-repository.js';
 import { find_tenant_by_slug, find_tenant_by_owner_id, save_tenant } from '../tenants/repositories/tenant-repository.js';
-import { save_store, find_store_by_tenant_id } from '../stores/repositories/store-repository.js';
+import { save_store } from '../stores/repositories/store-repository.js';
 import { clear_tenants_cache } from '../admin/services/admin-service.js';
+import { build_business_address } from './store-request-address.js';
+import { upload_request_document, save_request_details, read_request_details } from '../stores/services/store-request-document-service.js';
 
 export async function register_customer(payload) {
   const parsed = validate_customer_signup_input(payload);
@@ -75,7 +77,6 @@ export async function login_customer(payload) {
 export async function request_store_creation(customer_id, payload) {
   const store_name = String(payload.store_name || '').trim();
   const slug = String(payload.slug || '').trim().toLowerCase();
-  const description = String(payload.description || '').trim();
 
   if (store_name.length < 2 || store_name.length > 60) {
     throw new AppError('Store name must be between 2 and 60 characters', 400);
@@ -85,6 +86,8 @@ export async function request_store_creation(customer_id, payload) {
   if (!slug_check.valid) {
     throw new AppError(slug_check.message, 400);
   }
+
+  const business_address = build_business_address(payload.business_address);
 
   const existing_slug = await find_tenant_by_slug(slug);
   if (existing_slug) {
@@ -101,6 +104,10 @@ export async function request_store_creation(customer_id, payload) {
     }
   }
 
+  // Upload the documents last of the checks, so nothing is stored for a request that is going to be refused.
+  const id_proof_path = await upload_request_document({ customer_id, file: payload.id_proof, kind: 'id-proof', label: 'ID proof' });
+  const business_proof_path = await upload_request_document({ customer_id, file: payload.business_proof, kind: 'business-proof', label: 'Business proof' });
+
   const tenant = await save_tenant({
     id: randomUUID(),
     name: store_name,
@@ -115,8 +122,10 @@ export async function request_store_creation(customer_id, payload) {
     name: store_name,
     slug,
     is_published: false,
-    promotion_banner_text: description || null
+    promotion_banner_text: null
   });
+
+  await save_request_details(customer_id, { business_address, id_proof_path, business_proof_path });
 
   clear_tenants_cache();
 
@@ -125,7 +134,7 @@ export async function request_store_creation(customer_id, payload) {
     name: tenant.name,
     slug: tenant.slug,
     status: tenant.status,
-    description: description || null,
+    business_address,
     created_at: tenant.created_at
   };
 }
@@ -133,13 +142,13 @@ export async function request_store_creation(customer_id, payload) {
 export async function get_customer_store_request(customer_id) {
   const tenant = await find_tenant_by_owner_id(customer_id);
   if (!tenant) return null;
-  const store = await find_store_by_tenant_id(tenant.id);
+  const details = await read_request_details(customer_id);
   return {
     id: tenant.id,
     name: tenant.name,
     slug: tenant.slug,
     status: tenant.status,
     created_at: tenant.created_at,
-    description: store?.promotion_banner_text ?? null
+    business_address: details?.business_address ?? null
   };
 }

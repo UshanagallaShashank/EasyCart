@@ -133,3 +133,10 @@ create policy "Public Access to Store Assets"
 on storage.objects for select
 using (bucket_id = 'store-assets');
 
+
+-- 10. Private storage bucket for store request documents (ID proof, business proof and a small details file).
+-- Private on purpose: there is no public read policy, so files can only be reached by the backend,
+-- which gives the platform admin short-lived signed links. Only a bucket is created, no tables or columns change.
+insert into storage.buckets (id, name, public, file_size_limit)
+values ('store-request-docs', 'store-request-docs', false, 3145728)
+on conflict (id) do update set public = false, file_size_limit = 3145728;

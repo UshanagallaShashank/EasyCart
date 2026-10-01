@@ -1,9 +1,13 @@
 import { apiRequest } from '@/shared/api/api-client';
+import type { BusinessAddress } from '../lib/business-address';
 
 export interface CustomerStoreRequestPayload {
   store_name: string;
   slug: string;
-  description?: string;
+  business_address: BusinessAddress;
+  /** Documents as base64 data URLs */
+  id_proof: string;
+  business_proof: string;
 }
 
 export interface CustomerStoreRequestData {
@@ -12,7 +16,7 @@ export interface CustomerStoreRequestData {
   slug: string;
   status: 'pending' | 'active' | 'rejected';
   created_at: string;
-  description: string | null;
+  business_address: string | null;
 }
 
 export function requestStoreCreation(payload: CustomerStoreRequestPayload): Promise<{
