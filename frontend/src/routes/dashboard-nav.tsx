@@ -1,25 +1,22 @@
-// Dark sidebar for the merchant dashboard. The same content is used in the desktop rail and the mobile drawer.
+// Sidebar for the merchant dashboard. The same content is used in the desktop rail and the mobile drawer.
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { LayoutDashboard, Store, Tags, Package, ClipboardList, Users, Ticket, LogOut, type LucideIcon } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/shared/auth/auth-context';
 import { useOwnStore } from '@/features/stores/hooks/use-own-store';
+import { DASHBOARD_SECTIONS, type DashboardLink } from './dashboard-links';
 
-interface NavLink {
-  to: string;
-  label: string;
-  icon: LucideIcon;
+function NavItem({ link, active, onNavigate }: { link: DashboardLink; active: boolean; onNavigate?: () => void }) {
+  const Icon = link.icon;
+  return (
+    <Link to={link.to} onClick={onNavigate} aria-current={active ? 'page' : undefined} className={cn('relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm transition-colors', active ? 'font-semibold text-slate-900' : 'font-medium text-slate-500 hover:bg-slate-100 hover:text-slate-900')}>
+      {active && <motion.span layoutId="nav-active-pill" className="absolute inset-0 rounded-xl bg-white shadow-sm ring-1 ring-slate-200/80" transition={{ type: 'spring', stiffness: 400, damping: 32 }} />}
+      <Icon className={cn('relative size-[18px]', active ? 'text-sky-600' : 'text-slate-400')} />
+      <span className="relative">{link.label}</span>
+    </Link>
+  );
 }
-
-const LINKS: NavLink[] = [
-  { to: '/dashboard/overview', label: 'Overview', icon: LayoutDashboard },
-  { to: '/dashboard/store', label: 'Store', icon: Store },
-  { to: '/dashboard/categories', label: 'Categories', icon: Tags },
-  { to: '/dashboard/products', label: 'Products', icon: Package },
-  { to: '/dashboard/orders', label: 'Orders', icon: ClipboardList },
-  { to: '/dashboard/customers', label: 'Customers', icon: Users },
-  { to: '/dashboard/coupons', label: 'Coupons', icon: Ticket }
-];
 
 export function DashboardNavContent({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation();
@@ -27,51 +24,29 @@ export function DashboardNavContent({ onNavigate }: { onNavigate?: () => void })
   const { data: store } = useOwnStore();
 
   return (
-    <div className="flex h-full flex-col border-r border-slate-200/80 bg-white text-slate-600">
-      <Link to="/dashboard/overview" onClick={onNavigate} className="flex flex-col gap-1.5 px-5 py-5">
-        <img src="/easy-cart-icon.png" alt="EasyCart" className="h-10 w-auto self-start object-contain" />
-        <span className="block truncate text-xs font-medium text-slate-500">{store?.name ?? 'Store dashboard'}</span>
+    <div className="flex h-full flex-col border-r border-slate-200/80 bg-slate-50">
+      <Link to="/dashboard/overview" onClick={onNavigate} className="flex items-center gap-3 px-5 pt-5 pb-4">
+        <img src="/easy-cart-icon.png" alt="EasyCart" className="h-9 w-auto object-contain" />
+        <span className="min-w-0 truncate text-sm font-semibold text-slate-900">{store?.name ?? 'Store dashboard'}</span>
       </Link>
-
-      <nav className="flex-1 overflow-y-auto px-3 pb-4">
-        <ul className="flex flex-col gap-1">
-          {LINKS.map(({ to, label, icon: Icon }) => {
-            const active = pathname.startsWith(to);
-            return (
-              <li key={to}>
-                <Link
-                  to={to}
-                  onClick={onNavigate}
-                  className={`group relative flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs transition-all duration-200 ${
-                    active ? 'font-semibold text-[#0284C7]' : 'font-medium text-slate-600 hover:translate-x-1 hover:bg-slate-100/80 hover:text-slate-900'
-                  }`}
-                >
-                  {/* One highlight is shared by all links; layoutId makes it slide to whichever link is active */}
-                  {active && (
-                    <motion.span
-                      layoutId="nav-active-pill"
-                      className="absolute inset-0 rounded-xl bg-sky-50 shadow-xs"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    >
-                      <span className="absolute inset-y-2.5 right-1.5 w-1 rounded-full bg-[#0284C7]" />
-                    </motion.span>
-                  )}
-                  <Icon className={`relative size-4 transition-all duration-200 ${active ? 'scale-105 text-[#0284C7]' : 'text-slate-400 group-hover:scale-110 group-hover:text-[#0284C7]'}`} />
-                  <span className="relative">{label}</span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
+      <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-2" aria-label="Dashboard">
+        {DASHBOARD_SECTIONS.map((section) => (
+          <div key={section.title}>
+            <p className="mb-1.5 px-3 text-[11px] font-semibold tracking-wider text-slate-400 uppercase">{section.title}</p>
+            <div className="flex flex-col gap-0.5">
+              {section.links.map((link) => <NavItem key={link.to} link={link} active={pathname.startsWith(link.to)} onNavigate={onNavigate} />)}
+            </div>
+          </div>
+        ))}
       </nav>
-
-      <div className="safe-bottom border-t border-slate-100 p-3">
-        <p className="truncate px-3 pb-2 text-[11px] text-slate-400">{user?.email}</p>
-        <button
-          onClick={logout}
-          className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-500 transition-colors hover:bg-rose-50 hover:text-rose-600"
-        >
-          <LogOut className="size-4" /> Log out
+      <div className="safe-bottom flex items-center gap-3 border-t border-slate-200/80 p-4">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-700">{user?.username?.charAt(0).toUpperCase() ?? '?'}</span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-slate-900">{user?.username}</p>
+          <p className="truncate text-xs text-slate-500">{user?.email}</p>
+        </div>
+        <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600">
+          <LogOut className="size-4" />
         </button>
       </div>
     </div>
@@ -80,7 +55,7 @@ export function DashboardNavContent({ onNavigate }: { onNavigate?: () => void })
 
 export function DashboardNav() {
   return (
-    <aside className="hidden h-full w-60 shrink-0 lg:block xl:w-64">
+    <aside className="hidden h-full w-64 shrink-0 lg:block">
       <DashboardNavContent />
     </aside>
   );
