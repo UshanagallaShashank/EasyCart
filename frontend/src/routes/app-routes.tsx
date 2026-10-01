@@ -8,7 +8,8 @@ import { AdminLayout } from './admin-layout';
 import { StorefrontLayout } from './storefront-layout';
 import { LoginPage } from '@/features/auth/pages/login-page';
 import { RegisterPage } from '@/features/auth/pages/register-page';
-import { AdminRegisterPage } from '@/features/auth/pages/admin-register-page';
+import { AdminRegisterPage } from '@/features/admin-auth/pages/admin-register-page';
+import { AdminLoginPage } from '@/features/admin-auth/pages/admin-login-page';
 import { StoreSettingsPage } from '@/features/stores/pages/store-settings-page';
 import { CategoriesPage } from '@/features/categories/pages/categories-page';
 import { ProductsPage } from '@/features/products/pages/products-page';
@@ -41,6 +42,7 @@ export function AppRoutes() {
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route path="/admin/register" element={<AdminRegisterPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardLayout />}>

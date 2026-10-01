@@ -4,12 +4,12 @@ import { toast } from 'sonner';
 import { User, KeyRound } from 'lucide-react';
 import { ApiError } from '@/shared/api/api-error';
 import { useAdminRegister } from '../hooks/use-admin-register';
-import type { AdminRegisterPayload } from '../types/auth-types';
-import { AuthTextField } from './auth-text-field';
-import { AuthSubmitButton } from './auth-submit-button';
-import { EmailField } from './email-field';
-import { PasswordField } from './password-field';
-import { PasswordStrengthBar } from './password-strength-bar';
+import type { AdminRegisterPayload } from '../types/admin-auth-types';
+import { AuthTextField } from '@/features/auth/components/auth-text-field';
+import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
+import { EmailField } from '@/features/auth/components/email-field';
+import { PasswordField } from '@/features/auth/components/password-field';
+import { PasswordStrengthBar } from '@/features/auth/components/password-strength-bar';
 
 const INIT: AdminRegisterPayload = { username: '', email: '', password: '', passcode: '' };
 
