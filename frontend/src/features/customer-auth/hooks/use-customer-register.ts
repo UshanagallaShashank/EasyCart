@@ -13,7 +13,9 @@ export function useCustomerRegister() {
     mutationFn: (payload: CustomerRegisterPayload) => registerCustomer(payload),
     onSuccess: (data) => {
       login(data.user, data.token);
-      navigate(searchParams.get('redirect') ?? '/customer/orders');
+      const lastSlug = sessionStorage.getItem('last_store_slug');
+      const fallback = lastSlug ? `/${lastSlug}/orders` : '/customer/orders';
+      navigate(searchParams.get('redirect') ?? fallback);
     }
   });
 }

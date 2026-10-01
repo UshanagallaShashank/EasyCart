@@ -21,6 +21,7 @@ import { CustomerOrderDetailPage } from '@/features/orders/pages/customer-order-
 import { StorefrontHomePage } from '@/features/storefront/pages/storefront-home-page';
 import { StorefrontProductsPage } from '@/features/storefront/pages/storefront-products-page';
 import { StorefrontProductDetailPage } from '@/features/storefront/pages/storefront-product-detail-page';
+import { StorefrontAddressPage } from '@/features/storefront/pages/storefront-address-page';
 import { CartPage } from '@/features/cart/pages/cart-page';
 import { CheckoutPage } from '@/features/checkout/pages/checkout-page';
 import { TenantsPage } from '@/features/admin/pages/tenants-page';
@@ -73,8 +74,11 @@ export function AppRoutes() {
         <Route path="products" element={<StorefrontProductsPage />} />
         <Route path="products/:id" element={<StorefrontProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="address" element={<StorefrontAddressPage />} />
         <Route element={<RequireCustomerAuth />}>
           <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="orders" element={<CustomerOrdersPage />} />
+          <Route path="orders/:id" element={<CustomerOrderDetailPage />} />
         </Route>
       </Route>
     </Routes>
