@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
-@import "@fontsource-variable/fraunces";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -161,7 +160,7 @@
 }
 
 .animate-content-in {
-  animation: contentFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: contentFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-float-slow {
