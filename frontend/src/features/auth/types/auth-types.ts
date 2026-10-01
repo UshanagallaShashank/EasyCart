@@ -42,3 +42,10 @@ export interface LoginResponse {
   user: User;
   token: string;
 }
+
+export interface AdminRegisterPayload {
+  username: string;
+  email: string;
+  password: string;
+  passcode: string;
+}

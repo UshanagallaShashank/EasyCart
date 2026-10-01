@@ -4,7 +4,7 @@ import { motion } from 'motion/react';
 import { AuthBrandPanel } from './auth-brand-panel';
 
 interface AuthLayoutProps {
-  variant: 'merchant' | 'customer';
+  variant: 'merchant' | 'customer' | 'admin';
   title: string;
   subtitle: string;
   footer: ReactNode;
