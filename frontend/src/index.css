@@ -183,8 +183,13 @@ html {
 }
 
 body {
-  /* Never allow sideways scrolling of the whole page; wide tables scroll inside their own box. */
+  /* Never allow sideways scrolling of the whole page. */
   overflow-x: clip;
+}
+
+/* Grid items may shrink below their content's width, so long text or charts never widen a page. */
+.grid > * {
+  min-width: 0;
 }
 
 /* iPhones zoom the page when a focused input has text smaller than 16px, so keep inputs at 16px on phones. */

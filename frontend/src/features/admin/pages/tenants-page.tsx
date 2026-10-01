@@ -16,6 +16,7 @@ import { TenantStats } from '../components/tenant-stats';
 import { TenantTable } from '../components/tenant-table';
 import { TenantSortSelect } from '../components/tenant-sort-select';
 import { AdminPageTitle } from '../components/page-title';
+import { StoreStateLegend } from '../components/store-state-legend';
 import { usePagination } from '@/components/pagination/use-pagination';
 import { PaginationBar } from '@/components/pagination/pagination-bar';
 
@@ -81,7 +82,10 @@ export function TenantsPage() {
       </AdminPageTitle>
       {isLoading ? <Skeleton className="h-28 w-full rounded-2xl" /> : <TenantStats tenants={tenants ?? []} />}
 
-      <FilterPills<TenantFilter> options={options} value={filter} onChange={setFilter} />
+      <div className="flex flex-col gap-3">
+        <FilterPills<TenantFilter> options={options} value={filter} onChange={setFilter} />
+        <StoreStateLegend />
+      </div>
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <SearchField value={search} onChange={setSearch} placeholder="Search store or owner" className="md:w-80" />

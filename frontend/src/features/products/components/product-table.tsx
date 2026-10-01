@@ -22,7 +22,7 @@ function ProductIdentity({ product }: { product: Product }) {
 export function ProductTable({ products }: { products: Product[] }) {
   return (
     <>
-      <ul className="flex flex-col gap-3 md:hidden">
+      <ul className="flex flex-col gap-3 lg:hidden">
         {products.map((p) => (
           <li key={p.id} className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-xs">
             <div className="flex items-start justify-between gap-2"><ProductIdentity product={p} />{!p.is_active && <ProductVisibilityBadge isActive={false} />}</div>
@@ -33,7 +33,7 @@ export function ProductTable({ products }: { products: Product[] }) {
           </li>
         ))}
       </ul>
-      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs lg:block">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50/70 hover:bg-slate-50/70">
@@ -43,7 +43,7 @@ export function ProductTable({ products }: { products: Product[] }) {
           <TableBody>
             {products.map((p) => (
               <TableRow key={p.id}>
-                <TableCell className="max-w-xs py-3 pl-5"><ProductIdentity product={p} /></TableCell>
+                <TableCell className="max-w-56 py-3 pl-5 xl:max-w-80"><ProductIdentity product={p} /></TableCell>
                 <TableCell className="font-medium tabular-nums">{formatMoney(p.price)}</TableCell>
                 <TableCell><ProductStockLabel product={p} /></TableCell>
                 <TableCell><ProductVisibilityBadge isActive={p.is_active} /></TableCell>

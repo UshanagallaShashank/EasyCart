@@ -11,7 +11,7 @@ export function DashboardLayout() {
       <DashboardNav />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardHeader />
-        <main className="flex flex-1 flex-col overflow-hidden"><Suspense fallback={<PageLoading />}><Outlet /></Suspense></main>
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden"><Suspense fallback={<PageLoading />}><Outlet /></Suspense></main>
       </div>
     </div>
   );

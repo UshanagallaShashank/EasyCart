@@ -1,4 +1,4 @@
-// Row of pill buttons that switch a list between filter views, each with an optional count.
+// Wrapping row of pill buttons that switch a list between filter views, each with an optional count.
 import { cn } from '@/lib/utils';
 
 interface FilterPillsProps<T extends string> {
@@ -9,7 +9,7 @@ interface FilterPillsProps<T extends string> {
 
 export function FilterPills<T extends string>({ options, value, onChange }: FilterPillsProps<T>) {
   return (
-    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0" role="tablist">
+    <div className="flex flex-wrap gap-2" role="tablist">
       {options.map((o) => (
         <button
           key={o.value}

@@ -11,16 +11,16 @@ export function NewestStoresTable({ tenants }: { tenants: AdminTenant[] }) {
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
       <div className="flex items-center justify-between px-5 pt-5 pb-3"><h2 className="text-sm font-semibold text-slate-900">Newest stores</h2><Link to="/admin/stores" className="text-xs font-semibold text-sky-700 hover:underline">See all</Link></div>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[520px] text-sm">
-          <thead className="bg-slate-50/70 text-left text-xs text-slate-500"><tr><th className="px-5 py-2.5 font-medium">Store</th><th className="py-2.5 font-medium">Owner</th><th className="py-2.5 font-medium">State</th><th className="px-5 py-2.5 text-right font-medium">Joined</th></tr></thead>
+      <div>
+        <table className="w-full table-fixed text-sm">
+          <thead className="bg-slate-50/70 text-left text-xs text-slate-500"><tr><th className="w-[45%] py-2.5 pr-2 pl-4 font-medium sm:w-[35%] sm:px-5">Store</th><th className="hidden py-2.5 font-medium sm:table-cell">Owner</th><th className="py-2.5 font-medium">State</th><th className="hidden px-5 py-2.5 text-right font-medium md:table-cell">Joined</th></tr></thead>
           <tbody className="divide-y divide-slate-100">
             {rows.map((t) => (
               <tr key={t.id}>
-                <td className="px-5 py-2.5"><Link to={`/admin/stores/${t.id}`} className="font-medium text-slate-900 hover:text-sky-700">{t.name}</Link></td>
-                <td className="py-2.5 text-slate-600">{t.owner_username ?? '—'}</td>
-                <td className="py-2.5"><div className="flex gap-1.5"><StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />{!t.is_published && <StatusBadge tone="neutral" value="not published" />}</div></td>
-                <td className="px-5 py-2.5 text-right text-slate-500">{formatOrderDate(t.created_at)}</td>
+                <td className="truncate py-2.5 pr-2 pl-4 sm:px-5"><Link to={`/admin/stores/${t.id}`} className="font-medium text-slate-900 hover:text-sky-700">{t.name}</Link></td>
+                <td className="hidden truncate py-2.5 pr-2 text-slate-600 sm:table-cell">{t.owner_username ?? '—'}</td>
+                <td className="py-2.5 pr-4 sm:pr-2"><div className="flex flex-wrap gap-1.5"><StatusBadge tone={getTenantStatusTone(t.status)} value={t.status} />{!t.is_published && <StatusBadge tone="neutral" value="not published" />}</div></td>
+                <td className="hidden px-5 py-2.5 text-right text-slate-500 md:table-cell">{formatOrderDate(t.created_at)}</td>
               </tr>
             ))}
           </tbody>
