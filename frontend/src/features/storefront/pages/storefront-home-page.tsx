@@ -1,6 +1,7 @@
 // Landing page for public storefront featuring hero banner, trust perks, and product showcase.
 import { useParams, Link } from 'react-router-dom';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { Reveal } from '@/components/motion/reveal';
 import { usePublicStore } from '../hooks/use-public-store';
 import { usePublicProducts } from '../hooks/use-public-products';
 import { StorefrontHero } from '../components/storefront-hero';
@@ -17,14 +18,14 @@ export function StorefrontHomePage() {
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-8">
       {store.promotion_banner_text && (
-        <div className="bg-[#F58220] text-white px-6 py-2 text-center text-xs font-semibold tracking-wide">
+        <div className="bg-[#F58220] text-white px-4 py-2 text-center text-xs font-semibold tracking-wide">
           {store.promotion_banner_text}
         </div>
       )}
       <StorefrontHero store={store} />
       <StorefrontFeaturesStrip />
-      <section className="px-6">
-        <div className="mb-6 flex items-end justify-between">
+      <section className="px-4 sm:px-6">
+        <Reveal className="mb-6 flex items-end justify-between">
           <div>
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-600 mb-1">
               <Sparkles className="size-3.5 text-[#F58220]" /> Featured Catalog
@@ -34,7 +35,7 @@ export function StorefrontHomePage() {
           <Link to={`/${slug}/products`} className="group flex items-center gap-1 text-sm font-semibold text-sky-600 hover:text-sky-700">
             View all products <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
           </Link>
-        </div>
+        </Reveal>
         <ProductGrid products={products?.slice(0, 8)} isLoading={isLoading} slug={slug!} />
       </section>
     </div>

@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { useLogin } from '../hooks/use-login';
 import { ApiError } from '@/shared/api/api-error';
+import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from './email-field';
 import { PasswordField } from './password-field';
 import { SocialAuthButtons } from './social-auth-buttons';
@@ -28,9 +29,7 @@ export function LoginForm() {
           Forgot password?
         </a>
       </div>
-      <button type="submit" disabled={login.isPending} className="w-full h-10 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
-        {login.isPending ? 'Signing in…' : 'Sign In'}
-      </button>
+      <AuthSubmitButton isPending={login.isPending} pendingLabel="Signing in…">Sign In</AuthSubmitButton>
       <SocialAuthButtons mode="sign in" />
     </form>
   );

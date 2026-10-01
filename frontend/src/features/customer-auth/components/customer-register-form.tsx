@@ -5,6 +5,7 @@ import { useCustomerRegister } from '../hooks/use-customer-register';
 import { ApiError } from '@/shared/api/api-error';
 import type { CustomerRegisterPayload } from '../types/customer-auth-types';
 import { UserCredentialFields } from '@/features/auth/components/user-credential-fields';
+import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from '@/features/auth/components/email-field';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { PasswordStrengthBar } from '@/features/auth/components/password-strength-bar';
@@ -28,9 +29,7 @@ export function CustomerRegisterForm() {
       <EmailField value={form.email} onChange={(v) => set('email', v)} />
       <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
       <PasswordStrengthBar password={form.password} />
-      <button type="submit" disabled={register.isPending} className="w-full h-10 mt-1 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
-        {register.isPending ? 'Creating account…' : 'Create Account'}
-      </button>
+      <AuthSubmitButton isPending={register.isPending} pendingLabel="Creating account…" className="mt-1">Create Account</AuthSubmitButton>
       <SocialAuthButtons mode="sign up" />
     </form>
   );

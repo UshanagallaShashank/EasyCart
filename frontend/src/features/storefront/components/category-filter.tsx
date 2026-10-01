@@ -16,7 +16,7 @@ export function CategoryFilter({ slug }: { slug: string }) {
 
   return (
     <Select value={searchParams.get('category_id') ?? 'all'} onValueChange={handle_change}>
-      <SelectTrigger className="w-48 bg-white border-slate-200 shadow-2xs"><SelectValue placeholder="All Categories" /></SelectTrigger>
+      <SelectTrigger className="w-full bg-white sm:w-48 border-slate-200 shadow-2xs"><SelectValue placeholder="All Categories" /></SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All categories</SelectItem>
         {categories?.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
