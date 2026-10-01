@@ -20,7 +20,7 @@ export function PlatformKpis({ totals, sales, orders }: { totals: PlatformStats[
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
       {kpis.map((k) => (
         <div key={k.label} className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs sm:p-5">
-          <div className="flex items-center gap-2"><span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${k.tone}`}><k.icon className="size-4" /></span><p className="truncate text-sm font-medium text-slate-600">{k.label}</p></div>
+          <div className="flex items-center gap-2"><span className={`flex size-8 shrink-0 items-center justify-center rounded-lg ${k.tone}`}><k.icon className="size-4" /></span><p className="text-xs leading-tight font-medium text-slate-600 sm:text-sm">{k.label}</p></div>
           <p className="mt-3 font-heading text-lg leading-tight font-bold break-words text-slate-900 tabular-nums sm:text-[26px]">{k.value}</p>
           <div className="mt-1 flex min-h-5 flex-wrap items-center gap-1.5 text-xs text-slate-500">{k.hint}</div>
         </div>

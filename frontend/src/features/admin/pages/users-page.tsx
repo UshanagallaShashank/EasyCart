@@ -6,6 +6,7 @@ import { SearchField } from '@/components/search-field';
 import { usePlatformUsers } from '../hooks/use-platform-users';
 import { useUserDirectoryFilter, type UserRoleFilter } from '../hooks/use-user-directory-filter';
 import { UserDirectoryTable } from '../components/user-directory-table';
+import { AdminPageTitle } from '../components/page-title';
 
 export function UsersPage() {
   const { data: users, isLoading } = usePlatformUsers();
@@ -13,7 +14,7 @@ export function UsersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div><h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">Users</h1><p className="mt-1 text-sm text-slate-500">Store owners, customers, and admins with an EasyCart account.</p></div>
+      <AdminPageTitle title="Users" description="Store owners, customers, and admins with an EasyCart account." />
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <FilterPills<UserRoleFilter> options={options} value={role} onChange={setRole} />
         <SearchField value={search} onChange={setSearch} placeholder="Search name, email, phone" />

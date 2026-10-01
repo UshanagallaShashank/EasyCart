@@ -1,17 +1,18 @@
 // Slim top bar: mobile menu button with slide-in drawer, live store link and notifications.
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { ExternalLink, Menu, X } from 'lucide-react';
+import { ExternalLink, Menu } from 'lucide-react';
+import { MobileNavDrawer } from '@/components/app-shell/mobile-nav-drawer';
+import { find_nav_title } from '@/components/app-shell/nav-matching';
 import { useOwnStore } from '@/features/stores/hooks/use-own-store';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { DashboardNavContent } from './dashboard-nav';
-import { find_dashboard_link } from './dashboard-links';
+import { DASHBOARD_SECTIONS } from './dashboard-links';
 
 export function DashboardHeader() {
   const { data: store } = useOwnStore();
   const [menuOpen, setMenuOpen] = useState(false);
-  const current = find_dashboard_link(useLocation().pathname);
+  const title = find_nav_title(DASHBOARD_SECTIONS, useLocation());
 
   return (
     <>
@@ -24,7 +25,7 @@ export function DashboardHeader() {
           >
             <Menu className="size-5" />
           </button>
-          <span className="truncate text-sm font-semibold text-slate-900">{current?.label ?? store?.name}</span>
+          <span className="truncate text-sm font-semibold text-slate-900">{title ?? store?.name}</span>
         </div>
         <div className="flex items-center gap-3">
           {store?.slug && (
@@ -46,35 +47,9 @@ export function DashboardHeader() {
         </div>
       </header>
 
-      <AnimatePresence>
-        {menuOpen && (
-          <div className="fixed inset-0 z-50 lg:hidden">
-            <motion.div
-              className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setMenuOpen(false)}
-            />
-            <motion.div
-              className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl"
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'spring', stiffness: 300, damping: 32 }}
-            >
-              <DashboardNavContent onNavigate={() => setMenuOpen(false)} />
-              <button
-                onClick={() => setMenuOpen(false)}
-                aria-label="Close menu"
-                className="absolute right-3 top-5 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
-              >
-                <X className="size-4" />
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <MobileNavDrawer open={menuOpen} onClose={() => setMenuOpen(false)}>
+        <DashboardNavContent onNavigate={() => setMenuOpen(false)} />
+      </MobileNavDrawer>
     </>
   );
 }

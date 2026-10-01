@@ -33,7 +33,7 @@ export function DailyBarChart({ title, headline, days, describe }: DailyBarChart
             {days.map((d, i) => <DailyBarChartBar key={d.key} day={d} max={max} isToday={i === days.length - 1} describe={describe} />)}
           </div>
           <div className="flex h-6 gap-0.5 pt-1.5 sm:gap-2" aria-hidden>
-            {days.map((d) => <span key={d.key} className="min-w-0 flex-1 truncate text-center text-[11px] text-slate-500">{d.label}</span>)}
+            {days.map((d) => <span key={d.key} className="flex min-w-0 flex-1 justify-center text-[11px] whitespace-nowrap text-slate-500">{d.label}</span>)}
           </div>
         </div>
       </div>
