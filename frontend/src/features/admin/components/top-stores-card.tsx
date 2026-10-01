@@ -20,7 +20,7 @@ export function TopStoresCard({ stores }: { stores: PlatformStats['top_stores'] 
               </div>
               <div className="mt-1.5 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-[#0284C7]" style={{ width: `${(s.revenue / leader) * 100}%` }} /></div>
-                <span className="w-16 text-right text-[11px] text-slate-500">{s.orders} {s.orders === 1 ? 'order' : 'orders'}</span>
+                <span className="w-20 text-right text-xs text-slate-500">{s.orders} {s.orders === 1 ? 'order' : 'orders'}</span>
               </div>
             </li>
           ))}
