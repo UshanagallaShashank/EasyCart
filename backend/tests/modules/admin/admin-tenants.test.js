@@ -77,4 +77,18 @@ describe('Admin tenant management', () => {
     const preview = await request(app).get(`/api/stores/${slug}`);
     expect(preview.status).toBe(200);
   });
+
+  it('returns store detail with owner and activity for an admin', async () => {
+    const response = await request(app).get(`/api/admin/tenants/${tenantId}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(response.status).toBe(200);
+    expect(response.body.tenant.slug).toBe(slug);
+    expect(response.body.store.is_published).toBe(true);
+    expect(response.body.owner.email).toBeTruthy();
+    expect(response.body.activity).toMatchObject({ product_count: 0, order_count: 0, revenue: 0 });
+  });
+
+  it('returns 404 for an unknown store', async () => {
+    const response = await request(app).get(`/api/admin/tenants/${randomUUID()}`).set('Authorization', `Bearer ${adminToken}`);
+    expect(response.status).toBe(404);
+  });
 });

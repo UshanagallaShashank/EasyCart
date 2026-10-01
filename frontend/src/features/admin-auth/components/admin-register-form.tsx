@@ -3,13 +3,13 @@ import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { User, KeyRound } from 'lucide-react';
 import { ApiError } from '@/shared/api/api-error';
-import { useAdminRegister } from '../hooks/use-admin-register';
-import type { AdminRegisterPayload } from '../types/admin-auth-types';
-import { AuthTextField } from '@/features/auth/components/auth-text-field';
 import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from '@/features/auth/components/email-field';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { PasswordStrengthBar } from '@/features/auth/components/password-strength-bar';
+import { useAdminRegister } from '../hooks/use-admin-register';
+import type { AdminRegisterPayload } from '../types/admin-auth-types';
+import { AdminIconField } from './admin-icon-field';
 
 const INIT: AdminRegisterPayload = { username: '', email: '', password: '', passcode: '' };
 
@@ -24,13 +24,13 @@ export function AdminRegisterForm() {
   }
 
   return (
-    <form onSubmit={handle_submit} className="flex flex-col gap-4">
-      <AuthTextField id="username" label="Username" icon={User} value={form.username} onChange={(v) => set('username', v)} placeholder="platform_admin" autoComplete="username" />
+    <form onSubmit={handle_submit} className="flex flex-col gap-3">
+      <AdminIconField id="username" icon={User} value={form.username} onChange={(v) => set('username', v)} placeholder="Admin username" />
       <EmailField value={form.email} onChange={(v) => set('email', v)} />
-      <PasswordField value={form.password} onChange={(v) => set('password', v)} isNew />
+      <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
       <PasswordStrengthBar password={form.password} />
-      <AuthTextField id="passcode" label="Admin passcode" icon={KeyRound} type="password" value={form.passcode} onChange={(v) => set('passcode', v)} autoComplete="off" hint="Ask whoever runs the server for the ADMIN_SIGNUP_PASSCODE value." />
-      <AuthSubmitButton isPending={register.isPending} pendingLabel="Creating admin…" className="mt-1">Create admin account</AuthSubmitButton>
+      <AdminIconField id="passcode" icon={KeyRound} type="password" value={form.passcode} onChange={(v) => set('passcode', v)} placeholder="Admin passcode" />
+      <AuthSubmitButton isPending={register.isPending} pendingLabel="Creating admin…" className="mt-1">Create Admin Account</AuthSubmitButton>
     </form>
   );
 }

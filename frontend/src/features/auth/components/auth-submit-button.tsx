@@ -1,5 +1,6 @@
-// Full-width primary submit button for auth forms, with a spinner while the request runs.
+// Primary sky-blue submit button with press/hover motion and a spinner while loading.
 import type { ReactNode } from 'react';
+import { motion } from 'motion/react';
 import { Loader2 } from 'lucide-react';
 
 interface AuthSubmitButtonProps {
@@ -11,13 +12,16 @@ interface AuthSubmitButtonProps {
 
 export function AuthSubmitButton({ isPending, pendingLabel, children, className = '' }: AuthSubmitButtonProps) {
   return (
-    <button
+    <motion.button
       type="submit"
       disabled={isPending}
-      className={`flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-800 focus-visible:ring-3 focus-visible:ring-sky-500/40 focus-visible:outline-none active:scale-[0.99] disabled:opacity-60 ${className}`}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+      className={`flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-[#0077C8] text-xs font-semibold text-white shadow-md shadow-sky-500/20 transition-colors hover:bg-[#0064AA] hover:shadow-lg hover:shadow-sky-500/30 disabled:opacity-60 ${className}`}
     >
-      {isPending && <Loader2 className="size-4 animate-spin" />}
+      {isPending && <Loader2 className="size-3.5 animate-spin" />}
       {isPending ? pendingLabel : children}
-    </button>
+    </motion.button>
   );
 }

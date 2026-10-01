@@ -1,19 +1,28 @@
-// Customer registration page; keeps the post-signup redirect when linking back to login.
+// Customer registration page with floating frosted card
 import { Link, useSearchParams } from 'react-router-dom';
-import { CustomerAuthShell } from '../components/customer-auth-shell';
 import { CustomerRegisterForm } from '../components/customer-register-form';
+import { AuthCard } from '@/features/auth/components/auth-card';
+import { AuthSkyBackground } from '@/features/auth/components/auth-sky-background';
+import { AuthCardHeader } from '@/features/auth/components/auth-card-header';
 
 export function CustomerRegisterPage() {
-  const redirect = useSearchParams()[0].get('redirect');
+  const [params] = useSearchParams();
+  const redirect = params.get('redirect');
   const loginLink = redirect ? `/customer/login?redirect=${encodeURIComponent(redirect)}` : '/customer/login';
 
   return (
-    <CustomerAuthShell
-      title="Create your account"
-      subtitle="One account for tracking orders and faster checkout."
-      footer={<>Already have an account? <Link to={loginLink} className="font-semibold text-sky-700 hover:underline">Sign in</Link></>}
-    >
-      <CustomerRegisterForm />
-    </CustomerAuthShell>
+    <div className="relative min-h-svh flex flex-col justify-between p-6 overflow-hidden">
+      <AuthSkyBackground />
+      <main className="w-full flex items-center justify-center my-auto py-8">
+        <AuthCard>
+          <AuthCardHeader title="Create your customer account" subtitle="Join Easy Cart to track orders, manage addresses, and shop effortlessly." />
+          <CustomerRegisterForm />
+          <p className="text-center text-xs text-slate-500 pt-1">
+            Already have an account? <Link to={loginLink} className="text-sky-600 font-semibold hover:underline">Log in</Link>
+          </p>
+        </AuthCard>
+      </main>
+      <footer className="text-center text-[11px] text-slate-400 py-2">EasyCart &copy; 2026</footer>
+    </div>
   );
 }
