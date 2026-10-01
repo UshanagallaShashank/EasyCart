@@ -1,5 +1,5 @@
 import { useState, useId, type FormEvent } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { Store, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { CustomerPageShell } from '@/features/orders/components/customer-page-shell';
 import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { useMyStoreRequest, useSubmitStoreRequest } from '../hooks/use-customer-store-request';
+import { DocumentUploadBox } from '../components/document-upload-box';
+import { BusinessAddressFields } from '../components/business-address-fields';
+import { EMPTY_ADDRESS, isAddressComplete } from '../lib/business-address';
 
 function toSlug(text: string) {
   return text
@@ -19,17 +22,21 @@ function toSlug(text: string) {
 
 export function CustomerStoreRequestPage() {
   const { user } = useCustomerAuth();
+  const { slug: storeSlug } = useParams<{ slug: string }>();
+  // Opened without a store in the address: use the last store the customer visited, so the storefront menus show.
+  const lastStoreSlug = sessionStorage.getItem('last_store_slug');
   const { data: request, isLoading } = useMyStoreRequest();
   const submitRequest = useSubmitStoreRequest();
 
   const [storeName, setStoreName] = useState('');
   const [slug, setSlug] = useState('');
-  const [description, setDescription] = useState('');
+  const [businessAddress, setBusinessAddress] = useState(EMPTY_ADDRESS);
+  const [idProof, setIdProof] = useState<string | null>(null);
+  const [businessProof, setBusinessProof] = useState<string | null>(null);
   const [slugEdited, setSlugEdited] = useState(false);
 
   const nameId = useId();
   const slugId = useId();
-  const descId = useId();
 
   function handleNameChange(val: string) {
     setStoreName(val);
@@ -45,8 +52,8 @@ export function CustomerStoreRequestPage() {
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!storeName.trim() || !slug.trim()) {
-      toast.error('Store name and URL slug are required');
+    if (!storeName.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof) {
+      toast.error('Please fill in every field, including a 6-digit PIN code, and upload both documents');
       return;
     }
 
@@ -54,7 +61,15 @@ export function CustomerStoreRequestPage() {
       {
         store_name: storeName.trim(),
         slug: slug.trim(),
-        description: description.trim()
+        business_address: {
+          line1: businessAddress.line1.trim(),
+          landmark: businessAddress.landmark.trim(),
+          city: businessAddress.city.trim(),
+          state: businessAddress.state,
+          pincode: businessAddress.pincode
+        },
+        id_proof: idProof,
+        business_proof: businessProof
       },
       {
         onSuccess: (data) => {
@@ -67,9 +82,13 @@ export function CustomerStoreRequestPage() {
     );
   }
 
+  if (!storeSlug && lastStoreSlug) return <Navigate to={`/${lastStoreSlug}/store-request`} replace />;
+
+  const ordersPath = storeSlug ? `/${storeSlug}/orders` : '/customer/orders';
+
   const backLink = (
     <Link
-      to="/customer/orders"
+      to={ordersPath}
       className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900"
     >
       <ArrowLeft className="size-4" /> My orders
@@ -115,10 +134,10 @@ export function CustomerStoreRequestPage() {
                 <span className="text-slate-500">Storefront URL</span>
                 <span className="font-mono text-xs font-semibold text-sky-700">/{request.slug}</span>
               </div>
-              {request.description && (
+              {request.business_address && (
                 <div className="flex flex-col gap-1 border-b border-slate-100 pb-2">
-                  <span className="text-slate-500">Description / Note</span>
-                  <p className="text-xs text-slate-700">{request.description}</p>
+                  <span className="text-slate-500">Business address</span>
+                  <p className="text-xs text-slate-700">{request.business_address}</p>
                 </div>
               )}
               <div className="flex justify-between">
@@ -189,7 +208,7 @@ export function CustomerStoreRequestPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5">
+            <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
               <div className="flex flex-col gap-1.5">
                 <label htmlFor={nameId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
                   Store name <span className="text-rose-500">*</span>
@@ -224,37 +243,33 @@ export function CustomerStoreRequestPage() {
                 <p className="text-[11px] text-slate-500">This will be your public storefront link.</p>
               </div>
 
-              <div className="flex flex-col gap-1.5">
-                <label htmlFor={descId} className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                  Description / Business Category (Optional)
-                </label>
-                <textarea
-                  id={descId}
-                  rows={3}
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Tell the admin what products you plan to sell, your business category, or experience…"
-                  className="rounded-xl border border-slate-200 p-3 text-sm text-slate-900 transition-colors focus:border-sky-500 focus:outline-none placeholder:text-slate-400"
-                />
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <DocumentUploadBox label="ID proof" hint="Aadhaar, PAN, passport…" onChange={setIdProof} />
+                <DocumentUploadBox label="Business proof" hint="GST, licence, registration…" onChange={setBusinessProof} />
               </div>
+
+              <BusinessAddressFields value={businessAddress} onChange={setBusinessAddress} />
 
               {/* Applicant contact info */}
-              <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3.5 space-y-1.5 text-xs text-slate-600">
-                <p className="font-semibold text-slate-700">Applicant Details</p>
-                <p>Username: <strong className="font-medium text-slate-900">{user?.username}</strong></p>
-                <p>Email: <strong className="font-medium text-slate-900">{user?.email}</strong></p>
+              <div className="grid grid-cols-1 gap-x-4 gap-y-1 rounded-xl border border-slate-100 bg-slate-50/70 p-3 text-xs text-slate-600 sm:grid-cols-2">
+                <p className="font-semibold text-slate-700 sm:col-span-2">Applicant details</p>
+                <p className="truncate">Username: <strong className="font-medium text-slate-900">{user?.username}</strong></p>
                 {user?.phone_number && <p>Phone: <strong className="font-medium text-slate-900">{user.phone_number}</strong></p>}
+                <p className="truncate sm:col-span-2">Email: <strong className="font-medium text-slate-900">{user?.email}</strong></p>
               </div>
 
+              {/* The submit bar stays at the bottom of the screen, so it is always visible without scrolling */}
+              <div className="sticky bottom-0 z-10 -mx-6 -mb-6 rounded-b-2xl border-t border-slate-100 bg-white/95 px-6 py-3 backdrop-blur md:-mx-8 md:-mb-8 md:px-8">
               <Button
                 type="submit"
                 size="lg"
-                disabled={submitRequest.isPending || !storeName.trim() || !slug.trim()}
-                className="mt-2 bg-sky-600 hover:bg-sky-700 text-white font-semibold"
+                disabled={submitRequest.isPending || !storeName.trim() || !slug.trim() || !isAddressComplete(businessAddress) || !idProof || !businessProof}
+                className="w-full bg-sky-600 font-semibold text-white hover:bg-sky-700"
               >
                 <Store className="size-4 mr-2" />
                 {submitRequest.isPending ? 'Submitting request…' : 'Submit store request to admin'}
               </Button>
+              </div>
             </form>
           </div>
         )}
