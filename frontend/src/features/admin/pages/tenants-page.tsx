@@ -110,7 +110,7 @@ export function TenantsPage() {
 
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <SearchField value={search} onChange={setSearch} placeholder="Search store or owner" className="md:w-80" />
-        <TenantSortSelect value={sort} onChange={setSort} />
+        <div className="flex items-center gap-2"><span className="hidden text-sm text-slate-500 md:inline">Sort by</span><TenantSortSelect value={sort} onChange={setSort} /></div>
       </div>
 
       {/* Bulk action toolbar when stores are selected */}
@@ -168,6 +168,8 @@ export function TenantsPage() {
             onToggleSelectAll={handleToggleSelectAll}
             isAllSelected={isAllSelected}
             isSomeSelected={isSomeSelected}
+            sort={sort}
+            onSortChange={setSort}
           />
 
           <PaginationBar page={page} totalPages={totalPages} pageSize={pageSize} start={start} end={end} total={visible.length} noun="stores" onPageChange={setPage} onPageSizeChange={setPageSize} />
