@@ -7,6 +7,7 @@ import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
 import { StorefrontHeader } from '@/features/storefront/components/storefront-header';
 import { StorefrontFooter } from '@/features/storefront/components/storefront-footer';
 import { StorefrontNotFound } from '@/features/storefront/components/storefront-not-found';
+import { PromotionBar } from '@/features/storefront/components/promotion-bar';
 
 export function StorefrontLayout() {
   const { slug } = useParams<{ slug: string }>();
@@ -19,9 +20,9 @@ export function StorefrontLayout() {
 
   if (isLoading) {
     return (
-      <div className="min-h-svh bg-slate-50/50 p-6 space-y-6">
-        <Skeleton className="h-16 w-full rounded-xl" />
-        <Skeleton className="h-64 w-full rounded-2xl" />
+      <div className="min-h-svh space-y-6 bg-slate-50 p-4 sm:p-6">
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-[340px] w-full rounded-3xl" />
       </div>
     );
   }
@@ -30,9 +31,10 @@ export function StorefrontLayout() {
 
   return (
     <CartProvider slug={slug!}>
-      <div className="flex min-h-svh flex-col bg-slate-50/60 font-sans text-slate-900">
+      <div className="flex min-h-svh flex-col bg-slate-50 font-sans text-slate-900">
+        <PromotionBar text={store.promotion_banner_text} />
         <StorefrontHeader store={store} slug={slug!} />
-        <main className="flex-1 animate-content-in pb-12"><Outlet /></main>
+        <main className="flex-1 animate-content-in pb-16"><Outlet /></main>
         <StorefrontFooter store={store} slug={slug!} />
       </div>
     </CartProvider>
