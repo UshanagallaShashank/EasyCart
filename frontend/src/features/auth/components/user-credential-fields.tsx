@@ -38,7 +38,7 @@ export function UserCredentialFields({
           type="tel"
           value={phone}
           onChange={(e) => onUpdate('phone_number', e.target.value)}
-          placeholder="Phone number"
+          placeholder={phonePlaceholder}
           required
           className="w-full text-xs h-10 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all placeholder:text-slate-400"
         />

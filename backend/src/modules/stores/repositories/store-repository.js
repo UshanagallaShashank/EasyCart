@@ -53,7 +53,11 @@ export async function find_store_by_slug(slug) {
 
 export async function save_store(store) {
   if (DB_PROVIDER === 'supabase') {
-    const { data, error } = await get_supabase().from('stores').insert([store]).select().single();
+    const { promotion_banner_text, ...supaStore } = store;
+    if (promotion_banner_text) {
+      promotion_banner_fallback.set(store.tenant_id, promotion_banner_text);
+    }
+    const { data, error } = await get_supabase().from('stores').insert([supaStore]).select().single();
     if (error) throw error;
     return attach_fallback_fields(data);
   }

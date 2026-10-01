@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -30,7 +31,7 @@ export function CreateCouponDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>New coupon</Button>
+        <Button size="lg"><Plus /> New coupon</Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit}>

@@ -3,11 +3,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState } from '@/components/empty-state';
+import { ConfirmDialog } from '@/components/confirm-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
 import { useCoupons } from '../hooks/use-coupons';
 import { useSetCouponActive } from '../hooks/use-set-coupon-active';
 import { useDeleteCoupon } from '../hooks/use-delete-coupon';
 import { ApiError } from '@/shared/api/api-error';
+import { formatMoney } from '@/features/orders/lib/order-rules';
 import type { Coupon } from '../types/coupon-types';
 
 function describeCoupon(coupon: Coupon) {
@@ -16,7 +19,7 @@ function describeCoupon(coupon: Coupon) {
     isExpired,
     status: isExpired ? 'expired' : coupon.is_active ? 'active' : 'inactive',
     tone: (isExpired ? 'danger' : coupon.is_active ? 'success' : 'neutral') as 'danger' | 'success' | 'neutral',
-    discount: coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : `Rs. ${coupon.discount_value.toFixed(2)}`
+    discount: coupon.discount_type === 'percent' ? `${coupon.discount_value}%` : formatMoney(coupon.discount_value)
   };
 }
 
@@ -56,14 +59,17 @@ export function CouponTable() {
         >
           {isExpired ? 'Expired' : coupon.is_active ? 'Deactivate' : 'Activate'}
         </Button>
-        <Button variant="destructive" size="sm" onClick={() => handleDelete(coupon.id)}>
-          Delete
-        </Button>
+        <ConfirmDialog
+          title={`Delete coupon ${coupon.code}?`}
+          description="Customers will no longer be able to use this code. This can't be undone."
+          onConfirm={() => handleDelete(coupon.id)}
+          trigger={<Button variant="destructive" size="sm">Delete</Button>}
+        />
       </>
     );
   }
 
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
+  if (isLoading) return <Skeleton className="h-40 w-full rounded-2xl" />;
   if (!coupons?.length) return <EmptyState message="No coupons yet." />;
 
   return (
@@ -75,7 +81,7 @@ export function CouponTable() {
           return (
             <li key={coupon.id} className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs">
               <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-sm font-semibold">{coupon.code}</span>
+                <span className="rounded-md border border-dashed border-slate-300 bg-slate-50 px-2 py-0.5 font-mono text-sm font-semibold">{coupon.code}</span>
                 <Badge className={STATUS_TONE_CLASSNAME[info.tone]}>{info.status}</Badge>
               </div>
               <div className="mt-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
@@ -91,7 +97,7 @@ export function CouponTable() {
       </ul>
 
       {/* Tablets and larger: table */}
-      <div className="hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white px-2 shadow-xs md:block">
         <Table>
           <TableHeader>
             <TableRow>
