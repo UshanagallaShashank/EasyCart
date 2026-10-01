@@ -13,6 +13,20 @@ export function reactivateTenant(id: string): Promise<{ tenant: AdminTenant }> {
   return apiRequest(`/admin/tenants/${id}/reactivate`, { method: 'POST' });
 }
 
+export function bulkSuspendTenants(ids: string[]): Promise<{ success: boolean; count: number }> {
+  return apiRequest('/admin/tenants/bulk-suspend', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
+  });
+}
+
+export function bulkReactivateTenants(ids: string[]): Promise<{ success: boolean; count: number }> {
+  return apiRequest('/admin/tenants/bulk-reactivate', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
+  });
+}
+
 export function getTenantDetail(id: string): Promise<AdminTenantDetail> {
   return apiRequest(`/admin/tenants/${id}`);
 }

@@ -2,7 +2,13 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { TenantSort } from '../hooks/use-tenant-list-filter';
 
-const SORT_LABELS: Record<TenantSort, string> = { newest: 'Newest first', oldest: 'Oldest first', name: 'Name A–Z' };
+const SORT_LABELS: Record<TenantSort, string> = {
+  newest: 'Newest first',
+  oldest: 'Oldest first',
+  name: 'Name A–Z',
+  revenue: 'Highest revenue',
+  customers: 'Most customers'
+};
 
 export function TenantSortSelect({ value, onChange }: { value: TenantSort; onChange(sort: TenantSort): void }) {
   return (
