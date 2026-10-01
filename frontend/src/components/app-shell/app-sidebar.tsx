@@ -1,8 +1,8 @@
-// Shared light sidebar used by the store owner dashboard and the platform admin console.
 import { Link } from 'react-router-dom';
 import { LogOut } from 'lucide-react';
 import { useAuth } from '@/shared/auth/auth-context';
 import { SidebarItem } from './sidebar-item';
+import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 import type { NavSection } from './nav-types';
 
 interface AppSidebarProps {
@@ -33,7 +33,20 @@ export function AppSidebar({ title, homeTo, sections, ariaLabel, onNavigate }: A
       <div className="safe-bottom flex items-center gap-3 border-t border-slate-200/80 p-4">
         <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-sky-100 text-sm font-bold text-sky-700">{user?.username?.charAt(0).toUpperCase() ?? '?'}</span>
         <div className="min-w-0 flex-1"><p className="truncate text-sm font-semibold text-slate-900">{user?.username}</p><p className="truncate text-xs text-slate-500">{user?.email}</p></div>
-        <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-4" /></button>
+        <LogoutConfirmDialog
+          role={user?.role === 'platform_admin' ? 'admin' : 'owner'}
+          onConfirm={logout}
+          trigger={
+            <button
+              type="button"
+              aria-label="Log out"
+              title="Log out"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+            >
+              <LogOut className="size-4" />
+            </button>
+          }
+        />
       </div>
     </div>
   );
