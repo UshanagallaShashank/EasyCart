@@ -11,7 +11,10 @@ import {
   handle_list_store_requests,
   handle_approve_store_request,
   handle_reject_store_request,
-  handle_get_tenant_detail
+  handle_get_tenant_detail,
+  handle_list_admin_notifications,
+  handle_read_admin_notification,
+  handle_mark_all_admin_notifications_read
 } from '../controllers/admin-controller.js';
 
 export const admin_router = Router();
@@ -29,3 +32,6 @@ admin_router.post('/admin/tenants/bulk-suspend', admin_only, handle_bulk_suspend
 admin_router.post('/admin/tenants/bulk-reactivate', admin_only, handle_bulk_reactivate_tenants);
 admin_router.post('/admin/tenants/:id/suspend', admin_only, handle_suspend_tenant);
 admin_router.post('/admin/tenants/:id/reactivate', admin_only, handle_reactivate_tenant);
+admin_router.get('/admin/notifications', admin_only, handle_list_admin_notifications);
+admin_router.patch('/admin/notifications/:id/read', admin_only, handle_read_admin_notification);
+admin_router.post('/admin/notifications/mark-all-read', admin_only, handle_mark_all_admin_notifications_read);
