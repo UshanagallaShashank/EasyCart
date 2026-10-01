@@ -1,18 +1,48 @@
-// Name and phone number inputs shared by merchant and customer registration.
+// Username and phone number input fields
 import { User, Phone } from 'lucide-react';
-import { AuthTextField } from './auth-text-field';
 
 interface Props {
   username: string;
   phone: string;
   onUpdate: (key: 'username' | 'phone_number', val: string) => void;
+  usernamePlaceholder?: string;
+  phonePlaceholder?: string;
 }
 
-export function UserCredentialFields({ username, phone, onUpdate }: Props) {
+export function UserCredentialFields({
+  username,
+  phone,
+  onUpdate,
+  usernamePlaceholder = 'Username',
+  phonePlaceholder = 'Phone number'
+}: Props) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
-      <AuthTextField id="username" label="Your name" icon={User} value={username} onChange={(v) => onUpdate('username', v)} placeholder="Asha Rao" autoComplete="name" />
-      <AuthTextField id="phone_number" label="Phone" icon={Phone} type="tel" value={phone} onChange={(v) => onUpdate('phone_number', v)} placeholder="98765 43210" autoComplete="tel" />
+    <div className="space-y-2.5">
+      <div className="relative flex items-center">
+        <User className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+        <input
+          id="username"
+          type="text"
+          value={username}
+          onChange={(e) => onUpdate('username', e.target.value)}
+          placeholder={usernamePlaceholder}
+          required
+          className="w-full text-xs h-10 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all placeholder:text-slate-400"
+        />
+      </div>
+
+      <div className="relative flex items-center">
+        <Phone className="absolute left-3.5 w-4 h-4 text-slate-400 pointer-events-none" />
+        <input
+          id="phone_number"
+          type="tel"
+          value={phone}
+          onChange={(e) => onUpdate('phone_number', e.target.value)}
+          placeholder={phonePlaceholder}
+          required
+          className="w-full text-xs h-10 pl-10 pr-3.5 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all placeholder:text-slate-400"
+        />
+      </div>
     </div>
   );
 }

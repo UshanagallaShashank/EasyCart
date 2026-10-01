@@ -18,10 +18,10 @@ export function AdminLoginForm() {
   }
 
   return (
-    <form onSubmit={handle_submit} className="flex flex-col gap-4">
+    <form onSubmit={handle_submit} className="flex flex-col gap-3.5">
       <EmailField value={email} onChange={setEmail} />
       <PasswordField value={password} onChange={setPassword} />
-      <AuthSubmitButton isPending={login.isPending} pendingLabel="Signing in…">Sign in to console</AuthSubmitButton>
+      <AuthSubmitButton isPending={login.isPending} pendingLabel="Signing in…">Sign In</AuthSubmitButton>
     </form>
   );
 }

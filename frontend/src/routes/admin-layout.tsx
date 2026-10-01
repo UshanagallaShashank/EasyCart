@@ -1,7 +1,8 @@
-// Platform admin layout: sticky top bar with brand, signed-in admin, and log out; scrollable content.
+// Platform admin layout: top bar with brand, signed-in admin, log out, and section tabs; scrollable content.
 import { Outlet } from 'react-router-dom';
 import { LogOut, ShieldCheck } from 'lucide-react';
 import { useAuth } from '@/shared/auth/auth-context';
+import { AdminNav } from './admin-nav';
 
 export function AdminLayout() {
   const { user, logout } = useAuth();
@@ -21,6 +22,7 @@ export function AdminLayout() {
             </button>
           </div>
         </div>
+        <AdminNav />
       </header>
       <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
         <div className="mx-auto w-full max-w-7xl"><Outlet /></div>
