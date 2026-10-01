@@ -6,6 +6,7 @@ import { ApiError } from '@/shared/api/api-error';
 import type { RegisterPayload } from '../types/auth-types';
 import { StoreIdentityFields } from './store-identity-fields';
 import { UserCredentialFields } from './user-credential-fields';
+import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from './email-field';
 import { PasswordField } from './password-field';
 import { PasswordStrengthBar } from './password-strength-bar';
@@ -30,9 +31,7 @@ export function RegisterForm() {
       <EmailField value={form.email} onChange={(v) => set('email', v)} />
       <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
       <PasswordStrengthBar password={form.password} />
-      <button type="submit" disabled={register.isPending} className="w-full h-10 mt-1 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] text-white text-xs font-semibold shadow-md shadow-sky-500/20 transition-all disabled:opacity-50">
-        {register.isPending ? 'Launching store…' : 'Create Store'}
-      </button>
+      <AuthSubmitButton isPending={register.isPending} pendingLabel="Launching store…" className="mt-1">Create Store</AuthSubmitButton>
       <SocialAuthButtons mode="sign up" />
     </form>
   );
