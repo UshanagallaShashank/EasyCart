@@ -27,7 +27,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <StoreIdentityFields storeName={form.store_name} slug={form.slug} onUpdate={set} />
-      <UserCredentialFields username={form.username} phone={form.phone_number} onUpdate={set} />
+      <UserCredentialFields username={form.username} phone={form.phone_number} onUpdate={set} usernamePlaceholder="Owner username" />
       <EmailField value={form.email} onChange={(v) => set('email', v)} />
       <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
       <PasswordStrengthBar password={form.password} />
