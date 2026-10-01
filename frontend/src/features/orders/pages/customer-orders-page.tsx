@@ -1,59 +1,68 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Home } from 'lucide-react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EmptyState } from '@/components/empty-state';
-import { getOrderStatusTone, getPaymentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import type { Order } from '../types/order-types';
 import { useMyOrders } from '../hooks/use-my-orders';
+import { CustomerPageShell } from '../components/customer-page-shell';
+import { CustomerOrderCard } from '../components/customer-order-card';
+
+type OrderFilter = 'all' | 'active' | 'completed' | 'cancelled';
+
+function matchesFilter(order: Order, filter: OrderFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'active') return order.status === 'pending' || order.status === 'confirmed';
+  if (filter === 'completed') return order.status === 'fulfilled';
+  return order.status === 'cancelled';
+}
 
 export function CustomerOrdersPage() {
   const { data: orders, isLoading } = useMyOrders();
+  const [filter, setFilter] = useState<OrderFilter>('all');
   // Read the last visited store slug so we can offer a "Go to Store" link
   const lastSlug = sessionStorage.getItem('last_store_slug');
 
+  const visibleOrders = (orders ?? []).filter((order) => matchesFilter(order, filter));
+
+  const storeLink = lastSlug && (
+    <Link
+      to={`/${lastSlug}`}
+      className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 transition-colors hover:text-sky-700"
+    >
+      <Home className="size-4" /> Go to Store
+    </Link>
+  );
+
   return (
-    <div className="flex flex-col gap-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl">My orders</h1>
-        {lastSlug && (
-          <Link
-            to={`/${lastSlug}`}
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-sky-600 hover:text-sky-700 transition-colors"
-          >
-            <Home className="size-4" /> Go to Store
-          </Link>
+    <CustomerPageShell title="My orders" description="Track, review or cancel your orders" actions={storeLink}>
+      <div className="flex flex-col gap-5">
+        <Tabs value={filter} onValueChange={(value) => setFilter(value as OrderFilter)}>
+          <TabsList>
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {isLoading ? (
+          <div className="flex flex-col gap-3">
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+            <Skeleton className="h-24 w-full rounded-2xl" />
+          </div>
+        ) : !visibleOrders.length ? (
+          <EmptyState message={filter === 'all' ? 'No orders yet.' : `No ${filter} orders.`} />
+        ) : (
+          <div className="flex flex-col gap-3">
+            {visibleOrders.map((order) => (
+              <CustomerOrderCard key={order.id} order={order} />
+            ))}
+          </div>
         )}
       </div>
-      {isLoading ? (
-        <p className="text-muted-foreground">Loading…</p>
-      ) : !orders?.length ? (
-        <EmptyState message="No orders yet." />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Order</TableHead>
-              <TableHead>Total</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Payment</TableHead>
-              <TableHead>Created</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id} className="hover:bg-secondary/30">
-                <TableCell>
-                  <Link to={`/customer/orders/${order.id}`} className="underline">#{order.id.slice(0, 8)}</Link>
-                </TableCell>
-                <TableCell className="tabular-nums">Rs. {order.total.toFixed(2)}</TableCell>
-                <TableCell><Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge></TableCell>
-                <TableCell><Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge></TableCell>
-                <TableCell>{new Date(order.created_at).toLocaleDateString()}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </div>
+    </CustomerPageShell>
   );
 }

@@ -14,11 +14,11 @@ export function StorefrontProductDetailPage() {
   if (isError || !product) return <p className="p-8 text-center text-slate-500">Product not found.</p>;
 
   return (
-    <div className="mx-auto max-w-5xl px-6 pt-6">
+    <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6 sm:pt-6">
       <Link to={`/${slug}/products`} className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-sky-600 mb-6 transition-colors">
         <ArrowLeft className="size-4" /> Back to Products
       </Link>
-      <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-8">
         <ProductDetailGallery image={product.images[0]} name={product.name} />
         <div className="flex flex-col justify-center">
           <span className="text-xs font-bold uppercase tracking-wider text-sky-600">Product Details</span>
