@@ -13,7 +13,7 @@ const SORT_LABELS: Record<TenantSort, string> = {
 export function TenantSortSelect({ value, onChange }: { value: TenantSort; onChange(sort: TenantSort): void }) {
   return (
     <Select value={value} onValueChange={(v) => onChange(v as TenantSort)}>
-      <SelectTrigger aria-label="Sort stores" className="!h-10 w-full rounded-xl bg-white md:w-40"><SelectValue /></SelectTrigger>
+      <SelectTrigger aria-label="Sort stores" className="!h-10 w-full rounded-xl bg-white md:w-44"><SelectValue /></SelectTrigger>
       <SelectContent>{(Object.keys(SORT_LABELS) as TenantSort[]).map((s) => <SelectItem key={s} value={s}>{SORT_LABELS[s]}</SelectItem>)}</SelectContent>
     </Select>
   );

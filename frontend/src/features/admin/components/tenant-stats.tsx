@@ -1,13 +1,14 @@
-// Headline counts across all stores on the platform.
-import { Store, CheckCircle2, Globe, Ban } from 'lucide-react';
+// Headline counts across all stores, using the same states as the filters: Live, Not published, Suspended.
+import { Store, CheckCircle2, EyeOff, Ban } from 'lucide-react';
+import { get_store_state } from '../lib/get-store-state';
 import type { AdminTenant } from '../types/admin-types';
 
 export function TenantStats({ tenants }: { tenants: AdminTenant[] }) {
   const stats = [
     { label: 'Stores', value: tenants.length, icon: Store, tone: 'bg-sky-50 text-sky-600' },
-    { label: 'Active', value: tenants.filter((t) => t.status === 'active').length, icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-600' },
-    { label: 'Published', value: tenants.filter((t) => t.is_published).length, icon: Globe, tone: 'bg-violet-50 text-violet-600' },
-    { label: 'Suspended', value: tenants.filter((t) => t.status === 'suspended').length, icon: Ban, tone: 'bg-rose-50 text-rose-600' }
+    { label: 'Live', value: tenants.filter((t) => get_store_state(t).label === 'live').length, icon: CheckCircle2, tone: 'bg-emerald-50 text-emerald-600' },
+    { label: 'Not published', value: tenants.filter((t) => get_store_state(t).label === 'not published').length, icon: EyeOff, tone: 'bg-amber-50 text-amber-600' },
+    { label: 'Suspended', value: tenants.filter((t) => get_store_state(t).label === 'suspended').length, icon: Ban, tone: 'bg-rose-50 text-rose-600' }
   ];
 
   return (
