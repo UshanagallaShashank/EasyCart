@@ -1,108 +1,53 @@
-import { toast } from 'sonner';
-import { Package } from 'lucide-react';
+// Products list: cards on phones, a table on larger screens, each row with stock state and actions.
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { EmptyState } from '@/components/empty-state';
-import { getStockTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
-import { useProducts } from '../hooks/use-products';
-import { useDeleteProduct } from '../hooks/use-delete-product';
-import { ProductFormDialog } from './product-form-dialog';
-import { AdjustStockDialog } from './adjust-stock-dialog';
-import { ApiError } from '@/shared/api/api-error';
+import { formatMoney } from '@/features/orders/lib/order-rules';
+import { ProductThumb } from './product-thumb';
+import { ProductStockLabel } from './product-stock-label';
+import { ProductVisibilityBadge } from './product-visibility-badge';
+import { ProductRowActions } from './product-row-actions';
 import type { Product } from '../types/product-types';
 
-function ProductImage({ product }: { product: Product }) {
-  if (product.images?.[0]) {
-    return <img src={product.images[0]} alt={product.name} className="size-12 shrink-0 rounded-lg border bg-muted/20 object-cover" />;
-  }
+function ProductIdentity({ product }: { product: Product }) {
   return (
-    <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-300">
-      <Package className="size-5" />
-    </span>
+    <div className="flex min-w-0 items-center gap-3">
+      <ProductThumb product={product} />
+      <div className="min-w-0">
+        <p className="truncate font-semibold text-slate-900">{product.name}</p>
+        <p className="truncate text-xs text-slate-500">{product.sku ? `SKU ${product.sku}` : 'No SKU'}{product.variants.length > 0 && ` · ${product.variants.length} variants`}</p>
+      </div>
+    </div>
   );
 }
 
-function LowStockBadge({ product }: { product: Product }) {
-  if (product.stock_quantity > product.low_stock_threshold) return null;
-  return <Badge className={STATUS_TONE_CLASSNAME[getStockTone(product.stock_quantity, product.low_stock_threshold)]}>Low stock</Badge>;
-}
-
-export function ProductTable() {
-  const { data: products, isLoading } = useProducts();
-  const remove = useDeleteProduct();
-
-  function handleDelete(id: string) {
-    remove.mutate(id, {
-      onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to delete product')
-    });
-  }
-
-  function renderActions(product: Product) {
-    return (
-      <>
-        <AdjustStockDialog product={product} trigger={<Button variant="outline" size="sm">Stock</Button>} />
-        <ProductFormDialog product={product} trigger={<Button variant="outline" size="sm">Edit</Button>} />
-        <Button variant="destructive" size="sm" onClick={() => handleDelete(product.id)}>
-          Delete
-        </Button>
-      </>
-    );
-  }
-
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>;
-  if (!products?.length) return <EmptyState message="No products yet." />;
-
+export function ProductTable({ products }: { products: Product[] }) {
   return (
     <>
-      {/* Phones: one card per product */}
       <ul className="flex flex-col gap-3 md:hidden">
-        {products.map((product) => (
-          <li key={product.id} className="rounded-xl border border-slate-200/80 bg-white p-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <ProductImage product={product} />
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-medium text-slate-900">{product.name}</p>
-                <p className="text-sm tabular-nums text-slate-600">Rs. {product.price.toFixed(2)}</p>
-              </div>
-              {!product.is_active && <Badge className="bg-secondary text-secondary-foreground">Hidden</Badge>}
+        {products.map((p) => (
+          <li key={p.id} className="rounded-2xl border border-slate-200/80 bg-white p-3 shadow-xs">
+            <div className="flex items-start justify-between gap-2"><ProductIdentity product={p} />{!p.is_active && <ProductVisibilityBadge isActive={false} />}</div>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-2">
+              <div className="flex items-center gap-3"><span className="font-semibold tabular-nums">{formatMoney(p.price)}</span><ProductStockLabel product={p} /></div>
+              <ProductRowActions product={p} />
             </div>
-            <div className="mt-3 flex items-center gap-2 text-sm text-slate-600">
-              <span className="tabular-nums">{product.stock_quantity} in stock</span>
-              <LowStockBadge product={product} />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">{renderActions(product)}</div>
           </li>
         ))}
       </ul>
-
-      {/* Tablets and larger: table */}
-      <div className="hidden md:block">
+      <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
         <Table>
           <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Image</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Active</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+            <TableRow className="bg-slate-50/70 hover:bg-slate-50/70">
+              <TableHead className="pl-5">Product</TableHead><TableHead>Price</TableHead><TableHead>Stock</TableHead><TableHead>Status</TableHead><TableHead className="pr-5 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.map((product) => (
-              <TableRow key={product.id} className="hover:bg-secondary/30">
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell><ProductImage product={product} /></TableCell>
-                <TableCell className="tabular-nums">Rs. {product.price.toFixed(2)}</TableCell>
-                <TableCell className="tabular-nums">
-                  {product.stock_quantity}
-                  <span className="ml-2"><LowStockBadge product={product} /></span>
-                </TableCell>
-                <TableCell>{product.is_active ? 'Yes' : 'No'}</TableCell>
-                <TableCell>
-                  <div className="flex flex-wrap justify-end gap-2">{renderActions(product)}</div>
-                </TableCell>
+            {products.map((p) => (
+              <TableRow key={p.id}>
+                <TableCell className="max-w-xs py-3 pl-5"><ProductIdentity product={p} /></TableCell>
+                <TableCell className="font-medium tabular-nums">{formatMoney(p.price)}</TableCell>
+                <TableCell><ProductStockLabel product={p} /></TableCell>
+                <TableCell><ProductVisibilityBadge isActive={p.is_active} /></TableCell>
+                <TableCell className="pr-5"><ProductRowActions product={p} /></TableCell>
               </TableRow>
             ))}
           </TableBody>
