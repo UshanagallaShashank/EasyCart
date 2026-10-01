@@ -1,5 +1,5 @@
 // Store list for platform admins: cards on phones, a table on larger screens.
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatusBadge } from '@/components/status-badge';
 import { getTenantStatusTone } from '@/lib/status-colors';

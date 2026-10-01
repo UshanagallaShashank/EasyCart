@@ -12,7 +12,7 @@ export function AnimatedNumber({ value, decimals = 0, prefix = '' }: AnimatedNum
   const [shown, setShown] = useState(0);
 
   useEffect(() => {
-    const controls = animate(0, value, { duration: 1.1, ease: 'easeOut', onUpdate: setShown });
+    const controls = animate(0, value, { duration: 0.5, ease: 'easeOut', onUpdate: setShown });
     return () => controls.stop();
   }, [value]);
 
