@@ -1,4 +1,3 @@
-// Customer storefront layout with unified header, footer, left sidebar pane, and store resolution.
 import { useParams, Outlet } from 'react-router-dom';
 import { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -46,3 +45,5 @@ export function StorefrontLayout() {
     </CartProvider>
   );
 }
+
+
