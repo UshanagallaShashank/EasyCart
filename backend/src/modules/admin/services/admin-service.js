@@ -5,6 +5,7 @@ import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repos
 import { find_users_by_ids, update_user_role_and_tenant } from '../../users/repositories/user-repository.js';
 import { orders_snapshot } from './admin-data-cache.js';
 import { platform_stats_cache } from './platform-stats-service.js';
+import { create_signed_document_url, read_request_details } from '../../stores/services/store-request-document-service.js';
 
 let cached_tenants = null;
 let cache_timestamp = 0;
@@ -104,26 +105,26 @@ export async function list_store_requests() {
   const all_tenants = await find_all_tenants();
   const requests = all_tenants.filter((t) => t.status === 'pending' || t.status === 'rejected');
   const owner_ids = requests.map((t) => t.owner_id);
-  const tenant_ids = requests.map((t) => t.id);
 
-  const [owners, stores] = await Promise.all([
-    find_users_by_ids(owner_ids),
-    find_stores_by_tenant_ids(tenant_ids)
-  ]);
-
+  const owners = await find_users_by_ids(owner_ids);
   const owner_by_id = new Map(owners.map((u) => [u.id, u]));
-  const store_by_tenant = new Map(stores.map((s) => [s.tenant_id, s]));
 
-  return requests.map((t) => {
+  // Private documents are shown to the admin through links that expire after an hour.
+  const details_list = await Promise.all(requests.map((t) => read_request_details(t.owner_id)));
+  const id_proof_urls = await Promise.all(details_list.map((details) => create_signed_document_url(details?.id_proof_path)));
+  const business_proof_urls = await Promise.all(details_list.map((details) => create_signed_document_url(details?.business_proof_path)));
+
+  return requests.map((t, index) => {
     const owner = owner_by_id.get(t.owner_id);
-    const store = store_by_tenant.get(t.id);
     return {
       id: t.id,
       name: t.name,
       slug: t.slug,
       status: t.status,
       created_at: t.created_at,
-      description: store?.promotion_banner_text ?? null,
+      business_address: details_list[index]?.business_address ?? null,
+      id_proof_url: id_proof_urls[index],
+      business_proof_url: business_proof_urls[index],
       customer: owner
         ? {
             id: owner.id,

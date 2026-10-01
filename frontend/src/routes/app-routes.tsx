@@ -71,6 +71,7 @@ export function AppRoutes() {
           <Route path="checkout" element={<CheckoutPage />} />
           <Route path="orders" element={<CustomerOrdersPage />} />
           <Route path="orders/:id" element={<CustomerOrderDetailPage />} />
+          <Route path="store-request" element={<CustomerStoreRequestPage />} />
         </Route>
       </Route>
     </Routes>
