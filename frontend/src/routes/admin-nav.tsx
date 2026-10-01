@@ -1,11 +1,12 @@
-// Section tabs for the platform admin console (Overview, Stores); scrolls sideways on phones.
+// Section tabs for the platform admin console (Overview, Stores, Users); scrolls sideways on phones.
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Store } from 'lucide-react';
+import { LayoutDashboard, Store, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const ADMIN_SECTIONS = [
   { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
-  { to: '/admin/stores', label: 'Stores', icon: Store, end: false }
+  { to: '/admin/stores', label: 'Stores', icon: Store, end: false },
+  { to: '/admin/users', label: 'Users', icon: Users, end: false }
 ];
 
 export function AdminNav() {
