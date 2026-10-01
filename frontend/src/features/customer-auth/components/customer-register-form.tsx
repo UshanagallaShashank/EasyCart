@@ -9,7 +9,6 @@ import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button'
 import { EmailField } from '@/features/auth/components/email-field';
 import { PasswordField } from '@/features/auth/components/password-field';
 import { PasswordStrengthBar } from '@/features/auth/components/password-strength-bar';
-import { SocialAuthButtons } from '@/features/auth/components/social-auth-buttons';
 
 const INIT: CustomerRegisterPayload = { username: '', email: '', password: '', phone_number: '' };
 
@@ -24,13 +23,12 @@ export function CustomerRegisterForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       <UserCredentialFields username={form.username} phone={form.phone_number} onUpdate={set} />
       <EmailField value={form.email} onChange={(v) => set('email', v)} />
-      <PasswordField value={form.password} onChange={(v) => set('password', v)} placeholder="Create password" />
+      <PasswordField value={form.password} onChange={(v) => set('password', v)} isNew />
       <PasswordStrengthBar password={form.password} />
-      <AuthSubmitButton isPending={register.isPending} pendingLabel="Creating account…" className="mt-1">Create Account</AuthSubmitButton>
-      <SocialAuthButtons mode="sign up" />
+      <AuthSubmitButton isPending={register.isPending} pendingLabel="Creating account…" className="mt-1">Create account</AuthSubmitButton>
     </form>
   );
 }

@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, Store, Truck } from 'lucide-react';
 import { SearchField } from '@/components/search-field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
-import { getOrderStatusTone, getPaymentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import { getOrderStatusTone, getPaymentStatusTone } from '@/lib/status-colors';
 import { useOrders } from '../hooks/use-orders';
 import { formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
 import { OrderFilterTabs, type OrderFilter } from './order-filter-tabs';
@@ -82,8 +82,8 @@ export function OrderTable() {
                     </TableCell>
                     <TableCell className="hidden text-slate-500 sm:table-cell">{order.items.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
                     <TableCell className="font-medium tabular-nums">{formatMoney(order.total)}</TableCell>
-                    <TableCell><Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge></TableCell>
-                    <TableCell className="hidden md:table-cell"><Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge></TableCell>
+                    <TableCell><StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} /></TableCell>
+                    <TableCell className="hidden md:table-cell"><StatusBadge tone={getPaymentStatusTone(order.payment_status)} value={order.payment_status} /></TableCell>
                     <TableCell className="hidden text-slate-500 sm:table-cell">{formatOrderDate(order.created_at)}</TableCell>
                     <TableCell>
                       <ChevronRight className="size-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-sky-500" />

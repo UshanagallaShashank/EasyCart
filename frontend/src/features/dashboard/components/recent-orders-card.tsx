@@ -1,9 +1,9 @@
 // The five newest orders, linking to each order's page.
 import { Link } from 'react-router-dom';
 import { ArrowRight, ClipboardList } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/status-badge';
 import { EmptyState } from '@/components/empty-state';
-import { getOrderStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import { getOrderStatusTone } from '@/lib/status-colors';
 import { formatMoney, formatOrderDate, shortOrderId } from '@/features/orders/lib/order-rules';
 import type { Order } from '@/features/orders/types/order-types';
 
@@ -35,7 +35,7 @@ export function RecentOrdersCard({ orders }: { orders: Order[] | undefined }) {
                   <p className="text-xs text-slate-400">{formatOrderDate(order.created_at)} · {order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge>
+                  <StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} />
                   <span className="w-20 text-right sm:w-28 text-sm font-semibold tabular-nums">{formatMoney(order.total)}</span>
                 </div>
               </Link>
