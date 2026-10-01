@@ -8,7 +8,7 @@ export function AdminLayout() {
   const { pathname } = useLocation();
 
   return (
-    <div className="flex h-svh w-full overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 flex overflow-hidden bg-slate-50">
       <aside className="hidden h-full w-64 shrink-0 lg:block"><AdminNavContent /></aside>
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AdminHeader />
