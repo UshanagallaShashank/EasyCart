@@ -83,6 +83,27 @@ export function TenantsPage() {
 
       <FilterPills<TenantFilter> options={options} value={filter} onChange={setFilter} />
 
+      {(tenants ?? []).filter((t) => t.status === 'pending').length > 0 && filter !== 'requests' && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50/90 p-3.5 text-xs text-amber-900 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <span className="flex size-7 items-center justify-center rounded-lg bg-amber-500 text-white font-bold">
+              {(tenants ?? []).filter((t) => t.status === 'pending').length}
+            </span>
+            <span>
+              <strong>Customer Store Requests:</strong> There {(tenants ?? []).filter((t) => t.status === 'pending').length === 1 ? 'is 1 store request' : `are ${(tenants ?? []).filter((t) => t.status === 'pending').length} store requests`} awaiting admin approval.
+            </span>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setFilter('requests')}
+            className="h-7 border-amber-300 bg-white text-xs font-semibold text-amber-950 hover:bg-amber-100"
+          >
+            Review requests
+          </Button>
+        </div>
+      )}
+
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <SearchField value={search} onChange={setSearch} placeholder="Search store or owner" className="md:w-80" />
         <TenantSortSelect value={sort} onChange={setSort} />
