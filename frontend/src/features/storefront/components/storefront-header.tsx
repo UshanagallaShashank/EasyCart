@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import type { PublicStore } from '../types/storefront-types';
 import { CustomerProfileModal } from './customer-profile-modal';
+import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 
 export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: string }) {
   const { lines } = useCart();
@@ -25,6 +26,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
   const count = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   const [profileOpen, setProfileOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   function handleLogout() {
     logout();
@@ -35,6 +37,12 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
   return (
     <>
       <CustomerProfileModal open={profileOpen} onOpenChange={setProfileOpen} slug={slug} />
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        role="customer"
+        onConfirm={handleLogout}
+      />
       <motion.header
         initial={{ y: -64, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -158,7 +166,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                     <DropdownMenuItem
                       variant="destructive"
                       className="cursor-pointer gap-2 py-2 px-2 text-red-600 focus:text-red-700 focus:bg-red-50"
-                      onSelect={handleLogout}
+                      onSelect={() => setShowLogoutConfirm(true)}
                     >
                       <LogOut className="size-4" />
                       <span>Log out</span>
