@@ -22,24 +22,24 @@ export function CartPage() {
   });
 
   return (
-    <div className="mx-auto flex max-w-4xl flex-col gap-6 px-4 pt-4 sm:px-6 sm:pt-6">
-      <h1 className="font-heading text-2xl font-bold text-slate-900 tracking-tight sm:text-3xl">Your Shopping Cart</h1>
+    <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 pt-6 sm:px-6 sm:pt-10">
+      <h1 className="font-heading text-2xl font-bold tracking-tight text-slate-900 sm:text-4xl">Your cart</h1>
       {lines.length === 0 ? (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-16 text-center bg-white shadow-2xs"
+          className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-20 text-center"
         >
           <ShoppingBag className="size-12 text-sky-300 mb-3 animate-float-slow" />
           <p className="text-base font-semibold text-slate-800">Your cart is empty</p>
-          <p className="text-xs text-slate-500 mb-4">Discover our catalog and add items to your cart.</p>
-          <Button asChild className="bg-sky-600 hover:bg-sky-500 text-white">
+          <p className="mb-5 text-sm text-slate-500">Discover our catalog and add items to your cart.</p>
+          <Button asChild size="lg" className="h-11 rounded-full bg-slate-900 px-6 text-white hover:bg-slate-800">
             <Link to={`/${slug}/products`}>Browse Products <ArrowRight className="ml-1.5 size-4" /></Link>
           </Button>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-3 lg:gap-8">
           <div className="flex flex-col gap-3 md:col-span-2">
             <AnimatePresence initial={false}>
               {enrichedLines.map((line) => (
