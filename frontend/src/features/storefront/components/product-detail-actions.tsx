@@ -1,38 +1,38 @@
-// Variant selection, quantity controls, and cart submission on product detail page.
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { ShoppingCart } from 'lucide-react';
+// Variant selection, quantity stepper, and add-to-cart / buy-now buttons on the product page.
+import { useNavigate } from 'react-router-dom';
+import { ShoppingBag, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCart } from '@/features/cart/cart-context';
+import { QuantityStepper } from '@/components/quantity-stepper';
+import { VariantPicker } from './variant-picker';
+import { format_price } from '@/lib/format-price';
+import { useProductPurchase } from '../hooks/use-product-purchase';
 import type { Product } from '@/features/products/types/product-types';
 
-export function ProductDetailActions({ product }: { product: Product }) {
-  const { addItem } = useCart();
-  const [variantLabel, setVariantLabel] = useState<string | undefined>();
-  const [quantity, setQuantity] = useState(1);
-  const variant = product.variants.find((v) => v.label === variantLabel);
-  const price = variant?.price ?? product.price;
+export function ProductDetailActions({ product, slug }: { product: Product; slug: string }) {
+  const navigate = useNavigate();
+  const { variantLabel, select_variant, quantity, setQuantity, price, available, add_to_cart } = useProductPurchase(product);
+  const soldOut = available !== undefined && available <= 0;
 
-  function handle_add_cart() {
-    addItem({ product_id: product.id, name: product.name, price, quantity, variant_label: variantLabel, image: product.images[0] });
-    toast.success(`Added ${product.name} to cart`);
+  function handle_buy_now() {
+    add_to_cart();
+    navigate(`/${slug}/cart`);
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {product.variants.length > 0 && (
-        <Select value={variantLabel} onValueChange={setVariantLabel}>
-          <SelectTrigger className="w-56 bg-white"><SelectValue placeholder="Select variant" /></SelectTrigger>
-          <SelectContent>{product.variants.map((v) => <SelectItem key={v.label} value={v.label}>{v.label} (Rs. {v.price.toFixed(2)})</SelectItem>)}</SelectContent>
-        </Select>
-      )}
+    <div className="flex flex-col gap-5">
+      <p className="font-heading text-2xl font-semibold text-slate-900 tabular-nums sm:text-3xl">{format_price(price)}</p>
+      {product.variants.length > 0 && <VariantPicker variants={product.variants} value={variantLabel} onChange={select_variant} />}
       <div className="flex items-center gap-3">
-        <input type="number" min={1} value={quantity} onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))} className="w-20 rounded-md border border-slate-200 px-3 py-2 text-sm bg-white" />
-        <Button onClick={handle_add_cart} className="bg-sky-600 hover:bg-sky-500 text-white font-semibold">
-          <ShoppingCart className="mr-2 size-4" /> Add to cart
+        <QuantityStepper value={quantity} onChange={setQuantity} max={available} />
+        <Button size="lg" disabled={soldOut} onClick={add_to_cart} className="h-11 min-w-0 flex-1 rounded-full bg-slate-900 text-base font-semibold text-white hover:bg-slate-800">
+          <ShoppingBag className="size-5" /> {soldOut ? 'Sold out' : 'Add to cart'}
         </Button>
       </div>
+      {!soldOut && (
+        <Button size="lg" variant="outline" onClick={handle_buy_now} className="h-12 rounded-full text-base font-semibold">
+          <Zap className="size-5 text-[#F58220]" /> Buy now
+        </Button>
+      )}
     </div>
   );
 }
