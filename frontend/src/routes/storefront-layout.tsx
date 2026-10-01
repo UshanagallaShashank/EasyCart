@@ -1,6 +1,7 @@
 // Customer storefront layout with unified header, footer, left sidebar pane, and store resolution.
 import { useParams, Outlet } from 'react-router-dom';
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import { PageLoading } from '@/components/page-loading';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CartProvider } from '@/features/cart/cart-provider';
 import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
@@ -37,7 +38,9 @@ export function StorefrontLayout() {
           <StorefrontSidebar store={store} slug={slug!} />
           <div className="flex flex-1 flex-col min-w-0">
             <main className="flex-1 animate-content-in pb-12">
-              <Outlet />
+              <Suspense fallback={<PageLoading />}>
+                <Outlet />
+              </Suspense>
             </main>
             <StorefrontFooter store={store} slug={slug!} />
           </div>

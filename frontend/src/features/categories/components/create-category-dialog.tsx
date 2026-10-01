@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -26,7 +27,7 @@ export function CreateCategoryDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>New category</Button>
+        <Button size="lg"><Plus /> New category</Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit}>

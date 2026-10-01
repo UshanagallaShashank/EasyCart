@@ -1,13 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Search, Store, Truck } from 'lucide-react';
+import { ChevronRight, Store, Truck } from 'lucide-react';
+import { SearchField } from '@/components/search-field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { StatusBadge } from '@/components/status-badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
-import { getOrderStatusTone, getPaymentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import { getOrderStatusTone, getPaymentStatusTone } from '@/lib/status-colors';
 import { useOrders } from '../hooks/use-orders';
 import { formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
+import { OrderCard } from './order-card';
 import { OrderFilterTabs, type OrderFilter } from './order-filter-tabs';
 
 export function OrderTable() {
@@ -43,21 +45,17 @@ export function OrderTable() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <OrderFilterTabs value={filter} counts={counts} onChange={setFilter} />
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search order ID"
-            className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs outline-none transition-colors placeholder:text-slate-400 focus:border-sky-400 md:w-56"
-          />
-        </div>
+        <SearchField value={search} onChange={setSearch} placeholder="Search order ID" />
       </div>
 
       {!visibleOrders.length ? (
         <EmptyState message={allOrders.length ? 'No orders match your filter.' : 'No orders yet.'} />
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+        <>
+        <div className="flex flex-col gap-3 md:hidden">
+          {visibleOrders.map((order) => <OrderCard key={order.id} order={order} />)}
+        </div>
+        <div className="hidden overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs md:block">
           <Table>
             <TableHeader>
               <TableRow className="bg-slate-50/70">
@@ -89,8 +87,8 @@ export function OrderTable() {
                     </TableCell>
                     <TableCell className="hidden text-slate-500 sm:table-cell">{order.items.reduce((sum, item) => sum + item.quantity, 0)}</TableCell>
                     <TableCell className="font-medium tabular-nums">{formatMoney(order.total)}</TableCell>
-                    <TableCell><Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge></TableCell>
-                    <TableCell className="hidden md:table-cell"><Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge></TableCell>
+                    <TableCell><StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} /></TableCell>
+                    <TableCell className="hidden md:table-cell"><StatusBadge tone={getPaymentStatusTone(order.payment_status)} value={order.payment_status} /></TableCell>
                     <TableCell className="hidden text-slate-500 sm:table-cell">{formatOrderDate(order.created_at)}</TableCell>
                     <TableCell>
                       <ChevronRight className="size-4 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-sky-500" />
@@ -101,6 +99,7 @@ export function OrderTable() {
             </TableBody>
           </Table>
         </div>
+        </>
       )}
     </div>
   );

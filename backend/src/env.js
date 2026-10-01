@@ -12,3 +12,8 @@ export const DB_PROVIDER = process.env.DB_PROVIDER || 'mongodb';
 export const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/easycart';
 export const SUPABASE_URL = process.env.SUPABASE_URL || '';
 export const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+
+// Passcode required to create a platform admin via POST /api/admin/register. Empty disables admin sign-up.
+export function get_admin_signup_passcode() {
+  return process.env.ADMIN_SIGNUP_PASSCODE || '';
+}
