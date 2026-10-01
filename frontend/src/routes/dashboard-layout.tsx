@@ -8,7 +8,7 @@ export function DashboardLayout() {
   const { pathname } = useLocation();
 
   return (
-    <div className="flex h-svh w-full overflow-hidden bg-slate-50">
+    <div className="fixed inset-0 flex overflow-hidden bg-slate-50">
       <DashboardNav />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <DashboardHeader />
