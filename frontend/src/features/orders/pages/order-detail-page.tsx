@@ -2,12 +2,13 @@ import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, MapPin, Store as StoreIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/status-badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { PageHeader } from '@/components/page-header';
 import { getOrderStatusTone, getPaymentStatusTone, getFulfillmentStatusTone } from '@/lib/status-colors';
 import { useOrder } from '../hooks/use-order';
 import { OrderStatusControls } from '../components/order-status-controls';
 import { OrderProgress } from '../components/order-progress';
+import { OrderItemsList } from '../components/order-items-list';
+import { OrderNextStep } from '../components/order-next-step';
 import { formatMoney, formatOrderDate } from '../lib/order-rules';
 
 export function OrderDetailPage() {
@@ -48,8 +49,10 @@ export function OrderDetailPage() {
             {`Order #${order.id.slice(0, 8)}`}
           </span>
         }
-        description="Review items, update status, and manage fulfillment."
-      />
+        description={`Placed ${formatOrderDate(order.created_at)} · ${order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}`}
+      >
+        <OrderNextStep order={order} />
+      </PageHeader>
       <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="mx-auto grid w-full max-w-7xl gap-5 lg:grid-cols-3">
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
@@ -62,30 +65,9 @@ export function OrderDetailPage() {
               <OrderStatusControls order={order} />
             </div>
 
-            <div className="overflow-x-auto rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
               <h2 className="mb-2 text-sm font-semibold text-slate-900">Items</h2>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Product</TableHead>
-                    <TableHead>Variant</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Qty</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.items.map((item, i) => (
-                    <TableRow key={i} className="hover:bg-sky-50/40">
-                      <TableCell className="font-medium">{item.name}</TableCell>
-                      <TableCell>{item.variant_label ?? '—'}</TableCell>
-                      <TableCell className="tabular-nums">{formatMoney(item.price)}</TableCell>
-                      <TableCell className="tabular-nums">{item.quantity}</TableCell>
-                      <TableCell className="text-right font-medium tabular-nums">{formatMoney(item.price * item.quantity)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <OrderItemsList items={order.items} />
             </div>
           </div>
 
