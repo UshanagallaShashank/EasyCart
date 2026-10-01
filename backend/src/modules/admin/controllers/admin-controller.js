@@ -140,7 +140,7 @@ export async function handle_read_admin_notification(req, res, next) {
 export async function handle_mark_all_admin_notifications_read(req, res, next) {
   try {
     const { ids } = req.body || {};
-    const result = mark_all_admin_notifications_read(ids || []);
+    const result = await mark_all_admin_notifications_read(ids || []);
     res.status(200).json(result);
   } catch (err) {
     next(err);
