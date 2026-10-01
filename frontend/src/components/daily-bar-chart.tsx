@@ -10,9 +10,10 @@ interface DailyBarChartProps {
   headline: string;
   days: DayBucket[];
   describe(day: DayBucket): { value: string; detail: string };
+  highlightLast?: boolean;
 }
 
-export function DailyBarChart({ title, headline, days, describe }: DailyBarChartProps) {
+export function DailyBarChart({ title, headline, days, describe, highlightLast = true }: DailyBarChartProps) {
   const peak = Math.max(...days.map((d) => d.value));
   const max = peak > 0 ? get_nice_max(peak) : 1;
   const ticks = Number.isInteger(max / 2) ? [max, max / 2, 0] : [max, 0];
@@ -30,7 +31,7 @@ export function DailyBarChart({ title, headline, days, describe }: DailyBarChart
             {ticks.map((t) => <div key={t} className="h-px bg-slate-100" />)}
           </div>
           <div className="relative flex flex-1 gap-0.5 sm:gap-2">
-            {days.map((d, i) => <DailyBarChartBar key={d.key} day={d} max={max} isToday={i === days.length - 1} describe={describe} />)}
+            {days.map((d, i) => <DailyBarChartBar key={d.key} day={d} max={max} isToday={highlightLast && i === days.length - 1} describe={describe} />)}
           </div>
           <div className="flex h-6 gap-0.5 pt-1.5 sm:gap-2" aria-hidden>
             {days.map((d) => <span key={d.key} className="flex min-w-0 flex-1 justify-center text-[11px] whitespace-nowrap text-slate-500">{d.label}</span>)}
