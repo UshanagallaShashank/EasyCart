@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/api/api-client';
-import type { RegisterPayload, LoginPayload, RegisterResponse, LoginResponse, AdminRegisterPayload } from '../types/auth-types';
+import type { RegisterPayload, LoginPayload, RegisterResponse, LoginResponse } from '../types/auth-types';
 
 export function registerOwner(payload: RegisterPayload): Promise<RegisterResponse> {
   return apiRequest('/register', { method: 'POST', body: JSON.stringify(payload) });
@@ -7,8 +7,4 @@ export function registerOwner(payload: RegisterPayload): Promise<RegisterRespons
 
 export function loginOwner(payload: LoginPayload): Promise<LoginResponse> {
   return apiRequest('/login', { method: 'POST', body: JSON.stringify(payload) });
-}
-
-export function registerAdmin(payload: AdminRegisterPayload): Promise<LoginResponse> {
-  return apiRequest('/admin/register', { method: 'POST', body: JSON.stringify(payload) });
 }
