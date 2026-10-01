@@ -178,4 +178,51 @@ describe('Checkout with coupon', () => {
     expect(response.body.order.discount_amount).toBe(15);
     expect(response.body.order.total).toBe(85);
   });
+
+  it('validates an active coupon via the store validation endpoint', async () => {
+    const { slug, owner_token } = await setup_published_store_with_product(app, 100);
+    await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${owner_token}`)
+      .send({ code: 'CHECKME', discount_type: 'flat', discount_value: 20 });
+
+    const response = await request(app)
+      .post(`/api/stores/${slug}/coupons/validate`)
+      .send({ code: 'checkme' });
+    expect(response.status).toBe(200);
+    expect(response.body.valid).toBe(true);
+    expect(response.body.coupon.code).toBe('CHECKME');
+    expect(response.body.coupon.discount_type).toBe('flat');
+    expect(response.body.coupon.discount_value).toBe(20);
+  });
+
+  it('rejects validation of an expired coupon with 400', async () => {
+    const { slug, owner_token } = await setup_published_store_with_product(app, 100);
+    const pastDate = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    await request(app)
+      .post('/api/coupons')
+      .set('Authorization', `Bearer ${owner_token}`)
+      .send({ code: 'OLDCODE', discount_type: 'flat', discount_value: 10, expires_at: pastDate });
+
+    const response = await request(app)
+      .post(`/api/stores/${slug}/coupons/validate`)
+      .send({ code: 'OLDCODE' });
+    expect(response.status).toBe(400);
+    expect(response.body.error).toContain('Coupon has expired');
+  });
+
+  it('rejects validation of an unknown or missing code', async () => {
+    const { slug } = await setup_published_store_with_product(app, 100);
+    const notFound = await request(app)
+      .post(`/api/stores/${slug}/coupons/validate`)
+      .send({ code: 'NONEXISTENT' });
+    expect(notFound.status).toBe(400);
+    expect(notFound.body.error).toContain('Invalid or inactive coupon code');
+
+    const missing = await request(app)
+      .post(`/api/stores/${slug}/coupons/validate`)
+      .send({ code: '' });
+    expect(missing.status).toBe(400);
+  });
 });
+
