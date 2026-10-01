@@ -26,16 +26,19 @@ export function StorefrontSidebar({ store, slug, onNavigate }: StorefrontSidebar
   const { pathname } = useLocation();
 
   // Load addresses list
-  const [addressList] = useState<SavedAddress[]>(() => {
+  const [addressList, setAddressList] = useState<SavedAddress[]>(() => {
     const raw = localStorage.getItem('customer_saved_addresses');
     if (raw) {
-      try { return JSON.parse(raw); } catch { /* ignore */ }
+      try {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch { /* ignore */ }
     }
     return DEFAULT_ADDRESSES;
   });
 
   // Selected active address ID
-  const [activeAddressId] = useState<string>(() => {
+  const [activeAddressId, setActiveAddressId] = useState<string>(() => {
     return localStorage.getItem('customer_active_address_id') || '1';
   });
 
@@ -44,6 +47,33 @@ export function StorefrontSidebar({ store, slug, onNavigate }: StorefrontSidebar
     label: 'Home',
     street: '123 Main St, Cityville, NY 10001'
   };
+
+  // Live sync active address and address list when modified anywhere in the app
+  useEffect(() => {
+    function syncAddressFromStorage() {
+      const rawList = localStorage.getItem('customer_saved_addresses');
+      if (rawList) {
+        try {
+          const parsed = JSON.parse(rawList);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setAddressList(parsed);
+          }
+        } catch { /* ignore */ }
+      }
+      const actId = localStorage.getItem('customer_active_address_id');
+      if (actId) {
+        setActiveAddressId(actId);
+      }
+    }
+
+    syncAddressFromStorage();
+    window.addEventListener('customer_address_changed', syncAddressFromStorage);
+    window.addEventListener('storage', syncAddressFromStorage);
+    return () => {
+      window.removeEventListener('customer_address_changed', syncAddressFromStorage);
+      window.removeEventListener('storage', syncAddressFromStorage);
+    };
+  }, []);
 
   // Sync active address street to localStorage for checkout
   useEffect(() => {
