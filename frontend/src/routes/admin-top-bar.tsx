@@ -1,27 +1,27 @@
-// Platform admin top bar: brand, dropdown menus (desktop) or menu button (phones), and the account menu.
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, ShieldCheck } from 'lucide-react';
-import { ADMIN_MENUS } from './admin-menu';
-import { AdminMenuDropdown } from './admin-menu-dropdown';
+// Admin top bar: menu button (phones), breadcrumb of the current section, profile, and a log-out button.
+import { useLocation } from 'react-router-dom';
+import { ChevronRight, LogOut, Menu } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/shared/auth/auth-context';
+import { find_admin_location } from './admin-menu';
+import { MENU_COLORS } from './admin-menu-colors';
 import { AdminUserMenu } from './admin-user-menu';
-import { AdminMobileMenu } from './admin-mobile-menu';
 
-export function AdminTopBar() {
-  const [menuOpen, setMenuOpen] = useState(false);
+export function AdminTopBar({ onOpenMenu }: { onOpenMenu(): void }) {
+  const { pathname, search } = useLocation();
+  const { logout } = useAuth();
+  const { menu, entry } = find_admin_location(pathname, search);
+  const title = pathname.startsWith('/admin/account') ? 'Account & access' : menu?.label ?? 'Admin';
 
   return (
-    <header className="safe-top z-30 shrink-0 border-b border-slate-200/80 bg-white">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 md:px-8">
-        <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"><Menu className="size-5" /></button>
-        <Link to="/admin" className="flex shrink-0 items-center gap-2.5">
-          <img src="/easy-cart-icon.png" alt="EasyCart" className="h-9 w-auto" />
-          <span className="hidden items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-xs font-semibold text-sky-700 sm:inline-flex"><ShieldCheck className="size-3.5" /> Admin</span>
-        </Link>
-        <nav aria-label="Admin" className="hidden flex-1 items-center gap-1 lg:flex">{ADMIN_MENUS.map((menu) => <AdminMenuDropdown key={menu.label} menu={menu} />)}</nav>
-        <div className="ml-auto"><AdminUserMenu /></div>
+    <header className="safe-top z-20 flex h-16 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white/90 px-4 backdrop-blur-md md:px-6">
+      <button onClick={onOpenMenu} aria-label="Open menu" className="-ml-2 rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"><Menu className="size-5" /></button>
+      <div className="flex min-w-0 flex-1 items-center gap-2.5">
+        {menu && <span className={cn('hidden size-8 shrink-0 items-center justify-center rounded-lg sm:flex', MENU_COLORS[menu.color].tile)}><menu.icon className="size-4" /></span>}
+        <p className="flex min-w-0 items-center gap-1.5 text-sm"><span className="truncate font-semibold text-slate-900">{title}</span>{entry && <><ChevronRight className="size-4 shrink-0 text-slate-300" /><span className="truncate text-slate-500">{entry.label}</span></>}</p>
       </div>
-      <AdminMobileMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
+      <AdminUserMenu />
+      <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-[18px]" /></button>
     </header>
   );
 }

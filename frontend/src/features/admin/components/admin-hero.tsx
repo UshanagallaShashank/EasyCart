@@ -14,14 +14,14 @@ export function AdminHero({ sales, orders, pending }: { sales?: Trend; orders?: 
   ];
 
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-600 via-sky-700 to-slate-900 p-6 text-white shadow-lg shadow-sky-900/10 md:p-8">
+    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 p-6 text-white shadow-lg shadow-fuchsia-900/10 md:p-8">
       <div className="absolute -top-20 -right-16 size-72 rounded-full bg-white/10 blur-3xl" />
-      <p className="relative text-sm text-sky-100">{today}</p>
+      <p className="relative text-sm text-white/85">{today}</p>
       <h1 className="relative mt-1 font-heading text-2xl font-bold tracking-tight md:text-3xl">Welcome back, {user?.username}</h1>
       <div className="relative mt-6 grid gap-3 sm:grid-cols-3">
         {chips.map((c) => (
           <div key={c.label} className="rounded-2xl bg-white/10 p-4 ring-1 ring-white/15 backdrop-blur-sm">
-            <p className="text-xs font-medium text-sky-100">{c.label}</p>
+            <p className="text-xs font-medium text-white/85">{c.label}</p>
             <div className="mt-1 flex items-baseline justify-between gap-2"><p className="truncate font-heading text-xl font-bold tabular-nums">{c.value}</p>{c.trend && <TrendBadge trend={c.trend} onDark />}</div>
           </div>
         ))}
