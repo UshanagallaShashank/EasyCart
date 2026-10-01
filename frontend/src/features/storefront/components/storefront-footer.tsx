@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ShieldCheck, Truck, RotateCcw } from 'lucide-react';
 import type { PublicStore } from '../types/storefront-types';
 
-export function StorefrontFooter({ store, slug }: { store: PublicStore; slug: string }) {
+export function StorefrontFooter({ store }: { store: PublicStore; slug: string }) {
   return (
     <footer className="mt-auto border-t border-slate-200/80 bg-white/70 backdrop-blur-sm">
       <div className="mx-auto max-w-7xl px-6 py-8">

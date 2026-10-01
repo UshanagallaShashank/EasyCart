@@ -5,27 +5,24 @@ import { ApiError } from '@/shared/api/api-error';
 import { useUpdateStore } from './use-update-store';
 import type { Store, StoreSettingsPayload } from '../types/store-types';
 
-export function useStoreForm(store: Store) {
-  const [form, setForm] = useState<StoreSettingsPayload>({
+function to_form_values(store: Store): StoreSettingsPayload {
+  return {
     name: store.name,
     logo_url: store.logo_url ?? '',
     banner_url: store.banner_url ?? '',
     theme: store.theme,
     delivery_fee: store.delivery_fee,
     promotion_banner_text: store.promotion_banner_text ?? ''
-  });
+  };
+}
+
+export function useStoreForm(store: Store) {
+  const [form, setForm] = useState<StoreSettingsPayload>(() => to_form_values(store));
   const update = useUpdateStore();
   const set_field = (k: keyof StoreSettingsPayload, v: unknown) => setForm((p) => ({ ...p, [k]: v }));
 
   useEffect(() => {
-    setForm({
-      name: store.name,
-      logo_url: store.logo_url ?? '',
-      banner_url: store.banner_url ?? '',
-      theme: store.theme,
-      delivery_fee: store.delivery_fee,
-      promotion_banner_text: store.promotion_banner_text ?? ''
-    });
+    setForm(to_form_values(store));
   }, [store]);
 
   const is_dirty =
@@ -50,5 +47,5 @@ export function useStoreForm(store: Store) {
     update.mutate(next, { onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Failed to save settings') });
   }
 
-  return { form, set: set_field, is_dirty, isPending: update.isPending, handle_submit, handle_image_persist };
+  return { form, set: set_field, is_dirty, isPending: update.isPending, handle_submit, handle_image_persist, reset_form: () => setForm(to_form_values(store)) };
 }

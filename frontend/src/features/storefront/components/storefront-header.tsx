@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { UserCheck, User, LogOut, PackageCheck, LogIn, UserPlus, ChevronDown, Menu, X, Home, Package, ShoppingCart } from 'lucide-react';
+import { UserCheck, User, LogOut, PackageCheck, LogIn, UserPlus, ChevronDown, Menu, X, Home, Package, ShoppingCart, Store } from 'lucide-react';
 import { useCart } from '@/features/cart/cart-context';
 import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { toast } from 'sonner';
@@ -93,7 +93,8 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
               <DropdownMenuTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600 transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+                  aria-label="Account menu"
+                  className="flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-bold min-[400px]:px-3 text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600 transition-all cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
                 >
                   {user ? (
                     <div className="flex size-6 items-center justify-center rounded-full bg-sky-500 text-white">
@@ -104,7 +105,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                       <User className="size-3.5" />
                     </div>
                   )}
-                  <span className="max-w-[100px] sm:max-w-[140px] truncate">
+                  <span className="hidden min-[400px]:inline max-w-[100px] sm:max-w-[140px] truncate">
                     {user ? user.username || 'Account' : 'Sign In'}
                   </span>
                   <ChevronDown className="size-3.5 text-slate-400" />
@@ -146,6 +147,13 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                         </span>
                       )}
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="cursor-pointer gap-2 py-2 px-2"
+                      onSelect={() => navigate(`/${slug}/store-request`)}
+                    >
+                      <Store className="size-4 text-amber-500" />
+                      <span>Request to create a store</span>
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       variant="destructive"
@@ -176,6 +184,14 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                     <UserPlus className="size-4 text-slate-500" />
                     <span>Create account</span>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                      className="cursor-pointer gap-2 py-2 px-2"
+                      onSelect={() => navigate(`/${slug}/store-request`)}
+                    >
+                      <Store className="size-4 text-amber-500" />
+                      <span>Request to create a store</span>
+                    </DropdownMenuItem>
                 </>
               )}
             </DropdownMenuContent>

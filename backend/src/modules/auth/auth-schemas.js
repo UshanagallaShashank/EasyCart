@@ -42,6 +42,17 @@ export const login_schema = z.object({
   password: password_schema
 });
 
+export const admin_signup_schema = z.object({
+  username: username_schema,
+  email: email_schema,
+  password: password_schema,
+  passcode: z.string().min(1, 'Admin passcode is required')
+});
+
+export function validate_admin_signup_input(data) {
+  return admin_signup_schema.safeParse(data);
+}
+
 export function validate_signup_input(data) {
   return signup_schema.safeParse(data);
 }
