@@ -123,6 +123,7 @@ export async function list_store_requests() {
       status: t.status,
       created_at: t.created_at,
       business_address: details_list[index]?.business_address ?? null,
+      store_description: details_list[index]?.store_description ?? details_list[index]?.description ?? null,
       id_proof_url: id_proof_urls[index],
       business_proof_url: business_proof_urls[index],
       customer: owner
