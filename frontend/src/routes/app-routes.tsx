@@ -15,6 +15,7 @@ import { OrdersPage } from '@/features/orders/pages/orders-page';
 import { OrderDetailPage } from '@/features/orders/pages/order-detail-page';
 import { CustomerLoginPage } from '@/features/customer-auth/pages/customer-login-page';
 import { CustomerRegisterPage } from '@/features/customer-auth/pages/customer-register-page';
+import { OverviewPage } from '@/features/dashboard/pages/overview-page';
 import { CustomerOrdersPage } from '@/features/orders/pages/customer-orders-page';
 import { CustomerOrderDetailPage } from '@/features/orders/pages/customer-order-detail-page';
 import { StorefrontHomePage } from '@/features/storefront/pages/storefront-home-page';
@@ -41,7 +42,8 @@ export function AppRoutes() {
       <Route path="/register" element={<RegisterPage />} />
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="store" replace />} />
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<OverviewPage />} />
           <Route path="store" element={<StoreSettingsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
           <Route path="products" element={<ProductsPage />} />

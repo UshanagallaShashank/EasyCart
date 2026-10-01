@@ -105,3 +105,15 @@ export async function update_order_assignment(tenant_id, id, payload) {
   await get_order_for_tenant(tenant_id, id);
   return update_order(id, tenant_id, parsed.data);
 }
+
+export async function cancel_order_for_customer(customer_id, id) {
+  const order = await get_order_for_customer(customer_id, id);
+  if (order.status !== 'pending' || order.fulfillment_status !== 'not_started') {
+    throw new AppError('Only pending orders that are not yet being prepared can be cancelled', 400);
+  }
+  const cancelled = await update_order(id, order.tenant_id, { status: 'cancelled' });
+  for (const item of order.items) {
+    await adjust_stock(order.tenant_id, item.product_id, item.quantity);
+  }
+  return cancelled;
+}

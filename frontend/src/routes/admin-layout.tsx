@@ -8,7 +8,7 @@ export function AdminLayout() {
   const { logout } = useAuth();
 
   return (
-    <div className="h-svh w-screen flex flex-col overflow-hidden bg-[#F8FAFC]">
+    <div className="h-svh w-full flex flex-col overflow-hidden bg-[#F8FAFC]">
       <header className="shrink-0 h-15 z-30 bg-white/85 backdrop-blur-md border-b border-slate-200 px-6 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <AppLogo />

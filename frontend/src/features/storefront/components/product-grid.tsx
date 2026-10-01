@@ -1,13 +1,14 @@
 // Displays a responsive grid of product cards with loading skeletons and empty states.
 import { PackageOpen } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { StaggerList, StaggerItem } from '@/components/motion/reveal';
 import { ProductCard } from './product-card';
 import type { Product } from '@/features/products/types/product-types';
 
 export function ProductGrid({ products, isLoading, slug }: { products: Product[] | undefined; isLoading: boolean; slug: string }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
         {Array.from({ length: 8 }).map((_, i) => (
           <Skeleton key={i} className="h-80 w-full rounded-2xl bg-slate-200/60" />
         ))}
@@ -26,8 +27,12 @@ export function ProductGrid({ products, isLoading, slug }: { products: Product[]
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {products.map((product) => <ProductCard key={product.id} product={product} slug={slug} />)}
-    </div>
+    <StaggerList className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
+      {products.map((product) => (
+        <StaggerItem key={product.id} className="h-full">
+          <ProductCard product={product} slug={slug} />
+        </StaggerItem>
+      ))}
+    </StaggerList>
   );
 }
