@@ -3,13 +3,28 @@ export interface AdminTenant {
   id: string;
   name: string;
   slug: string;
-  status: 'active' | 'suspended';
+  status: 'active' | 'suspended' | 'pending' | 'rejected';
   created_at: string;
   is_published: boolean;
   owner_email: string | null;
   owner_username: string | null;
   customer_count?: number;
   revenue?: number;
+}
+
+export interface StoreRequest {
+  id: string;
+  name: string;
+  slug: string;
+  status: 'pending' | 'approved' | 'rejected';
+  created_at: string;
+  description: string | null;
+  customer?: {
+    id: string;
+    username: string;
+    email: string;
+    phone_number: string;
+  } | null;
 }
 
 export interface AdminTenantDetail {

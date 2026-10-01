@@ -106,3 +106,12 @@ export async function set_user_tenant_id(id, tenant_id) {
   }
   return User.findOneAndUpdate({ id }, { tenant_id }, { new: true }).lean();
 }
+
+export async function update_user_role_and_tenant(id, role, tenant_id) {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('users').update({ role, tenant_id }).eq('id', id).select().single();
+    if (error) throw error;
+    return data;
+  }
+  return User.findOneAndUpdate({ id }, { role, tenant_id }, { new: true }).lean();
+}
