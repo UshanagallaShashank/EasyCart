@@ -4,7 +4,8 @@
 import { get_supabase } from '../../../platform/db/db.js';
 import { AppError } from '../../../platform/shared/app-error.js';
 
-const DOCUMENT_BUCKET = process.env.SUPABASE_REQUEST_DOCS_BUCKET || 'store-request-docs';
+// A bucket inside the same Supabase project as the database (same SUPABASE_URL and key), so no extra settings are needed.
+const DOCUMENT_BUCKET = 'store-request-docs';
 const MAX_DOCUMENT_BYTES = 3 * 1024 * 1024;
 const SIGNED_LINK_SECONDS = 60 * 60;
 
