@@ -14,7 +14,7 @@ export function useCheckout(slug: string) {
     onSuccess: (data) => {
       clear();
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
-      navigate(`/customer/orders/${data.order.id}`);
+      navigate(`/${slug}/orders/${data.order.id}`);
     }
   });
 }
