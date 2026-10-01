@@ -9,6 +9,7 @@ import { useTenantDetail } from '../hooks/use-tenant-detail';
 import { TenantAction } from '../components/tenant-action';
 import { TenantMetrics } from '../components/tenant-metrics';
 import { TenantInfoCards } from '../components/tenant-info-cards';
+import { TenantDocumentsCard } from '../components/tenant-documents-card';
 import { TenantRecentOrders } from '../components/tenant-recent-orders';
 
 export function TenantDetailPage() {
@@ -38,6 +39,7 @@ export function TenantDetailPage() {
       </div>
       <TenantMetrics activity={detail.activity} />
       <TenantInfoCards detail={detail} />
+      <TenantDocumentsCard detail={detail} />
       <TenantRecentOrders orders={detail.activity.recent_orders} />
     </div>
   );

@@ -1,5 +1,5 @@
 // Storefront and owner details for one store, side by side on wide screens.
-import { Mail, Phone, User, Globe, Truck, Megaphone } from 'lucide-react';
+import { Mail, Phone, User, Globe, Truck, Megaphone, MapPin } from 'lucide-react';
 import { formatMoney } from '@/features/orders/lib/order-rules';
 import type { AdminTenantDetail } from '../types/admin-types';
 
@@ -13,7 +13,7 @@ function InfoRow({ icon: Icon, label, value }: { icon: typeof Mail; label: strin
 }
 
 export function TenantInfoCards({ detail }: { detail: AdminTenantDetail }) {
-  const { store, owner, tenant } = detail;
+  const { store, owner, tenant, business_address } = detail;
   return (
     <div className="grid gap-5 md:grid-cols-2">
       <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
@@ -27,6 +27,7 @@ export function TenantInfoCards({ detail }: { detail: AdminTenantDetail }) {
         <InfoRow icon={User} label="Name" value={owner?.username ?? 'Unknown'} />
         <InfoRow icon={Mail} label="Email" value={owner?.email ?? '—'} />
         <InfoRow icon={Phone} label="Phone" value={owner?.phone_number ?? '—'} />
+        {business_address && <InfoRow icon={MapPin} label="Business address" value={business_address} />}
       </section>
     </div>
   );
