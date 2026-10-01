@@ -8,6 +8,8 @@ export interface AdminTenant {
   is_published: boolean;
   owner_email: string | null;
   owner_username: string | null;
+  customer_count?: number;
+  revenue?: number;
 }
 
 export interface AdminTenantDetail {

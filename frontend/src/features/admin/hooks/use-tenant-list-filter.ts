@@ -4,7 +4,7 @@ import { useUrlFilter } from '@/hooks/use-url-filter';
 import type { AdminTenant } from '../types/admin-types';
 
 export type TenantFilter = 'all' | 'live' | 'unpublished' | 'suspended';
-export type TenantSort = 'newest' | 'oldest' | 'name';
+export type TenantSort = 'newest' | 'oldest' | 'name' | 'revenue' | 'customers';
 
 const FILTER_TESTS: Record<TenantFilter, (t: AdminTenant) => boolean> = {
   all: () => true,
@@ -16,7 +16,9 @@ const FILTER_TESTS: Record<TenantFilter, (t: AdminTenant) => boolean> = {
 const SORTERS: Record<TenantSort, (a: AdminTenant, b: AdminTenant) => number> = {
   newest: (a, b) => b.created_at.localeCompare(a.created_at),
   oldest: (a, b) => a.created_at.localeCompare(b.created_at),
-  name: (a, b) => a.name.localeCompare(b.name)
+  name: (a, b) => a.name.localeCompare(b.name),
+  revenue: (a, b) => (b.revenue ?? 0) - (a.revenue ?? 0),
+  customers: (a, b) => (b.customer_count ?? 0) - (a.customer_count ?? 0)
 };
 
 export function useTenantListFilter(tenants: AdminTenant[]) {
