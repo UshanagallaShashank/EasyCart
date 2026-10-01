@@ -94,8 +94,8 @@ export function CheckoutPage() {
   const canPlaceOrder = fulfillmentMethod === 'pickup' || deliveryAddress.trim().length > 0;
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6 px-6 pt-6">
-      <div className="flex max-w-md flex-col gap-4 p-6">
+    <div className="mx-auto flex max-w-lg flex-col gap-6 px-4 pt-4 sm:px-6 sm:pt-6">
+      <div className="flex max-w-md flex-col gap-4 sm:p-6">
         <h1 className="font-heading text-2xl">Checkout</h1>
         {lines.map((line) => (
           <div key={`${line.product_id}-${line.variant_label ?? ''}`} className="flex justify-between text-sm">

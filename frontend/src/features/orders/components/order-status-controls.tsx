@@ -70,11 +70,11 @@ export function OrderStatusControls({ order }: { order: Order }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-end gap-6">
+      <div className="grid grid-cols-1 items-end gap-4 sm:flex sm:flex-wrap sm:gap-6">
         <div className="flex flex-col gap-2">
           <Label>Status</Label>
           <Select value={status} onValueChange={(v) => setStatus(v as Order['status'])}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               {STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -83,7 +83,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
         <div className="flex flex-col gap-2">
           <Label>Payment</Label>
           <Select value={paymentStatus} onValueChange={(v) => setPaymentStatus(v as Order['payment_status'])}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
@@ -92,7 +92,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
         <div className="flex flex-col gap-2">
           <Label>{order.fulfillment_method === 'delivery' ? 'Delivery status' : 'Pickup status'}</Label>
           <Select value={fulfillmentStatus} onValueChange={(v) => setFulfillmentStatus(v as Order['fulfillment_status'])}>
-            <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="w-full sm:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
               {fulfillmentStatuses.map((s) => <SelectItem key={s} value={s}>{s.replaceAll('_', ' ')}</SelectItem>)}
             </SelectContent>
@@ -102,13 +102,13 @@ export function OrderStatusControls({ order }: { order: Order }) {
           <Label htmlFor="assigned_to">Assigned to</Label>
           <Input
             id="assigned_to"
-            className="w-40"
+            className="w-full sm:w-40"
             placeholder="Unassigned"
             value={assignedTo}
             onChange={(e) => setAssignedTo(e.target.value)}
           />
         </div>
-        <Button onClick={handleSave} disabled={!isDirty || isSaving}>
+        <Button className="w-full sm:w-auto" onClick={handleSave} disabled={!isDirty || isSaving}>
           {isSaving ? 'Saving…' : 'Save'}
         </Button>
       </div>

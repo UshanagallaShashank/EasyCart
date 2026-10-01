@@ -8,7 +8,7 @@ export function CartLineRow({ line }: { line: CartLine }) {
   const { removeItem, updateQuantity } = useCart();
 
   return (
-    <div className="flex items-center justify-between gap-4 border-b py-3">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b py-3 sm:flex-nowrap sm:gap-4">
       {line.image ? (
         <img src={line.image} alt={line.name} className="size-12 rounded-md object-cover" />
       ) : (
@@ -16,7 +16,7 @@ export function CartLineRow({ line }: { line: CartLine }) {
           <Package className="text-muted-foreground size-5" />
         </div>
       )}
-      <div className="flex-1">
+      <div className="min-w-0 flex-1 basis-[calc(100%-4rem)] sm:basis-auto">
         <p className="font-medium">{line.name}</p>
         {line.variant_label && <p className="text-muted-foreground text-sm">{line.variant_label}</p>}
       </div>
@@ -27,7 +27,7 @@ export function CartLineRow({ line }: { line: CartLine }) {
         onChange={(e) => updateQuantity(line.product_id, Number(e.target.value), line.variant_label)}
         className="w-20"
       />
-      <p className="w-20 text-right tabular-nums">Rs. {(line.price * line.quantity).toFixed(2)}</p>
+      <p className="ml-auto w-24 text-right tabular-nums sm:ml-0 sm:w-20">Rs. {(line.price * line.quantity).toFixed(2)}</p>
       <Button variant="ghost" size="sm" onClick={() => removeItem(line.product_id, line.variant_label)}>
         Remove
       </Button>

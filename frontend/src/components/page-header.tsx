@@ -11,7 +11,7 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, eyebrow, children }: PageHeaderProps) {
   return (
-    <div className="shrink-0 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-6 py-3.5 md:px-8 shadow-xs">
+    <div className="shrink-0 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3 md:px-8 md:py-3.5 shadow-xs">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           {eyebrow && <div className="mb-1">{eyebrow}</div>}
