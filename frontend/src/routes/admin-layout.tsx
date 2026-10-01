@@ -1,32 +1,37 @@
-// Platform admin layout: top bar with brand, signed-in admin, log out, and section tabs; scrollable content.
-import { Outlet } from 'react-router-dom';
-import { LogOut, ShieldCheck } from 'lucide-react';
-import { useAuth } from '@/shared/auth/auth-context';
-import { AdminNav } from './admin-nav';
+// Platform admin layout: dark sidebar on desktop, top bar with slide-in menu on phones, scrollable content.
+import { useState } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'motion/react';
+import { Menu } from 'lucide-react';
+import { AdminSidebar, ADMIN_SECTIONS } from './admin-sidebar';
 
 export function AdminLayout() {
-  const { user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const { pathname } = useLocation();
+  const section = [...ADMIN_SECTIONS].reverse().find((s) => (s.end ? pathname === s.to : pathname.startsWith(s.to)));
 
   return (
-    <div className="flex h-svh w-full flex-col overflow-hidden bg-slate-50">
-      <header className="safe-top z-30 shrink-0 border-b border-slate-200/80 bg-white">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 md:px-8">
-          <div className="flex items-center gap-3">
-            <img src="/easy-cart-icon.png" alt="EasyCart" className="h-9 w-auto" />
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white"><ShieldCheck className="size-3.5" /> Platform admin</span>
+    <div className="flex h-svh w-full overflow-hidden bg-slate-50">
+      <aside className="hidden h-full w-64 shrink-0 lg:block"><AdminSidebar /></aside>
+      <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
+        <header className="safe-top flex h-14 shrink-0 items-center gap-2 border-b border-slate-200/80 bg-white px-4 lg:hidden">
+          <button type="button" onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 rounded-lg p-2 text-slate-600 hover:bg-slate-100"><Menu className="size-5" /></button>
+          <span className="text-sm font-semibold text-slate-900">{section?.label ?? 'Admin'}</span>
+        </header>
+        <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
+          <div key={pathname} className="mx-auto w-full max-w-7xl animate-content-in"><Outlet /></div>
+        </main>
+      </div>
+      <AnimatePresence>
+        {menuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <motion.div className="absolute inset-0 bg-slate-950/50 backdrop-blur-sm" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} />
+            <motion.div className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl" initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }} transition={{ type: 'spring', stiffness: 300, damping: 32 }}>
+              <AdminSidebar onNavigate={() => setMenuOpen(false)} />
+            </motion.div>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="hidden text-sm text-slate-500 sm:inline">{user?.email}</span>
-            <button type="button" onClick={logout} className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 px-3 text-sm font-medium text-slate-600 transition-colors hover:border-rose-200 hover:bg-rose-50 hover:text-rose-600">
-              <LogOut className="size-4" /> <span className="hidden sm:inline">Log out</span>
-            </button>
-          </div>
-        </div>
-        <AdminNav />
-      </header>
-      <main className="flex-1 overflow-y-auto px-4 py-6 md:px-8 md:py-8">
-        <div className="mx-auto w-full max-w-7xl"><Outlet /></div>
-      </main>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
