@@ -28,6 +28,7 @@ import { CheckoutPage } from '@/features/checkout/pages/checkout-page';
 import { TenantsPage } from '@/features/admin/pages/tenants-page';
 import { AdminOverviewPage } from '@/features/admin/pages/admin-overview-page';
 import { TenantDetailPage } from '@/features/admin/pages/tenant-detail-page';
+import { UsersPage } from '@/features/admin/pages/users-page';
 import { CustomersPage } from '@/features/tenant-customers/pages/customers-page';
 import { CustomerDetailPage } from '@/features/tenant-customers/pages/customer-detail-page';
 import { CouponsPage } from '@/features/coupons/pages/coupons-page';
@@ -66,6 +67,7 @@ export function AppRoutes() {
           <Route index element={<AdminOverviewPage />} />
           <Route path="stores" element={<TenantsPage />} />
           <Route path="stores/:id" element={<TenantDetailPage />} />
+          <Route path="users" element={<UsersPage />} />
         </Route>
       </Route>
 

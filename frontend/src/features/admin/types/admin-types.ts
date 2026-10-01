@@ -26,3 +26,21 @@ export interface AdminTenantDetail {
     recent_orders: { id: string; total: number; status: 'pending' | 'confirmed' | 'fulfilled' | 'cancelled'; payment_status: 'unpaid' | 'paid'; created_at: string }[];
   };
 }
+
+export interface PlatformStats {
+  totals: { stores: number; active_stores: number; owners: number; customers: number; admins: number; orders: number; pending_orders: number; gmv: number };
+  daily_revenue: { date: string; revenue: number; orders: number }[];
+  top_stores: { tenant_id: string; name: string; slug: string; revenue: number; orders: number }[];
+}
+
+export type PlatformRole = 'tenant_owner' | 'customer' | 'platform_admin';
+
+export interface PlatformUser {
+  id: string;
+  username: string;
+  email: string;
+  phone_number: string;
+  role: PlatformRole;
+  created_at: string;
+  store: { id: string; name: string; slug: string } | null;
+}

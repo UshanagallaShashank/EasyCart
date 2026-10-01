@@ -91,4 +91,20 @@ describe('Admin tenant management', () => {
     const response = await request(app).get(`/api/admin/tenants/${randomUUID()}`).set('Authorization', `Bearer ${adminToken}`);
     expect(response.status).toBe(404);
   });
+
+  it('returns platform stats that include the new store', async () => {
+    const response = await request(app).get('/api/admin/stats').set('Authorization', `Bearer ${adminToken}`);
+    expect(response.status).toBe(200);
+    expect(response.body.totals.stores).toBeGreaterThan(0);
+    expect(response.body.daily_revenue).toHaveLength(30);
+    expect(Array.isArray(response.body.top_stores)).toBe(true);
+  });
+
+  it('lists users without password hashes, with the store for owners', async () => {
+    const response = await request(app).get('/api/admin/users').set('Authorization', `Bearer ${adminToken}`);
+    expect(response.status).toBe(200);
+    expect(response.body.users.every((u) => !('password_hash' in u))).toBe(true);
+    const owner = response.body.users.find((u) => u.store?.id === tenantId);
+    expect(owner.role).toBe('tenant_owner');
+  });
 });

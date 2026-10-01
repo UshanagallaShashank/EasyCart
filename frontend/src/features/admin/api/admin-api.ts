@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/api/api-client';
-import type { AdminTenant, AdminTenantDetail } from '../types/admin-types';
+import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser } from '../types/admin-types';
 
 export function listTenants(): Promise<{ tenants: AdminTenant[] }> {
   return apiRequest('/admin/tenants');
@@ -15,4 +15,12 @@ export function reactivateTenant(id: string): Promise<{ tenant: AdminTenant }> {
 
 export function getTenantDetail(id: string): Promise<AdminTenantDetail> {
   return apiRequest(`/admin/tenants/${id}`);
+}
+
+export function getPlatformStats(): Promise<PlatformStats> {
+  return apiRequest('/admin/stats');
+}
+
+export function listPlatformUsers(): Promise<{ users: PlatformUser[] }> {
+  return apiRequest('/admin/users');
 }
