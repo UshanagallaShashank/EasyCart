@@ -6,6 +6,7 @@ import { find_nav_title } from '@/components/app-shell/nav-matching';
 import { ADMIN_SECTIONS } from './admin-links';
 import { AdminUserMenu } from './admin-user-menu';
 import { AdminNotificationBell } from '@/features/admin/components/admin-notification-bell';
+import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 
 export function AdminTopBar({ onOpenMenu }: { onOpenMenu(): void }) {
   const { logout } = useAuth();
@@ -18,7 +19,20 @@ export function AdminTopBar({ onOpenMenu }: { onOpenMenu(): void }) {
       <div className="flex items-center gap-2">
         <AdminNotificationBell />
         <AdminUserMenu />
-        <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-4" /></button>
+        <LogoutConfirmDialog
+          role="admin"
+          onConfirm={logout}
+          trigger={
+            <button
+              type="button"
+              aria-label="Log out"
+              title="Log out"
+              className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 cursor-pointer"
+            >
+              <LogOut className="size-4" />
+            </button>
+          }
+        />
       </div>
     </header>
   );
