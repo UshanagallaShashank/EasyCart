@@ -27,10 +27,28 @@ export interface StoreRequest {
   } | null;
 }
 
+export interface TenantDocument {
+  id: string;
+  title: string;
+  file_name: string;
+  url: string;
+  type: 'pdf' | 'image' | string;
+}
+
 export interface AdminTenantDetail {
   tenant: Pick<AdminTenant, 'id' | 'name' | 'slug' | 'status' | 'created_at'>;
   store: { name: string; logo_url: string | null; banner_url: string | null; is_published: boolean; delivery_fee: number; promotion_banner_text: string | null } | null;
   owner: { username: string; email: string; phone_number: string } | null;
+  business_address?: string | null;
+  id_proof_url?: string | null;
+  business_proof_url?: string | null;
+  documents?: TenantDocument[];
+  verification?: {
+    business_address: string | null;
+    id_proof_url: string | null;
+    business_proof_url: string | null;
+    documents: TenantDocument[];
+  } | null;
   activity: {
     product_count: number;
     active_product_count: number;

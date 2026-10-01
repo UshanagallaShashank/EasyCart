@@ -1,6 +1,6 @@
 import { useState, useId, type FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
-import { Store, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft, ExternalLink, Sparkles } from 'lucide-react';
+import { Store, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft, ExternalLink, Sparkles, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -144,6 +144,28 @@ export function CustomerStoreRequestPage() {
                 <span className="text-slate-500">Submitted on</span>
                 <span className="text-xs text-slate-700">{new Date(request.created_at).toLocaleDateString()}</span>
               </div>
+              {request.documents && request.documents.length > 0 && (
+                <div className="flex flex-col gap-2 border-t border-slate-100 pt-2.5">
+                  <span className="text-xs font-semibold text-slate-500">Submitted verification documents</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {request.documents.map((doc) => (
+                      <a
+                        key={doc.id}
+                        href={doc.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex items-center justify-between rounded-lg border border-amber-200/70 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:border-amber-400 hover:text-amber-900 transition-colors shadow-2xs"
+                      >
+                        <span className="flex items-center gap-1.5 truncate">
+                          <FileText className="size-3.5 text-amber-600 shrink-0" />
+                          <span className="truncate">{doc.title}</span>
+                        </span>
+                        <ExternalLink className="size-3 text-slate-400 shrink-0" />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <p className="mt-4 text-xs text-amber-800">
