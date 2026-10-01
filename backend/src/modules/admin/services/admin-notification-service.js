@@ -9,6 +9,7 @@ export async function list_admin_notifications() {
   const tenants = await find_all_tenants();
 
   const owner_ids = tenants
+    .filter((t) => t.status === 'pending' || t.status === 'suspended')
     .map((t) => t.owner_id)
     .filter(Boolean);
 
@@ -17,7 +18,7 @@ export async function list_admin_notifications() {
 
   const notifications = [];
 
-  // 1. Pending store requests (high priority)
+  // 1. Pending store requests (high priority, needs admin review)
   const pending_tenants = tenants.filter((t) => t.status === 'pending');
   for (const tenant of pending_tenants) {
     const owner = owner_by_id.get(tenant.owner_id);
@@ -34,11 +35,11 @@ export async function list_admin_notifications() {
     });
   }
 
-  // 2. Suspended stores (up to 5 most recent)
+  // 2. Suspended stores (needs admin review or reactivation)
   const suspended_tenants = tenants
     .filter((t) => t.status === 'suspended')
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5);
+    .slice(0, 10);
 
   for (const tenant of suspended_tenants) {
     const owner = owner_by_id.get(tenant.owner_id);
@@ -50,27 +51,6 @@ export async function list_admin_notifications() {
       message: `"${tenant.name}" owned by ${owner?.username || 'user'} is currently suspended.`,
       link: `/admin/stores/${tenant.id}`,
       priority: 'medium',
-      is_read: read_admin_notification_ids.has(id),
-      created_at: tenant.created_at
-    });
-  }
-
-  // 3. Recently active stores (up to 5 most recent)
-  const recent_active = tenants
-    .filter((t) => t.status === 'active')
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .slice(0, 5);
-
-  for (const tenant of recent_active) {
-    const owner = owner_by_id.get(tenant.owner_id);
-    const id = `active-store-${tenant.id}`;
-    notifications.push({
-      id,
-      type: 'store_active',
-      title: 'Store Active',
-      message: `"${tenant.name}" owned by ${owner?.username || 'user'} is live on EasyCart.`,
-      link: `/admin/stores/${tenant.id}`,
-      priority: 'low',
       is_read: read_admin_notification_ids.has(id),
       created_at: tenant.created_at
     });
@@ -95,9 +75,18 @@ export function mark_admin_notification_read(notification_id) {
   return { success: true, id: notification_id };
 }
 
-export function mark_all_admin_notifications_read(notification_ids = []) {
-  for (const id of notification_ids) {
-    read_admin_notification_ids.add(id);
+export async function mark_all_admin_notifications_read(notification_ids = []) {
+  if (Array.isArray(notification_ids) && notification_ids.length > 0) {
+    for (const id of notification_ids) {
+      read_admin_notification_ids.add(id);
+    }
+    return { success: true, count: notification_ids.length };
   }
-  return { success: true, count: notification_ids.length };
+
+  // If no IDs specified, mark all currently existing notifications as read
+  const { notifications } = await list_admin_notifications();
+  for (const n of notifications) {
+    read_admin_notification_ids.add(n.id);
+  }
+  return { success: true, count: notifications.length };
 }

@@ -1,16 +1,14 @@
 // Platform admin notification bell with unread badge and dropdown menu.
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Store, Ban, CheckCircle2, CheckCheck, Clock, ExternalLink } from 'lucide-react';
+import { Bell, Store, Ban, CheckCircle2, CheckCheck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { EmptyState } from '@/components/empty-state';
 import {
   useAdminNotifications,
   useMarkAdminNotificationRead,
@@ -18,14 +16,31 @@ import {
 } from '../hooks/use-admin-notifications';
 import type { AdminNotification } from '../types/admin-types';
 
+const STORAGE_KEY = 'easycart_admin_read_notifications';
+
+function getStoredReadIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function storeReadIds(ids: Set<string>) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(ids)));
+  } catch {
+    // ignore
+  }
+}
+
 function getNotificationIcon(type: string) {
   switch (type) {
     case 'store_request':
       return { icon: Store, tone: 'bg-amber-100 text-amber-700' };
     case 'store_suspended':
       return { icon: Ban, tone: 'bg-rose-100 text-rose-700' };
-    case 'store_active':
-      return { icon: CheckCircle2, tone: 'bg-emerald-100 text-emerald-700' };
     default:
       return { icon: Clock, tone: 'bg-sky-100 text-sky-700' };
   }
@@ -54,11 +69,25 @@ export function AdminNotificationBell() {
   const markRead = useMarkAdminNotificationRead();
   const markAllRead = useMarkAllAdminNotificationsRead();
 
-  const notifications = data?.notifications ?? [];
-  const unreadCount = data?.unread_count ?? notifications.filter((n) => !n.is_read).length;
+  const [localReadIds, setLocalReadIds] = useState<Set<string>>(() => getStoredReadIds());
+
+  // Merge backend notifications with local read status
+  const rawNotifications = data?.notifications ?? [];
+  const notifications = rawNotifications.map((n) => ({
+    ...n,
+    is_read: n.is_read || localReadIds.has(n.id)
+  }));
+
+  const unreadCount = notifications.filter((n) => !n.is_read).length;
 
   function handleItemClick(notification: AdminNotification) {
     if (!notification.is_read) {
+      setLocalReadIds((prev) => {
+        const next = new Set(prev);
+        next.add(notification.id);
+        storeReadIds(next);
+        return next;
+      });
       markRead.mutate(notification.id);
     }
     if (notification.link) {
@@ -69,6 +98,12 @@ export function AdminNotificationBell() {
   function handleMarkAll() {
     const unreadIds = notifications.filter((n) => !n.is_read).map((n) => n.id);
     if (unreadIds.length > 0) {
+      setLocalReadIds((prev) => {
+        const next = new Set(prev);
+        unreadIds.forEach((id) => next.add(id));
+        storeReadIds(next);
+        return next;
+      });
       markAllRead.mutate(unreadIds);
     }
   }
@@ -94,17 +129,29 @@ export function AdminNotificationBell() {
         <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-bold text-slate-900">Admin Notifications</span>
-            {unreadCount > 0 && (
+            {unreadCount > 0 ? (
               <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
                 {unreadCount} new
+              </span>
+            ) : (
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                All caught up
               </span>
             )}
           </div>
           {unreadCount > 0 && (
             <button
               type="button"
-              onClick={handleMarkAll}
-              className="flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-800 transition-colors"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleMarkAll();
+              }}
+              className="flex items-center gap-1 rounded-md px-2 py-1 text-xs font-semibold text-sky-600 hover:bg-sky-50 hover:text-sky-800 transition-colors cursor-pointer"
             >
               <CheckCheck className="size-3.5" /> Mark all read
             </button>
@@ -126,7 +173,7 @@ export function AdminNotificationBell() {
                   key={n.id}
                   onSelect={() => handleItemClick(n)}
                   className={`flex items-start gap-3 p-3.5 cursor-pointer transition-colors hover:bg-slate-50 focus:bg-slate-50 ${
-                    !n.is_read ? 'bg-sky-50/40' : ''
+                    !n.is_read ? 'bg-sky-50/40' : 'opacity-75'
                   }`}
                 >
                   <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${tone}`}>
@@ -134,7 +181,7 @@ export function AdminNotificationBell() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`text-xs font-bold ${!n.is_read ? 'text-slate-900' : 'text-slate-700'}`}>
+                      <span className={`text-xs font-bold ${!n.is_read ? 'text-slate-900' : 'text-slate-600'}`}>
                         {n.title}
                       </span>
                       <span className="text-[10px] text-slate-400 shrink-0">
@@ -152,17 +199,6 @@ export function AdminNotificationBell() {
               );
             })
           )}
-        </div>
-
-        <div className="border-t border-slate-100 bg-slate-50/60 p-2.5 text-center">
-          <button
-            type="button"
-            onClick={() => navigate('/admin/stores')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-sky-700 transition-colors"
-          >
-            <span>Review all stores</span>
-            <ExternalLink className="size-3" />
-          </button>
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
