@@ -1,4 +1,5 @@
 // Store list for platform admins: cards on phones, a table on larger screens.
+import { Link } from 'react-router-dom';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { StatusBadge } from '@/components/status-badge';
 import { getTenantStatusTone } from '@/lib/status-colors';
@@ -10,7 +11,7 @@ function TenantIdentity({ tenant }: { tenant: AdminTenant }) {
   return (
     <div className="flex min-w-0 items-center gap-3">
       <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-slate-100 font-bold text-slate-600">{tenant.name.charAt(0).toUpperCase()}</span>
-      <div className="min-w-0"><p className="truncate font-semibold text-slate-900">{tenant.name}</p><a href={`/${tenant.slug}`} target="_blank" rel="noreferrer" className="truncate text-xs text-slate-500 hover:text-sky-700">/{tenant.slug}</a></div>
+      <div className="min-w-0"><Link to={`/admin/stores/${tenant.id}`} className="block truncate font-semibold text-slate-900 hover:text-sky-700">{tenant.name}</Link><a href={`/${tenant.slug}`} target="_blank" rel="noreferrer" className="truncate text-xs text-slate-500 hover:text-sky-700">/{tenant.slug}</a></div>
     </div>
   );
 }
