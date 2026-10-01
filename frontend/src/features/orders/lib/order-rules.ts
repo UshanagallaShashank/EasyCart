@@ -1,4 +1,5 @@
 import type { Order } from '../types/order-types';
+import { format_price } from '@/lib/format-price';
 
 // A customer can only cancel before the store has started working on the order.
 export function canCustomerCancel(order: Order): boolean {
@@ -6,7 +7,7 @@ export function canCustomerCancel(order: Order): boolean {
 }
 
 export function formatMoney(amount: number): string {
-  return `Rs. ${amount.toFixed(2)}`;
+  return format_price(amount);
 }
 
 export function formatOrderDate(isoDate: string): string {

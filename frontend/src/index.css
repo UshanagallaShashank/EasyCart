@@ -2,7 +2,6 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
-@import "@fontsource-variable/fraunces";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -161,7 +160,7 @@
 }
 
 .animate-content-in {
-  animation: contentFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: contentFadeIn 0.15s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-float-slow {
@@ -184,8 +183,13 @@ html {
 }
 
 body {
-  /* Never allow sideways scrolling of the whole page; wide tables scroll inside their own box. */
+  /* Never allow sideways scrolling of the whole page. */
   overflow-x: clip;
+}
+
+/* Grid items may shrink below their content's width, so long text or charts never widen a page. */
+.grid > * {
+  min-width: 0;
 }
 
 /* iPhones zoom the page when a focused input has text smaller than 16px, so keep inputs at 16px on phones. */
