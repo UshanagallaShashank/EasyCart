@@ -1,4 +1,4 @@
-// Platform admin layout: colorful sidebar on the left, top bar with profile and log out, scrollable page.
+// Platform admin layout, in the store owner dashboard's colors: sidebar, top bar with profile and log out, scrollable page.
 import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -11,7 +11,7 @@ export function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <div className="fixed inset-0 flex overflow-hidden bg-gradient-to-br from-slate-50 via-violet-50/40 to-sky-50/60">
+    <div className="fixed inset-0 flex overflow-hidden bg-slate-50">
       <aside className="hidden h-full w-64 shrink-0 lg:block"><AdminSidebar /></aside>
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <AdminTopBar onOpenMenu={() => setMenuOpen(true)} />
