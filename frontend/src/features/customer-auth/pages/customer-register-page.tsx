@@ -15,7 +15,7 @@ export function CustomerRegisterPage() {
       <AuthSkyBackground />
       <main className="w-full flex items-center justify-center my-auto py-8">
         <AuthCard>
-          <AuthCardHeader title="Create your shopper account" subtitle="Join Easy Cart to start shopping effortlessly." />
+          <AuthCardHeader title="Create your customer account" subtitle="Join Easy Cart to track orders, manage addresses, and shop effortlessly." />
           <CustomerRegisterForm />
           <p className="text-center text-xs text-slate-500 pt-1">
             Already have an account? <Link to={loginLink} className="text-sky-600 font-semibold hover:underline">Log in</Link>
