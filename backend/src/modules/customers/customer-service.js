@@ -10,7 +10,7 @@ import { find_tenant_by_slug, find_tenant_by_owner_id, save_tenant } from '../te
 import { save_store } from '../stores/repositories/store-repository.js';
 import { clear_tenants_cache } from '../admin/services/admin-service.js';
 import { build_business_address } from './store-request-address.js';
-import { upload_request_document, save_request_details, read_request_details } from '../stores/services/store-request-document-service.js';
+import { upload_request_document, save_request_details, read_request_details, create_signed_document_url } from '../stores/services/store-request-document-service.js';
 
 export async function register_customer(payload) {
   const parsed = validate_customer_signup_input(payload);
@@ -143,12 +143,42 @@ export async function get_customer_store_request(customer_id) {
   const tenant = await find_tenant_by_owner_id(customer_id);
   if (!tenant) return null;
   const details = await read_request_details(customer_id);
+  const [id_proof_url, business_proof_url] = details
+    ? await Promise.all([
+        create_signed_document_url(details.id_proof_path),
+        create_signed_document_url(details.business_proof_path)
+      ])
+    : [null, null];
+
+  const documents = [];
+  if (id_proof_url && details?.id_proof_path) {
+    documents.push({
+      id: 'id-proof',
+      title: 'ID Proof',
+      file_name: details.id_proof_path.split('/').pop(),
+      url: id_proof_url,
+      type: details.id_proof_path.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'
+    });
+  }
+  if (business_proof_url && details?.business_proof_path) {
+    documents.push({
+      id: 'business-proof',
+      title: 'Business Proof',
+      file_name: details.business_proof_path.split('/').pop(),
+      url: business_proof_url,
+      type: details.business_proof_path.toLowerCase().endsWith('.pdf') ? 'pdf' : 'image'
+    });
+  }
+
   return {
     id: tenant.id,
     name: tenant.name,
     slug: tenant.slug,
     status: tenant.status,
     created_at: tenant.created_at,
-    business_address: details?.business_address ?? null
+    business_address: details?.business_address ?? null,
+    id_proof_url,
+    business_proof_url,
+    documents
   };
 }

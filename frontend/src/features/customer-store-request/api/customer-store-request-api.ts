@@ -17,6 +17,15 @@ export interface CustomerStoreRequestData {
   status: 'pending' | 'active' | 'rejected';
   created_at: string;
   business_address: string | null;
+  id_proof_url?: string | null;
+  business_proof_url?: string | null;
+  documents?: Array<{
+    id: string;
+    title: string;
+    file_name?: string;
+    url: string;
+    type?: string;
+  }>;
 }
 
 export function requestStoreCreation(payload: CustomerStoreRequestPayload): Promise<{
