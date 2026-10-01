@@ -8,3 +8,4 @@ export const CartPage = lazy_page(() => import('@/features/cart/pages/cart-page'
 export const CheckoutPage = lazy_page(() => import('@/features/checkout/pages/checkout-page'), 'CheckoutPage');
 export const CustomerOrdersPage = lazy_page(() => import('@/features/orders/pages/customer-orders-page'), 'CustomerOrdersPage');
 export const CustomerOrderDetailPage = lazy_page(() => import('@/features/orders/pages/customer-order-detail-page'), 'CustomerOrderDetailPage');
+export const CustomerStoreRequestPage = lazy_page(() => import('@/features/customer-store-request/pages/customer-store-request-page'), 'CustomerStoreRequestPage');

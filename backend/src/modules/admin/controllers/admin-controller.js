@@ -1,4 +1,13 @@
-import { list_all_tenants, suspend_tenant, reactivate_tenant, bulk_suspend_tenants, bulk_reactivate_tenants } from '../services/admin-service.js';
+import {
+  list_all_tenants,
+  suspend_tenant,
+  reactivate_tenant,
+  bulk_suspend_tenants,
+  bulk_reactivate_tenants,
+  list_store_requests,
+  approve_store_request,
+  reject_store_request
+} from '../services/admin-service.js';
 import { get_tenant_detail } from '../services/admin-tenant-detail-service.js';
 
 export async function handle_list_tenants(req, res, next) {
@@ -73,6 +82,33 @@ export async function handle_get_tenant_detail(req, res, next) {
   try {
     const detail = await get_tenant_detail(req.params.id);
     res.status(200).json(detail);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_list_store_requests(req, res, next) {
+  try {
+    const requests = await list_store_requests();
+    res.status(200).json({ requests });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_approve_store_request(req, res, next) {
+  try {
+    const result = await approve_store_request(req.params.id);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_reject_store_request(req, res, next) {
+  try {
+    const result = await reject_store_request(req.params.id);
+    res.status(200).json(result);
   } catch (err) {
     next(err);
   }
