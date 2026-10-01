@@ -105,6 +105,44 @@ export async function handle_approve_store_request(req, res, next) {
   }
 }
 
+import {
+  get_store_categories,
+  add_store_category,
+  remove_store_category
+} from '../../stores/services/store-categories-service.js';
+
+export async function handle_get_store_categories(req, res, next) {
+  try {
+    const categories = await get_store_categories();
+    res.status(200).json({ categories });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_add_store_category(req, res, next) {
+  try {
+    const { name } = req.body;
+    if (!name || !String(name).trim()) {
+      return res.status(400).json({ message: 'Category name is required' });
+    }
+    const categories = await add_store_category(name);
+    res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_remove_store_category(req, res, next) {
+  try {
+    const name = decodeURIComponent(req.params.name);
+    const categories = await remove_store_category(name);
+    res.status(200).json({ success: true, categories });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function handle_reject_store_request(req, res, next) {
   try {
     const result = await reject_store_request(req.params.id);

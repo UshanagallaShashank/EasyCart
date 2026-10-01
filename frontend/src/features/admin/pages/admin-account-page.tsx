@@ -5,6 +5,8 @@ import { useAuth } from '@/shared/auth/auth-context';
 import { AdminPageTitle } from '../components/page-title';
 import { CopyButton } from '../components/copy-button';
 
+import { StoreCategoryManager } from '../components/store-category-manager';
+
 export function AdminAccountPage() {
   const { user, logout } = useAuth();
   const signupLink = `${window.location.origin}/admin/register`;
@@ -12,7 +14,8 @@ export function AdminAccountPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdminPageTitle title="Account & access" description="Your admin profile, and how new admins get access." />
+      <AdminPageTitle title="Account & access" description="Your admin profile, platform settings, and store category management." />
+      
       <div className="grid gap-5 lg:grid-cols-2">
         <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
           <h2 className="text-sm font-semibold text-slate-900">Your profile</h2>
@@ -29,6 +32,9 @@ export function AdminAccountPage() {
           <div className="mt-4 flex items-center gap-2 rounded-xl bg-slate-50 p-2 pl-3"><code className="min-w-0 flex-1 truncate text-xs text-slate-700">{signupLink}</code><CopyButton text={signupLink} label="Copy link" /></div>
         </section>
       </div>
+
+      {/* Dynamic Store Category Manager */}
+      <StoreCategoryManager />
     </div>
   );
 }

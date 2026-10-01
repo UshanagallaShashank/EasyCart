@@ -125,7 +125,9 @@ export async function request_store_creation(customer_id, payload) {
     promotion_banner_text: null
   });
 
-  await save_request_details(customer_id, { business_address, id_proof_path, business_proof_path });
+  const store_description = String(payload.store_description || payload.description || '').trim();
+
+  await save_request_details(customer_id, { business_address, store_description, id_proof_path, business_proof_path });
 
   clear_tenants_cache();
 
@@ -135,6 +137,7 @@ export async function request_store_creation(customer_id, payload) {
     slug: tenant.slug,
     status: tenant.status,
     business_address,
+    store_description,
     created_at: tenant.created_at
   };
 }
@@ -177,6 +180,7 @@ export async function get_customer_store_request(customer_id) {
     status: tenant.status,
     created_at: tenant.created_at,
     business_address: details?.business_address ?? null,
+    store_description: details?.store_description ?? details?.description ?? null,
     id_proof_url,
     business_proof_url,
     documents

@@ -11,12 +11,23 @@ import {
   handle_list_store_requests,
   handle_approve_store_request,
   handle_reject_store_request,
-  handle_get_tenant_detail
+  handle_get_tenant_detail,
+  handle_get_store_categories,
+  handle_add_store_category,
+  handle_remove_store_category
 } from '../controllers/admin-controller.js';
 
 export const admin_router = Router();
 
 const admin_only = [authenticate, require_role('platform_admin')];
+
+// Public / applicant category retrieval
+admin_router.get('/store-categories', handle_get_store_categories);
+
+// Admin category management
+admin_router.get('/admin/store-categories', admin_only, handle_get_store_categories);
+admin_router.post('/admin/store-categories', admin_only, handle_add_store_category);
+admin_router.delete('/admin/store-categories/:name', admin_only, handle_remove_store_category);
 
 admin_router.get('/admin/stats', admin_only, handle_get_platform_stats);
 admin_router.get('/admin/users', admin_only, handle_list_platform_users);
