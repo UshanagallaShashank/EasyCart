@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 
 interface CustomerProfileModalProps {
   open: boolean;
@@ -94,13 +95,18 @@ export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfi
           >
             <PackageCheck className="size-4" /> View My Orders
           </Button>
-          <Button
-            type="button"
-            onClick={handleLogout}
-            className="h-10 rounded-xl gap-2 font-bold bg-rose-600 text-white hover:bg-rose-700 shadow-xs"
-          >
-            <LogOut className="size-4 text-white" /> <span className="text-white">Log out</span>
-          </Button>
+          <LogoutConfirmDialog
+            role="customer"
+            onConfirm={handleLogout}
+            trigger={
+              <Button
+                type="button"
+                className="h-10 rounded-xl gap-2 font-bold bg-rose-600 text-white hover:bg-rose-700 shadow-xs cursor-pointer"
+              >
+                <LogOut className="size-4 text-white" /> <span className="text-white">Log out</span>
+              </Button>
+            }
+          />
         </div>
       </DialogContent>
     </Dialog>

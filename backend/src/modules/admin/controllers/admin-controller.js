@@ -9,6 +9,11 @@ import {
   reject_store_request
 } from '../services/admin-service.js';
 import { get_tenant_detail } from '../services/admin-tenant-detail-service.js';
+import {
+  list_admin_notifications,
+  mark_admin_notification_read,
+  mark_all_admin_notifications_read
+} from '../services/admin-notification-service.js';
 
 export async function handle_list_tenants(req, res, next) {
   try {
@@ -146,6 +151,34 @@ export async function handle_remove_store_category(req, res, next) {
 export async function handle_reject_store_request(req, res, next) {
   try {
     const result = await reject_store_request(req.params.id);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_list_admin_notifications(req, res, next) {
+  try {
+    const data = await list_admin_notifications();
+    res.status(200).json(data);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_read_admin_notification(req, res, next) {
+  try {
+    const result = mark_admin_notification_read(req.params.id);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_mark_all_admin_notifications_read(req, res, next) {
+  try {
+    const { ids } = req.body || {};
+    const result = await mark_all_admin_notifications_read(ids || []);
     res.status(200).json(result);
   } catch (err) {
     next(err);
