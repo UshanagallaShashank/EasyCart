@@ -79,3 +79,14 @@ export interface PlatformUser {
   created_at: string;
   store: { id: string; name: string; slug: string } | null;
 }
+
+export interface AdminNotification {
+  id: string;
+  type: 'store_request' | 'store_suspended' | 'store_active' | string;
+  title: string;
+  message: string;
+  link?: string;
+  priority?: 'high' | 'medium' | 'low';
+  is_read: boolean;
+  created_at: string;
+}

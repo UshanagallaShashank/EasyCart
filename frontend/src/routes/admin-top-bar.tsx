@@ -5,6 +5,7 @@ import { useAuth } from '@/shared/auth/auth-context';
 import { find_nav_title } from '@/components/app-shell/nav-matching';
 import { ADMIN_SECTIONS } from './admin-links';
 import { AdminUserMenu } from './admin-user-menu';
+import { AdminNotificationBell } from '@/features/admin/components/admin-notification-bell';
 
 export function AdminTopBar({ onOpenMenu }: { onOpenMenu(): void }) {
   const { logout } = useAuth();
@@ -14,8 +15,11 @@ export function AdminTopBar({ onOpenMenu }: { onOpenMenu(): void }) {
     <header className="safe-top z-20 flex h-14 shrink-0 items-center gap-3 border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md md:px-6">
       <button onClick={onOpenMenu} aria-label="Open menu" className="-ml-2 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"><Menu className="size-5" /></button>
       <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900">{title ?? 'Admin'}</span>
-      <AdminUserMenu />
-      <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-4" /></button>
+      <div className="flex items-center gap-2">
+        <AdminNotificationBell />
+        <AdminUserMenu />
+        <button type="button" onClick={logout} aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-4" /></button>
+      </div>
     </header>
   );
 }
