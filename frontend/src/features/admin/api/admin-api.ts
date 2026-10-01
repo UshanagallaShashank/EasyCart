@@ -1,5 +1,5 @@
 import { apiRequest } from '@/shared/api/api-client';
-import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser, StoreRequest } from '../types/admin-types';
+import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser, StoreRequest, AdminNotification } from '../types/admin-types';
 
 export function listTenants(): Promise<{ tenants: AdminTenant[] }> {
   return apiRequest('/admin/tenants');
@@ -49,4 +49,19 @@ export function getPlatformStats(): Promise<PlatformStats> {
 
 export function listPlatformUsers(): Promise<{ users: PlatformUser[] }> {
   return apiRequest('/admin/users');
+}
+
+export function listAdminNotifications(): Promise<{ notifications: AdminNotification[]; unread_count: number }> {
+  return apiRequest('/admin/notifications');
+}
+
+export function markAdminNotificationRead(id: string): Promise<{ success: boolean; id: string }> {
+  return apiRequest(`/admin/notifications/${id}/read`, { method: 'PATCH' });
+}
+
+export function markAllAdminNotificationsRead(ids: string[]): Promise<{ success: boolean; count: number }> {
+  return apiRequest('/admin/notifications/mark-all-read', {
+    method: 'POST',
+    body: JSON.stringify({ ids })
+  });
 }
