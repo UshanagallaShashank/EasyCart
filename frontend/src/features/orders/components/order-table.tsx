@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, Search, Store, Truck } from 'lucide-react';
+import { ChevronRight, Store, Truck } from 'lucide-react';
+import { SearchField } from '@/components/search-field';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -43,15 +44,7 @@ export function OrderTable() {
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <OrderFilterTabs value={filter} counts={counts} onChange={setFilter} />
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search order ID"
-            className="h-9 w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 text-xs outline-none transition-colors placeholder:text-slate-400 focus:border-sky-400 md:w-56"
-          />
-        </div>
+        <SearchField value={search} onChange={setSearch} placeholder="Search order ID" />
       </div>
 
       {!visibleOrders.length ? (

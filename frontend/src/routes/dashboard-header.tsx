@@ -1,26 +1,31 @@
 // Slim top bar: mobile menu button with slide-in drawer, live store link and notifications.
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { ExternalLink, Menu, X } from 'lucide-react';
 import { useOwnStore } from '@/features/stores/hooks/use-own-store';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
 import { DashboardNavContent } from './dashboard-nav';
+import { find_dashboard_link } from './dashboard-links';
 
 export function DashboardHeader() {
   const { data: store } = useOwnStore();
   const [menuOpen, setMenuOpen] = useState(false);
+  const current = find_dashboard_link(useLocation().pathname);
 
   return (
     <>
-      <header className="z-20 flex h-14 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md md:px-6">
-        <button
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          className="rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"
-        >
-          <Menu className="size-5" />
-        </button>
-        <div className="hidden lg:block" />
+      <header className="safe-top z-20 flex h-14 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/80 px-4 backdrop-blur-md md:px-6">
+        <div className="flex min-w-0 items-center gap-2">
+          <button
+            onClick={() => setMenuOpen(true)}
+            aria-label="Open menu"
+            className="-ml-2 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"
+          >
+            <Menu className="size-5" />
+          </button>
+          <span className="truncate text-sm font-semibold text-slate-900">{current?.label ?? store?.name}</span>
+        </div>
         <div className="flex items-center gap-3">
           {store?.slug && (
             <a
@@ -52,7 +57,7 @@ export function DashboardHeader() {
               onClick={() => setMenuOpen(false)}
             />
             <motion.div
-              className="absolute inset-y-0 left-0 w-64 max-w-[85vw] shadow-2xl"
+              className="absolute inset-y-0 left-0 w-72 max-w-[85vw] shadow-2xl"
               initial={{ x: '-100%' }}
               animate={{ x: 0 }}
               exit={{ x: '-100%' }}
