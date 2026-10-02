@@ -8,8 +8,10 @@ import { find_orders_by_riders } from '../repositories/delivery-order-repository
 import { create_delivery_code, create_pickup_code, MAX_CODE_ATTEMPTS } from '../lib/delivery-codes.js';
 import { ACTIVE_RIDER_STAGES, is_rider_available } from '../lib/delivery-stages.js';
 import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
+import { estimate_arrival } from '../lib/estimate-arrival.js';
 import { to_handover_rider } from '../lib/rider-views.js';
 import { dispatch_order, refresh_dispatch, store_point } from './dispatch-service.js';
+import { order_point } from '../lib/order-point.js';
 import { delivery_file_url } from './delivery-file-service.js';
 
 function timeline(order) {
@@ -25,6 +27,17 @@ function timeline(order) {
 async function base_delivery(order) {
   const rider = order.rider_id ? await find_rider_by_id(order.rider_id) : null;
   const accepted = order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status);
+
+  // While the rider is heading to the store, show how far they are and roughly how long they need.
+  // (After pickup there is no customer location on record, so no arrival time is shown for that last leg.)
+  const heading_to_store = order.fulfillment_status === 'rider_assigned' && order.rider_offer_status === 'accepted';
+  const store = heading_to_store ? await find_store_by_tenant_id(order.tenant_id) : null;
+  const pickup_eta = heading_to_store ? estimate_arrival(rider, store_point(store)) : null;
+
+  // On the last leg, the same from the rider's position to the customer's pin (only if the customer dropped one).
+  const on_the_way = order.fulfillment_status === 'dispatched' && order.status !== 'cancelled';
+  const dropoff_eta = on_the_way ? estimate_arrival(rider, order_point(order)) : null;
+
   return {
     order_id: order.id,
     stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
@@ -32,6 +45,8 @@ async function base_delivery(order) {
     // Only a rider who accepted is shown, so nobody sees a rider who may still pass on the order.
     rider: accepted ? await to_handover_rider(rider, { include_phone: order.fulfillment_status !== 'delivered' }) : null,
     timeline: timeline(order),
+    pickup_eta,
+    dropoff_eta,
     cash_collected: order.cash_collected ?? null,
     proof_photo_url: order.delivery_photo_path ? await delivery_file_url(order.delivery_photo_path) : null
   };

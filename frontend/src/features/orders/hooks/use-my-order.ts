@@ -4,6 +4,8 @@ import { getMyOrder } from '../api/customer-order-api';
 export function useMyOrder(id: string) {
   return useQuery({
     queryKey: ['my-orders', id],
-    queryFn: async () => (await getMyOrder(id)).order
+    queryFn: async () => (await getMyOrder(id)).order,
+    // Keep the page up to date while the order is still open, so a new rider or status shows without reloading.
+    refetchInterval: (query) => (['fulfilled', 'cancelled'].includes(query.state.data?.status ?? '') ? false : 20_000)
   });
 }
