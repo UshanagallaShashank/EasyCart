@@ -16,6 +16,9 @@ export function LoginPage() {
           <p className="text-center text-xs text-slate-500 pt-1">
             New here? <Link to="/register" className="text-sky-600 font-semibold hover:underline">Create an account</Link>
           </p>
+          <p className="text-center text-[11px] text-slate-400 -mt-2">
+            Ride a bike? <Link to="/rider/register" className="text-sky-600 font-semibold hover:underline">Become a delivery partner</Link>
+          </p>
         </AuthCard>
       </main>
       <footer className="text-center text-[11px] text-slate-400 py-2">

@@ -5,10 +5,12 @@ import { useAuth } from '@/shared/auth/auth-context';
 import { RequireAuth } from './require-auth';
 import { RequireAdmin } from './require-admin';
 import { RequireCustomerAuth } from './require-customer-auth';
-import { DashboardLayout, AdminLayout, StorefrontLayout } from './lazy-layouts';
+import { RequireRider } from './require-rider';
+import { DashboardLayout, AdminLayout, StorefrontLayout, RiderLayout } from './lazy-layouts';
 import { LoginPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-pages';
-import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage } from './lazy-dashboard-pages';
-import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage } from './lazy-admin-pages';
+import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage, StoreDeliveryPage } from './lazy-dashboard-pages';
+import { RiderRegisterPage, RiderOnboardingPage, RiderHomePage, RiderOrderPage, RiderHistoryPage, RiderEarningsPage, RiderProfilePage } from './lazy-rider-pages';
+import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage, RidersPage, RiderDetailPage, DeliveriesPage } from './lazy-admin-pages';
 import { LegacyShopRedirect, BareCustomerRedirect } from './legacy-redirects';
 import { CustomerHomePage } from './customer-home-page';
 import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
@@ -23,7 +25,7 @@ function HomeRedirect() {
   if (!user && customer && lastSlug) return <Navigate to={customerOrdersPath(lastSlug)} replace />;
   if (!user && customer) return <CustomerHomePage />;
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={user.role === 'platform_admin' ? '/admin' : '/dashboard'} replace />;
+  return <Navigate to={user.role === 'platform_admin' ? '/admin' : user.role === 'delivery_partner' ? '/rider' : '/dashboard'} replace />;
 }
 
 export function AppRoutes() {
@@ -47,6 +49,7 @@ export function AppRoutes() {
           <Route path="customers" element={<CustomersPage />} />
           <Route path="customers/:id" element={<CustomerDetailPage />} />
           <Route path="coupons" element={<CouponsPage />} />
+          <Route path="delivery" element={<StoreDeliveryPage />} />
         </Route>
       </Route>
 
@@ -56,9 +59,25 @@ export function AppRoutes() {
           <Route path="stores" element={<TenantsPage />} />
           <Route path="stores/:id" element={<TenantDetailPage />} />
           <Route path="users" element={<UsersPage />} />
+          <Route path="riders" element={<RidersPage />} />
+          <Route path="riders/:id" element={<RiderDetailPage />} />
+          <Route path="deliveries" element={<DeliveriesPage />} />
           <Route path="insights/sales" element={<SalesInsightsPage />} />
           <Route path="insights/growth" element={<GrowthInsightsPage />} />
           <Route path="account" element={<AdminAccountPage />} />
+        </Route>
+      </Route>
+
+      {/* Delivery partners: public sign-up, then their own app under /rider. */}
+      <Route path="/rider/register" element={<RiderRegisterPage />} />
+      <Route element={<RequireRider />}>
+        <Route path="/rider" element={<RiderLayout />}>
+          <Route index element={<RiderHomePage />} />
+          <Route path="onboarding" element={<RiderOnboardingPage />} />
+          <Route path="orders/:id" element={<RiderOrderPage />} />
+          <Route path="history" element={<RiderHistoryPage />} />
+          <Route path="earnings" element={<RiderEarningsPage />} />
+          <Route path="profile" element={<RiderProfilePage />} />
         </Route>
       </Route>
 

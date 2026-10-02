@@ -68,7 +68,7 @@ export interface PlatformStats {
   top_stores: { tenant_id: string; name: string; slug: string; revenue: number; orders: number }[];
 }
 
-export type PlatformRole = 'tenant_owner' | 'customer' | 'platform_admin';
+export type PlatformRole = 'tenant_owner' | 'customer' | 'delivery_partner' | 'platform_admin';
 
 export interface PlatformUser {
   id: string;

@@ -11,7 +11,8 @@ export const OFFER_SECONDS = 120;
 export const MAX_ACTIVE_ORDERS = 2;
 
 export function is_rider_flow(order) {
-  return Boolean(order.rider_id) || RIDER_STAGES.slice(0, 3).includes(order.fulfillment_status);
+  // "dispatched" alone is not enough: a store delivering with its own staff uses it too.
+  return Boolean(order.rider_id) || ['ready_for_delivery', 'rider_assigned'].includes(order.fulfillment_status);
 }
 
 export function is_rider_available(rider, now = Date.now()) {

@@ -5,6 +5,7 @@ import type { PlatformRole } from '../types/admin-types';
 const ROLE_STYLES: Record<PlatformRole, { label: string; className: string }> = {
   tenant_owner: { label: 'Store owner', className: 'bg-sky-50 text-sky-700' },
   customer: { label: 'Customer', className: 'bg-violet-50 text-violet-700' },
+  delivery_partner: { label: 'Delivery partner', className: 'bg-emerald-50 text-emerald-700' },
   platform_admin: { label: 'Admin', className: 'bg-slate-900 text-white' }
 };
 

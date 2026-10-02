@@ -47,6 +47,7 @@ describe('delivery stages', () => {
     expect(is_rider_flow({ fulfillment_status: 'not_started' })).toBe(false);
     expect(is_rider_flow({ fulfillment_status: 'ready_for_delivery' })).toBe(true);
     expect(is_rider_flow({ fulfillment_status: 'delivered', rider_id: 'r1' })).toBe(true);
+    expect(is_rider_flow({ fulfillment_status: 'dispatched', rider_id: null })).toBe(false);
   });
 });
 
