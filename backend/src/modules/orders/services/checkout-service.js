@@ -4,6 +4,7 @@ import { get_public_product } from '../../products/services/product-service.js';
 import { get_own_store } from '../../stores/services/store-service.js';
 import { resolve_active_coupon, apply_coupon_discount } from '../../coupons/services/coupon-service.js';
 import { create_order } from './order-service.js';
+import { merge_cart_lines } from '../lib/order-rules.js';
 
 function resolve_unit_price_and_stock(product, variant_label) {
   if (!variant_label) {
@@ -25,11 +26,11 @@ export async function checkout(tenant_id, customer_id, payload) {
   const line_items = [];
   let subtotal = 0;
 
-  for (const item of parsed.data.items) {
+  for (const item of merge_cart_lines(parsed.data.items)) {
     const product = await get_public_product(tenant_id, item.product_id);
     const { price, stock } = resolve_unit_price_and_stock(product, item.variant_label);
     if (stock < item.quantity) {
-      throw new AppError(`Insufficient stock for ${product.name}`, 400);
+      throw new AppError(stock > 0 ? `Only ${stock} left of ${product.name}` : `${product.name} is out of stock`, 400);
     }
     line_items.push({ product_id: product.id, name: product.name, price, quantity: item.quantity, variant_label: item.variant_label });
     subtotal += price * item.quantity;

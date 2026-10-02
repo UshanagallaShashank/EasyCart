@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { AppError } from '../../../platform/shared/app-error.js';
 import { validate_product_input, validate_product_update_input } from '../product-schemas.js';
 import { find_category_by_id } from '../../categories/repositories/category-repository.js';
+import { plan_stock_change } from '../../orders/lib/order-rules.js';
 import {
   find_products_by_tenant,
   find_product_by_id,
@@ -93,4 +94,38 @@ export async function adjust_stock(tenant_id, id, delta) {
   }
   const updated = await update_product(id, tenant_id, { stock_quantity: new_quantity });
   return { product: updated, low_stock: new_quantity <= product.low_stock_threshold };
+}
+
+function group_by_product(lines) {
+  const groups = new Map();
+  for (const line of lines) {
+    if (!groups.has(line.product_id)) groups.set(line.product_id, []);
+    groups.get(line.product_id).push(line);
+  }
+  return groups;
+}
+
+// Takes (sign -1) or returns (sign +1) stock for every line of an order, including sizes/colours.
+// All or nothing: if any product is short, the ones already changed are put back before the error is raised.
+export async function change_order_stock(tenant_id, lines, sign) {
+  const done = [];
+  try {
+    for (const [product_id, product_lines] of group_by_product(lines)) {
+      const product = await find_product_by_id(product_id, tenant_id);
+      if (!product) {
+        // Returning stock for a product the store has since deleted: nothing to put back.
+        if (sign > 0) continue;
+        throw new AppError('A product in your cart is no longer available', 400);
+      }
+      const plan = plan_stock_change(product, product_lines, sign);
+      if (plan.problem) throw new AppError(plan.problem, 400);
+      await update_product(product_id, tenant_id, { stock_quantity: plan.stock_quantity, variants: plan.variants });
+      done.push(product_lines);
+    }
+  } catch (err) {
+    for (const product_lines of done) {
+      await change_order_stock(tenant_id, product_lines, -sign).catch(() => undefined);
+    }
+    throw err;
+  }
 }
