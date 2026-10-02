@@ -27,9 +27,9 @@ export function OrderSettlementCard({ side, settlement, counterpart }: { side: S
       </div>
       {settlement.is_settled ? (
         <p className="text-xs text-slate-500">Settled {formatDateTime(settlement.settled_at)} by {settlement.settled_by === 'rider' ? 'the rider' : 'the store'} ({settlement.method ?? 'cash'}){settlement.note && ` · ${settlement.note}`}</p>
-      ) : (
+      ) : side === 'store' ? (
         <Button size="sm" onClick={() => setOpen(true)} className="self-start">{copy.action}</Button>
-      )}
+      ) : null}
       <SettleDialog side={side} settlement={open ? settlement : null} counterpart={counterpart} onClose={() => setOpen(false)} />
     </div>
   );
