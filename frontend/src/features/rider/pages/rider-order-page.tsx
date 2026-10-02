@@ -93,9 +93,9 @@ export function RiderOrderPage() {
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 text-sm">
                   <p className="font-semibold text-slate-900">{order.store.name}</p>
-                  <p className="text-xs text-slate-500">{order.store.address_line ?? 'Address not set by the store'} · {formatDistance(order.store.distance_km)}</p>
+                  <p className="text-xs text-slate-500">{order.store.address ?? 'Address not set by the store'} · {formatDistance(order.store.distance_km)}</p>
                 </div>
-                {order.stage === 'to_pickup' && <NavigateButton href={mapsLink(order.store, order.store.address_line)} label="Navigate" />}
+                {order.stage === 'to_pickup' && <NavigateButton href={mapsLink(order.store, order.store.address)} label="Navigate" />}
               </div>
             </FormSection>
 

@@ -127,7 +127,7 @@ export async function get_rider_delivery_settlements(user_id) {
 
   const rows = delivered.map((order) => {
     const store = store_map.get(order.tenant_id);
-    return { order_id: order.id, store_id: order.tenant_id, store_name: store?.name ?? 'Store', store_address: store?.address_line ?? null, created_at: order.created_at, delivered_at: order.delivered_at ?? null, total: order.total, ...calculate_order_settlement(order) };
+    return { order_id: order.id, store_id: order.tenant_id, store_name: store?.name ?? 'Store', store_address: store?.address ?? null, created_at: order.created_at, delivered_at: order.delivered_at ?? null, total: order.total, ...calculate_order_settlement(order) };
   });
   const open = rows.filter((row) => !row.is_settled);
   const done = rows.filter((row) => row.is_settled);

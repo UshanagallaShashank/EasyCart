@@ -6,6 +6,7 @@ export interface CustomerAuthState {
   user: CustomerUser | null;
   login(user: CustomerUser, token: string): void;
   logout(): void;
+  updateUser(nextUser: Partial<CustomerUser>): void;
 }
 
 export const CustomerAuthContext = createContext<CustomerAuthState | null>(null);

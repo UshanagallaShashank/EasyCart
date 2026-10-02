@@ -6,7 +6,7 @@ type StoreAction = 'request-rider' | 'cancel-rider' | 'new-pickup-code' | 'new-d
 
 export const getStoreOrderDelivery = (id: string): Promise<{ delivery: StoreOrderDelivery }> => apiRequest(`/orders/${id}/delivery`);
 export const runStoreDeliveryAction = (id: string, action: StoreAction): Promise<{ delivery: StoreOrderDelivery }> => apiRequest(`/orders/${id}/delivery/${action}`, { method: 'POST' });
-export const getRidersNearby = (): Promise<{ store_location: { latitude: number; longitude: number; address_line: string | null } | null; riders: NearbyRider[] }> => apiRequest('/delivery/riders-nearby');
+export const getRidersNearby = (): Promise<{ store_location: { latitude: number; longitude: number; address: string | null } | null; riders: NearbyRider[] }> => apiRequest('/delivery/riders-nearby');
 export const getStoreDeliveries = (): Promise<{ deliveries: StoreDeliveryRow[] }> => apiRequest('/delivery/orders');
 export const getStoreSettlements = (): Promise<StoreSettlementSummary> => apiRequest('/delivery/settlements');
 export const settleStoreOrderDelivery = (id: string, payload?: { method?: string; note?: string }): Promise<{ ok: boolean; settlement: OrderSettlementInfo }> =>

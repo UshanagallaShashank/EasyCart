@@ -5,7 +5,7 @@ import { validate_login_input } from '../auth/auth-schemas.js';
 import { validate_slug } from '../../platform/shared/slug-validator.js';
 import { hash_password, check_password_matches } from '../../platform/shared/hash.js';
 import { sign_token } from '../../platform/shared/jwt.js';
-import { find_user_by_email, save_user } from '../users/repositories/user-repository.js';
+import { find_user_by_email, save_user, update_user_last_active } from '../users/repositories/user-repository.js';
 import { find_tenant_by_slug, find_tenant_by_owner_id, save_tenant } from '../tenants/repositories/tenant-repository.js';
 import { save_store } from '../stores/repositories/store-repository.js';
 import { clear_tenants_cache } from '../admin/services/admin-service.js';
@@ -60,6 +60,12 @@ export async function login_customer(payload) {
   if (!user || !password_matches || user.role !== 'customer') {
     throw new AppError('Invalid email or password', 401);
   }
+
+  if (user.status === 'inactive') {
+    throw new AppError('Your account has been deactivated. Please contact support.', 403);
+  }
+
+  await update_user_last_active(user.id);
 
   const token = sign_token({ sub: user.id, email: user.email, username: user.username, role: user.role, tenant_id: null });
 

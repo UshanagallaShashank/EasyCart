@@ -44,7 +44,7 @@ async function to_rider_order(order, rider) {
     offer_expires_at: order.rider_offer_status === 'offered' ? order.rider_offer_expires_at : null,
     store: {
       name: store?.name ?? 'Store',
-      address_line: store?.address_line ?? null,
+      address: store?.address ?? null,
       latitude: store_location?.latitude ?? null,
       longitude: store_location?.longitude ?? null,
       distance_km: store_location ? Math.round((haversine_km(rider, store_location) ?? 0) * 10) / 10 : null

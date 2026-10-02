@@ -1,9 +1,12 @@
 import { Package, Trash2, Minus, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 import { useCart } from '../cart-context';
 import type { CartLine } from '../types/cart-types';
 
 export function CartLineRow({ line }: { line: CartLine }) {
   const { removeItem, updateQuantity } = useCart();
+
+  const isMaxStockReached = line.max_stock !== undefined && line.quantity >= line.max_stock;
 
   return (
     <div className="flex flex-wrap items-center gap-4 rounded-3xl border border-slate-100 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-slate-200">
@@ -33,8 +36,15 @@ export function CartLineRow({ line }: { line: CartLine }) {
           <span className="w-8 text-center font-bold text-slate-900 text-xs">{line.quantity}</span>
           <button
             type="button"
-            onClick={() => updateQuantity(line.product_id, line.quantity + 1, line.variant_label)}
-            className="flex size-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            onClick={() => {
+              if (isMaxStockReached) {
+                toast.error(`Stock is only ${line.max_stock} left for this item`);
+                return;
+              }
+              updateQuantity(line.product_id, line.quantity + 1, line.variant_label);
+            }}
+            disabled={isMaxStockReached}
+            className="flex size-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
           >
             <Plus className="size-3" />
           </button>

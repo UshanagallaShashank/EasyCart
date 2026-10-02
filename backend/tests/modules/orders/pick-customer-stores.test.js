@@ -8,7 +8,7 @@ const STORE_B = { tenant_id: 'tb', slug: 'store-b', name: 'Store B', logo_url: '
 describe('pick_customer_stores', () => {
   it('returns the store the customer ordered from', () => {
     const orders = [{ tenant_id: 'ta', created_at: '2026-10-01T10:00:00Z' }];
-    expect(pick_customer_stores(orders, [STORE_A])).toEqual([{ slug: 'store-a', name: 'Store A', logo_url: null }]);
+    expect(pick_customer_stores(orders, [STORE_A])).toEqual([{ slug: 'store-a', name: 'Store A', logo_url: null, max_delivery_radius_km: null, pincode: null }]);
   });
 
   it('lists the most recently ordered store first', () => {

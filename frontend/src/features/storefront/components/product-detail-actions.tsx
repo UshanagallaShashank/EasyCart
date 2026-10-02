@@ -9,24 +9,67 @@ import { useCart } from '@/features/cart/cart-context';
 import type { Product } from '@/features/products/types/product-types';
 
 export function ProductDetailActions({ product, slug }: { product: Product; slug?: string }) {
-  const { addItem } = useCart();
+  const { addItem, lines } = useCart();
   const navigate = useNavigate();
   const [variantLabel, setVariantLabel] = useState<string | undefined>();
   const [quantity, setQuantity] = useState(1);
+
   const variant = product.variants.find((v) => v.label === variantLabel);
   const price = variant?.price ?? product.price;
 
+  // Maximum stock available for product or selected variant
+  const availableStock = variant ? (variant.stock ?? 0) : (product.stock_quantity ?? 0);
+
+  // Existing quantity already in cart
+  const existingInCart = lines.find(
+    (l) => l.product_id === product.id && l.variant_label === variantLabel
+  )?.quantity ?? 0;
+
   function handleAddToCart() {
-    addItem({ product_id: product.id, name: product.name, price, quantity, variant_label: variantLabel, image: product.images[0] });
-    toast.success(`Added ${product.name} to cart`);
+    if (availableStock <= 0) {
+      toast.error('Item is out of stock');
+      return;
+    }
+    if (existingInCart + quantity > availableStock) {
+      toast.error(`Stock is only ${availableStock} left (${existingInCart} already in cart). Cannot add ${quantity} more.`);
+      return;
+    }
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price,
+      quantity,
+      variant_label: variantLabel,
+      image: product.images[0],
+      max_stock: availableStock
+    });
+    toast.success(`Added ${quantity} × ${product.name} to cart`);
   }
 
   function handleBuyNow() {
-    addItem({ product_id: product.id, name: product.name, price, quantity, variant_label: variantLabel, image: product.images[0] });
+    if (availableStock <= 0) {
+      toast.error('Item is out of stock');
+      return;
+    }
+    if (existingInCart + quantity > availableStock) {
+      toast.error(`Stock is only ${availableStock} left. Cannot add ${quantity} items.`);
+      return;
+    }
+    addItem({
+      product_id: product.id,
+      name: product.name,
+      price,
+      quantity,
+      variant_label: variantLabel,
+      image: product.images[0],
+      max_stock: availableStock
+    });
     if (slug) {
       navigate(`/${slug}/cart`);
     }
   }
+
+  const isOutOfStock = availableStock <= 0;
 
   return (
     <div className="flex flex-col gap-5">
@@ -47,15 +90,23 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
           <button
             type="button"
             onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-            className="flex size-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            disabled={quantity <= 1 || isOutOfStock}
+            className="flex size-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
           >
             <Minus className="size-3.5" />
           </button>
           <span className="w-8 text-center font-bold text-slate-900 text-sm">{quantity}</span>
           <button
             type="button"
-            onClick={() => setQuantity((q) => q + 1)}
-            className="flex size-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
+            onClick={() => {
+              if (quantity >= availableStock) {
+                toast.error(`Only ${availableStock} items in stock`);
+                return;
+              }
+              setQuantity((q) => Math.min(availableStock, q + 1));
+            }}
+            disabled={quantity >= availableStock || isOutOfStock}
+            className="flex size-7 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
           >
             <Plus className="size-3.5" />
           </button>
@@ -65,9 +116,10 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
         <Button
           type="button"
           onClick={handleAddToCart}
-          className="h-11 rounded-full bg-[#0F172A] px-7 text-xs font-bold text-white hover:bg-slate-800 shadow-md shadow-slate-900/10 gap-2 cursor-pointer flex-1 sm:flex-none justify-center"
+          disabled={isOutOfStock}
+          className="h-11 rounded-full bg-[#0F172A] px-7 text-xs font-bold text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md shadow-slate-900/10 gap-2 cursor-pointer flex-1 sm:flex-none justify-center"
         >
-          <ShoppingBag className="size-4" /> Add to cart
+          <ShoppingBag className="size-4" /> {isOutOfStock ? 'Out of stock' : 'Add to cart'}
         </Button>
       </div>
 
@@ -76,9 +128,10 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
         type="button"
         variant="outline"
         onClick={handleBuyNow}
-        className="h-11 w-full rounded-full border border-slate-200 bg-slate-50/50 px-6 text-xs font-bold text-[#0F172A] hover:bg-slate-100 hover:border-slate-300 gap-2 cursor-pointer justify-center"
+        disabled={isOutOfStock}
+        className="h-11 w-full rounded-full border border-slate-200 bg-slate-50/50 px-6 text-xs font-bold text-[#0F172A] hover:bg-slate-100 hover:border-slate-300 disabled:opacity-40 disabled:cursor-not-allowed gap-2 cursor-pointer justify-center"
       >
-        <Zap className="size-4 text-amber-500 fill-amber-500" /> Buy now
+        <Zap className="size-4 text-amber-500 fill-amber-500" /> {isOutOfStock ? 'Out of stock' : 'Buy now'}
       </Button>
 
       {/* Trust Perks Box */}

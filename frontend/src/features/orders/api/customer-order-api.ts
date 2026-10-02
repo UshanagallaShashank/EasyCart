@@ -17,6 +17,8 @@ export interface MyStore {
   slug: string;
   name: string;
   logo_url: string | null;
+  max_delivery_radius_km?: number;
+  pincode?: string | null;
 }
 
 // The stores this customer has ordered from, most recent first.

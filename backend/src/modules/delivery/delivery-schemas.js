@@ -87,11 +87,6 @@ export const settlement_schema = z.object({
   note: z.string().trim().max(200).optional()
 });
 
-export const store_location_schema = z.object({
-  latitude: latitude_schema,
-  longitude: longitude_schema,
-  address_line: z.string().trim().min(3, 'Store address is required').max(200)
-});
 
 export function issues_message(error) {
   return error.issues.map((issue) => issue.message).join(', ');
