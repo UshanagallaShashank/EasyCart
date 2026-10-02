@@ -69,7 +69,12 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                   {store.name.charAt(0).toUpperCase()}
                 </span>
               )}
-              <span className="max-w-[9rem] truncate font-heading text-base font-bold text-slate-900 transition-colors group-hover:text-sky-600 sm:max-w-none sm:text-lg">{store.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="max-w-[9rem] truncate font-heading text-base font-bold text-slate-900 transition-colors group-hover:text-sky-600 sm:max-w-none sm:text-lg">{store.name}</span>
+                <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
+                  Store
+                </span>
+              </div>
             </Link>
           </div>
 
