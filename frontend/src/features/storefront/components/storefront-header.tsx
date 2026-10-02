@@ -27,7 +27,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
   const { user, logout } = useCustomerAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const count = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const count = lines.length;
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
