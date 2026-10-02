@@ -1,5 +1,5 @@
 // Navigation header for public customer storefronts.
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserCheck, User, LogOut, PackageCheck, LogIn, UserPlus, ChevronDown, Menu, X, Home, Package, ShoppingCart, Store } from 'lucide-react';
@@ -19,6 +19,9 @@ import type { PublicStore } from '../types/storefront-types';
 import { CustomerProfileModal } from './customer-profile-modal';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 
+import { CustomerLocationBadge } from './customer-location-badge';
+import { checkStoreDeliveryEligibility } from '../lib/delivery-radius';
+
 export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: string }) {
   const { lines } = useCart();
   const { user, logout } = useCustomerAuth();
@@ -28,6 +31,16 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
 
   const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [delivery, setDelivery] = useState(() => checkStoreDeliveryEligibility(store));
+
+  useEffect(() => {
+    function sync() {
+      setDelivery(checkStoreDeliveryEligibility(store));
+    }
+    sync();
+    window.addEventListener('customer_address_changed', sync);
+    return () => window.removeEventListener('customer_address_changed', sync);
+  }, [store]);
 
   function handleLogout() {
     logout();
@@ -43,6 +56,11 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
         role="customer"
         onConfirm={handleLogout}
       />
+      {!delivery.isEligible && (
+        <div className="bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-white px-4 py-1.5 text-center text-xs font-bold shadow-xs flex items-center justify-center gap-2">
+          <span>{delivery.message}</span>
+        </div>
+      )}
       <motion.header
         initial={{ y: -64, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -78,8 +96,10 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
             </Link>
           </div>
 
-          {/* Top bar right area: Cart + User / Account */}
+          {/* Top bar right area: Location + Cart + User / Account */}
           <nav className="flex items-center gap-2.5">
+            <CustomerLocationBadge store={store} />
+
             <Link
               to={`/${slug}/cart`}
               className="relative flex size-9 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-700 hover:border-sky-300 hover:bg-sky-50 hover:text-sky-600 transition-all"

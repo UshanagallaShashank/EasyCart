@@ -8,6 +8,11 @@ export interface Store {
   banner_url: string | null;
   theme: 'default' | 'light' | 'dark';
   delivery_fee: number;
+  max_delivery_radius_km?: number;
+  pincode?: string | null;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   promotion_banner_text: string | null;
   is_published: boolean;
   created_at: string;
@@ -20,5 +25,10 @@ export interface StoreSettingsPayload {
   banner_url?: string;
   theme?: 'default' | 'light' | 'dark';
   delivery_fee?: number;
+  max_delivery_radius_km?: number;
+  pincode?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
   promotion_banner_text?: string;
 }

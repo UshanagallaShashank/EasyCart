@@ -8,6 +8,7 @@ import { useStoreForm } from '../hooks/use-store-form';
 import { StoreHeroBanner } from './store-hero-banner';
 import { StoreBrandingCard } from './store-branding-card';
 import { StoreOperationsCard } from './store-operations-card';
+import { StorePickupLocationCard } from './store-pickup-location-card';
 
 export function StoreSettingsForm({ store }: { store: Store }) {
   const { form, set, is_dirty, isPending, handle_submit, handle_image_persist, reset_form } = useStoreForm(store);
@@ -23,6 +24,7 @@ export function StoreSettingsForm({ store }: { store: Store }) {
           <StoreHeroBanner store={store} />
           <StoreBrandingCard form={form} onUpdate={set} onImagePersist={handle_image_persist} />
           <StoreOperationsCard form={form} onUpdate={set} />
+          <StorePickupLocationCard form={form} onUpdate={set} />
         </div>
         <UnsavedChangesBar visible={is_dirty} isSaving={isPending} onDiscard={reset_form} />
       </div>

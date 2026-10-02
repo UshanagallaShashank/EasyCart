@@ -6,4 +6,5 @@ export interface CartLine {
   quantity: number;
   variant_label?: string;
   image?: string;
+  max_stock?: number;
 }

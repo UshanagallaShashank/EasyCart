@@ -54,6 +54,11 @@ export async function get_public_store_by_slug(slug) {
     banner_url: store.banner_url,
     theme: store.theme,
     delivery_fee: store.delivery_fee,
+    max_delivery_radius_km: store.max_delivery_radius_km ?? 5,
+    pincode: store.pincode ?? null,
+    address: store.address ?? null,
+    latitude: store.latitude ?? null,
+    longitude: store.longitude ?? null,
     promotion_banner_text: store.promotion_banner_text
   };
 }
