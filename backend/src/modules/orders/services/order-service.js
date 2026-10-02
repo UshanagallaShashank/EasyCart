@@ -15,11 +15,20 @@ import { find_orders_by_tenant, find_orders_by_customer } from '../repositories/
 import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repository.js';
 import { pick_customer_stores } from '../lib/pick-customer-stores.js';
 
+import { find_product_by_id } from '../../products/repositories/product-repository.js';
+
 export async function create_order(
   tenant_id,
   customer_id,
   { items, total, payment_method, fulfillment_method, delivery_address, delivery_fee, coupon_code, discount_amount }
 ) {
+  for (const item of items) {
+    const prod = await find_product_by_id(item.product_id, tenant_id);
+    if (prod && prod.stock_quantity < item.quantity) {
+      throw new AppError(`Item "${item.name || prod.name}" has only ${prod.stock_quantity} in stock. Cannot order ${item.quantity}.`, 400);
+    }
+  }
+
   const order = await save_order({
     id: randomUUID(),
     tenant_id,

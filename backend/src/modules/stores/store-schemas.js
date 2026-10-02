@@ -4,11 +4,16 @@ import { z } from 'zod';
 export const store_settings_schema = z
   .object({
     name: z.string().trim().min(2).max(60).optional(),
-    logo_url: z.union([z.string().url(), z.literal('')]).optional(),
-    banner_url: z.union([z.string().url(), z.literal('')]).optional(),
+    logo_url: z.union([z.string(), z.null()]).optional(),
+    banner_url: z.union([z.string(), z.null()]).optional(),
     theme: z.enum(['default', 'light', 'dark']).optional(),
     delivery_fee: z.number().min(0).optional(),
-    promotion_banner_text: z.string().trim().max(200).optional()
+    max_delivery_radius_km: z.number().min(0).optional(),
+    pincode: z.union([z.string(), z.null()]).optional(),
+    address: z.union([z.string(), z.null()]).optional(),
+    latitude: z.union([z.number(), z.null()]).optional(),
+    longitude: z.union([z.number(), z.null()]).optional(),
+    promotion_banner_text: z.union([z.string(), z.null()]).optional()
   })
   .partial();
 
