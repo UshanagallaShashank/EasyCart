@@ -1,7 +1,7 @@
 // Store owner profile dropdown menu in top bar matching customer dropdown style.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronDown, Store, Settings, LogOut } from 'lucide-react';
+import { ChevronDown, Store, Settings, LogOut, User } from 'lucide-react';
 import { useAuth } from '@/shared/auth/auth-context';
 import { useOwnStore } from '@/features/stores/hooks/use-own-store';
 import {
@@ -12,11 +12,13 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
+import { OwnerProfileModal } from '@/features/stores/components/owner-profile-modal';
 
 export function DashboardUserMenu() {
   const { user, logout } = useAuth();
   const { data: store } = useOwnStore();
   const navigate = useNavigate();
+  const [profileOpen, setProfileOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const displayName = store?.name || user?.username || 'Store';
@@ -24,6 +26,7 @@ export function DashboardUserMenu() {
 
   return (
     <>
+      <OwnerProfileModal open={profileOpen} onOpenChange={setProfileOpen} />
       <LogoutConfirmDialog
         open={showLogoutConfirm}
         onOpenChange={setShowLogoutConfirm}
@@ -58,6 +61,14 @@ export function DashboardUserMenu() {
           </div>
 
           <DropdownMenuSeparator className="my-1 border-slate-100" />
+
+          <DropdownMenuItem
+            className="cursor-pointer gap-2.5 py-2.5 px-3 font-medium text-slate-700 rounded-xl"
+            onSelect={() => setProfileOpen(true)}
+          >
+            <User className="size-4 text-sky-500" />
+            <span>View profile</span>
+          </DropdownMenuItem>
 
           {store?.slug && (
             <DropdownMenuItem
