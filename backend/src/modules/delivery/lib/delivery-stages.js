@@ -33,3 +33,13 @@ export function is_offer_expired(order, now = Date.now()) {
   if (order.fulfillment_status !== 'rider_assigned' || order.rider_offer_status !== 'offered') return false;
   return Boolean(order.rider_offer_expires_at) && new Date(order.rider_offer_expires_at).getTime() <= now;
 }
+
+// The delivery step to show for an order: its fulfillment step, or "cancelled" once cancelled.
+export function delivery_stage(order) {
+  return order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status;
+}
+
+// True once a rider has accepted the order; until then nobody is shown a rider who might still pass on it.
+export function has_confirmed_rider(order) {
+  return order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status);
+}

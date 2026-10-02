@@ -45,18 +45,6 @@ export function useRiderSettlements() {
   });
 }
 
-export function useRiderPayStore(orderId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload?: { method?: string; note?: string }) => api.payStoreForOrder(orderId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['rider'] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['store-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['store-settlements'] });
-    }
-  });
-}
 
 // Any change to the rider profile updates the cached profile right away.
 export function useRiderProfileMutation<T>(run: (input: T) => Promise<{ rider: Rider }>) {
