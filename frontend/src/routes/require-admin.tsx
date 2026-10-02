@@ -4,7 +4,7 @@ import { useAuth } from '@/shared/auth/auth-context';
 
 export function RequireAdmin() {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/admin/login" replace />;
-  if (user.role !== 'platform_admin') return <Navigate to="/admin/login" replace />;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role !== 'platform_admin') return <Navigate to="/login" replace />;
   return <Outlet />;
 }

@@ -1,7 +1,7 @@
 // Customer shopper login form with styled inputs and social options
 import { useState, type FormEvent } from 'react';
 import { toast } from 'sonner';
-import { useCustomerLogin } from '../hooks/use-customer-login';
+import { useLogin } from '@/features/auth/hooks/use-login';
 import { ApiError } from '@/shared/api/api-error';
 import { AuthSubmitButton } from '@/features/auth/components/auth-submit-button';
 import { EmailField } from '@/features/auth/components/email-field';
@@ -11,7 +11,7 @@ import { SocialAuthButtons } from '@/features/auth/components/social-auth-button
 export function CustomerLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const login = useCustomerLogin();
+  const login = useLogin();
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();

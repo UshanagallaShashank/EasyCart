@@ -12,6 +12,7 @@ import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
+import { customerOrdersPath, getLastStoreSlug } from '../lib/customer-paths';
 
 interface CustomerProfileModalProps {
   open: boolean;
@@ -34,8 +35,8 @@ export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfi
 
   function handleViewOrders() {
     onOpenChange(false);
-    const targetSlug = slug || sessionStorage.getItem('last_store_slug');
-    navigate(targetSlug ? `/${targetSlug}/orders` : '/customer/orders');
+    const targetSlug = slug || getLastStoreSlug();
+    navigate(targetSlug ? customerOrdersPath(targetSlug) : '/');
   }
 
   return (

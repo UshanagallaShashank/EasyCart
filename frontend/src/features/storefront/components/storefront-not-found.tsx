@@ -20,7 +20,7 @@ export function StorefrontNotFound({ slug }: { slug: string }) {
           <Link to="/"><ArrowLeft className="mr-2 size-4" /> Back to Home</Link>
         </Button>
         <Button asChild className="bg-sky-600 hover:bg-sky-500 text-white">
-          <Link to="/register">Create Your Store</Link>
+          <Link to="/register">Create an account</Link>
         </Button>
       </div>
     </div>

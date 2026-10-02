@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
+import { customerLoginPath, customerOrdersPath, customerRegisterPath, customerStoreRequestPath } from '../lib/customer-paths';
 import type { PublicStore } from '../types/storefront-types';
 import { CustomerProfileModal } from './customer-profile-modal';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
@@ -138,7 +139,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer gap-2 py-2 px-2"
-                      onSelect={() => navigate(`/${slug}/orders`)}
+                      onSelect={() => navigate(customerOrdersPath(slug))}
                     >
                       <PackageCheck className="size-4 text-sky-500" />
                       <span>My orders</span>
@@ -157,7 +158,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       className="cursor-pointer gap-2 py-2 px-2"
-                      onSelect={() => navigate(`/${slug}/store-request`)}
+                      onSelect={() => navigate(customerStoreRequestPath(slug))}
                     >
                       <Store className="size-4 text-amber-500" />
                       <span>Request to create a store</span>
@@ -180,14 +181,14 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="cursor-pointer gap-2 py-2 px-2"
-                    onSelect={() => navigate(`/customer/login?redirect=${encodeURIComponent('/' + slug)}`)}
+                    onSelect={() => navigate(customerLoginPath(slug, '/' + slug))}
                   >
                     <LogIn className="size-4 text-sky-500" />
                     <span>Sign in</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     className="cursor-pointer gap-2 py-2 px-2"
-                    onSelect={() => navigate(`/customer/register?redirect=${encodeURIComponent('/' + slug)}`)}
+                    onSelect={() => navigate(customerRegisterPath(slug, '/' + slug))}
                   >
                     <UserPlus className="size-4 text-slate-500" />
                     <span>Create account</span>
@@ -195,7 +196,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                       className="cursor-pointer gap-2 py-2 px-2"
-                      onSelect={() => navigate(`/${slug}/store-request`)}
+                      onSelect={() => navigate(customerStoreRequestPath(slug))}
                     >
                       <Store className="size-4 text-amber-500" />
                       <span>Request to create a store</span>
@@ -246,7 +247,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                 )}
               </Link>
               <Link
-                to={`/${slug}/orders`}
+                to={customerOrdersPath(slug)}
                 onClick={() => setMobileMenuOpen(false)}
                 className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-100"
               >
