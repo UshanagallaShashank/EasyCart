@@ -1,0 +1,58 @@
+{
+  "expo": {
+    "name": "EasyCart",
+    "slug": "easycart",
+    "scheme": "easycart",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.easycart.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "EasyCart uses the camera for delivery photos and partner documents.",
+        "NSLocationWhenInUseUsageDescription": "EasyCart uses your location to match nearby deliveries."
+      }
+    },
+    "android": {
+      "package": "com.easycart.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#E0F2FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-image-picker",
+        {
+          "cameraPermission": "EasyCart uses the camera for delivery photos and partner documents."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "EasyCart uses your location to match nearby deliveries."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
