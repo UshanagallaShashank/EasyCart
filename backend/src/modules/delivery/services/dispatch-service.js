@@ -55,16 +55,13 @@ async function pass_on_expired_offer(order) {
   if (released) await dispatch_order(released);
 }
 
-const REFRESH_EVERY_MS = 10 * 1000;
-let last_refresh = 0;
+// Looks at every waiting order and every expired offer.
+// One loop per server process does this every few seconds, so reading a screen never has to.
+// Running it on several servers at once is safe: each change is a conditional update, so only one wins.
 let running = null;
 
-// Looks at every waiting order and every expired offer. Runs when riders or stores open their screens,
-// at most every few seconds, so no background timer is needed.
-export function refresh_dispatch({ force = false } = {}) {
+export function refresh_dispatch() {
   if (running) return running;
-  if (!force && Date.now() - last_refresh < REFRESH_EVERY_MS) return Promise.resolve();
-  last_refresh = Date.now();
   running = (async () => {
     const orders = await find_orders_in_stages(['ready_for_delivery', 'rider_assigned']);
     for (const order of orders) {
@@ -73,4 +70,14 @@ export function refresh_dispatch({ force = false } = {}) {
     }
   })().finally(() => { running = null; });
   return running;
+}
+
+const LOOP_EVERY_MS = 10 * 1000;
+
+export function start_dispatch_loop() {
+  const timer = setInterval(() => {
+    refresh_dispatch().catch((err) => console.warn('Dispatch loop failed:', err?.message || err));
+  }, LOOP_EVERY_MS);
+  timer.unref();
+  return timer;
 }

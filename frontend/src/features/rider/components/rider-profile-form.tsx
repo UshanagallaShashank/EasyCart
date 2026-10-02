@@ -22,13 +22,20 @@ function pickFields(rider: Rider): RiderProfileFields {
 
 export function RiderProfileForm({ rider, onSaved, submitLabel = 'Save details' }: { rider: Rider; onSaved?(): void; submitLabel?: string }) {
   const [form, setForm] = useState<RiderProfileFields>(() => pickFields(rider));
+  const [touched, setTouched] = useState(false);
   const save = useRiderProfileMutation(updateMyProfile);
   const fullyEditable = rider.status === 'draft' || rider.status === 'rejected';
   const isBicycle = form.vehicle_type === 'bicycle';
 
-  useEffect(() => setForm(pickFields(rider)), [rider]);
+  // Show fresh details when they change elsewhere (an admin review, a live update), unless the rider is mid-edit.
+  useEffect(() => {
+    if (!touched) setForm(pickFields(rider));
+  }, [rider, touched]);
 
-  const set = (key: keyof RiderProfileFields) => (value: string) => setForm((prev) => ({ ...prev, [key]: value }));
+  const set = (key: keyof RiderProfileFields) => (value: string) => {
+    setTouched(true);
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
   const locked = (key: keyof RiderProfileFields) => !fullyEditable && !ALWAYS_EDITABLE.has(key);
   const input = (key: keyof RiderProfileFields) => ({ id: key, value: form[key], onChange: (e: { target: { value: string } }) => set(key)(e.target.value), disabled: locked(key) });
 
@@ -36,6 +43,7 @@ export function RiderProfileForm({ rider, onSaved, submitLabel = 'Save details' 
     e.preventDefault();
     save.mutate(form, {
       onSuccess: () => {
+        setTouched(false);
         toast.success('Details saved');
         onSaved?.();
       },

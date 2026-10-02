@@ -4,6 +4,7 @@ import { DB_PROVIDER } from '../../../env.js';
 import { select_all_rows } from '../../../platform/shared/select-all-rows.js';
 import { chunk_array } from '../../../platform/shared/chunk-array.js';
 import { Rider } from './rider-model.js';
+import { publish_rider_change } from '../../../platform/live/live-bus.js';
 
 const TABLE = 'delivery_partners';
 
@@ -66,17 +67,26 @@ export async function save_rider(rider) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from(TABLE).insert([row]).select().single();
     if (error) throw error;
+    publish_rider_change(normalize(data));
     return normalize(data);
   }
-  return normalize((await Rider.create(row)).toObject());
+  const created = normalize((await Rider.create(row)).toObject());
+  publish_rider_change(created);
+  return created;
 }
 
-export async function update_rider(id, updates) {
-  const payload = { ...updates, updated_at: new Date().toISOString() };
+async function write_rider(id, payload) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from(TABLE).update(payload).eq('id', id).select().single();
     if (error) throw error;
     return normalize(data);
   }
   return normalize(await Rider.findOneAndUpdate({ id }, payload, { new: true }).lean());
+}
+
+export async function update_rider(id, updates, { silent = false } = {}) {
+  const updated = await write_rider(id, { ...updates, updated_at: new Date().toISOString() });
+  // Location pings are frequent and change nothing anyone is looking at, so they stay silent.
+  if (!silent) publish_rider_change(updated);
+  return updated;
 }

@@ -221,3 +221,14 @@ alter table stores
 insert into storage.buckets (id, name, public, file_size_limit)
 values ('delivery-partner-files', 'delivery-partner-files', false, 5242880)
 on conflict (id) do update set public = false, file_size_limit = 5242880;
+
+-- 12. Order settlement (same as migrations/008-order-settlement.sql, without the carry-over)
+alter table orders
+  add column if not exists settled_at timestamptz,
+  add column if not exists settled_by text,          -- store_owner | rider
+  add column if not exists settlement_method text,   -- cash | upi | bank_transfer
+  add column if not exists settlement_note text;
+
+alter table rider_settlements
+  add column if not exists order_id text;
+create index if not exists rider_settlements_order_idx on rider_settlements (order_id);

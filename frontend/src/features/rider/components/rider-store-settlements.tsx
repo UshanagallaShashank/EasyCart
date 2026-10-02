@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Banknote, CheckCircle2, Clock, HandCoins, Store, Wallet, ArrowDownRight, ArrowUpRight } from 'lucide-react';
+import { Banknote, CheckCircle2, Clock, Store } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';

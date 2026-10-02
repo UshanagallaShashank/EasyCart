@@ -3,6 +3,7 @@ import { get_supabase } from '../../../platform/db/db.js';
 import { DB_PROVIDER } from '../../../env.js';
 import { select_all_rows } from '../../../platform/shared/select-all-rows.js';
 import { Order } from '../../orders/repositories/order-model.js';
+import { publish_order_change } from '../../../platform/live/live-bus.js';
 
 export async function find_order_by_id_any_store(id) {
   if (DB_PROVIDER === 'supabase') {
@@ -46,7 +47,13 @@ export async function find_all_delivery_orders() {
 // Updates an order only if it is still in the state the caller saw, so two riders can never both take it.
 // Returns the updated order, or null when someone else changed it first.
 export async function update_order_if(id, expected, updates) {
-  const payload = { ...updates, updated_at: new Date().toISOString() };
+  const updated = await write_order_if(id, expected, { ...updates, updated_at: new Date().toISOString() });
+  // The rider it was taken from (if any) also refreshes, so a passed-on offer disappears from their screen.
+  if (updated) publish_order_change(updated, expected.rider_id && expected.rider_id !== updated.rider_id ? expected.rider_id : null);
+  return updated;
+}
+
+async function write_order_if(id, expected, payload) {
   if (DB_PROVIDER === 'supabase') {
     let query = get_supabase().from('orders').update(payload).eq('id', id);
     for (const [column, value] of Object.entries(expected)) {

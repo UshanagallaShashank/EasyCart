@@ -5,9 +5,11 @@ import { PageLoading } from '@/components/page-loading';
 import { MobileNavDrawer } from '@/components/app-shell/mobile-nav-drawer';
 import { AdminSidebar } from './admin-sidebar';
 import { AdminTopBar } from './admin-top-bar';
+import { useLiveUpdates } from '@/shared/live/use-live-updates';
 
 export function AdminLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  useLiveUpdates('owner');
 
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-slate-50">

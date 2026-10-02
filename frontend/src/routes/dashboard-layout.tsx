@@ -4,8 +4,10 @@ import { Outlet } from 'react-router-dom';
 import { PageLoading } from '@/components/page-loading';
 import { DashboardHeader } from './dashboard-header';
 import { DashboardNav } from './dashboard-nav';
+import { useLiveUpdates } from '@/shared/live/use-live-updates';
 
 export function DashboardLayout() {
+  useLiveUpdates('owner');
   return (
     <div className="fixed inset-0 flex overflow-hidden bg-slate-50">
       <DashboardNav />

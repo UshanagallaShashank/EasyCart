@@ -9,6 +9,7 @@ import { MobileNavDrawer } from '@/components/app-shell/mobile-nav-drawer';
 import { find_nav_title } from '@/components/app-shell/nav-matching';
 import { useMyRider } from '@/features/rider/hooks/use-rider-queries';
 import { RIDER_BOTTOM_LINKS, RIDER_SECTIONS } from './rider-links';
+import { useLiveUpdates } from '@/shared/live/use-live-updates';
 
 function RiderSidebar({ onNavigate }: { onNavigate?(): void }) {
   return <AppSidebar title="Delivery partner" homeTo="/rider" sections={RIDER_SECTIONS} ariaLabel="Delivery partner" onNavigate={onNavigate} />;
@@ -27,6 +28,7 @@ function OnlinePill() {
 
 export function RiderLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
+  useLiveUpdates('owner');
   const title = find_nav_title(RIDER_SECTIONS, useLocation());
 
   return (

@@ -1,4 +1,6 @@
 import { useParams, Outlet } from 'react-router-dom';
+import { useLiveUpdates } from '@/shared/live/use-live-updates';
+import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { Suspense, useEffect } from 'react';
 import { PageLoading } from '@/components/page-loading';
 import { rememberStoreSlug } from '@/features/storefront/lib/customer-paths';
@@ -11,6 +13,8 @@ import { StorefrontFooter } from '@/features/storefront/components/storefront-fo
 import { StorefrontNotFound } from '@/features/storefront/components/storefront-not-found';
 
 export function StorefrontLayout() {
+  // Signed-in customers see their order and delivery change as it happens.
+  useLiveUpdates('customer', Boolean(useCustomerAuth().user));
   const { slug } = useParams<{ slug: string }>();
   const { data: store, isLoading, isError } = usePublicStore(slug!);
 

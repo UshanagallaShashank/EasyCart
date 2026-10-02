@@ -2,6 +2,7 @@
 import { get_supabase } from '../../../platform/db/db.js';
 import { DB_PROVIDER } from '../../../env.js';
 import { RiderSettlement } from './settlement-model.js';
+import { publish, channel } from '../../../platform/live/live-bus.js';
 
 const TABLE = 'rider_settlements';
 
@@ -27,12 +28,17 @@ export async function find_all_settlements() {
   return (await RiderSettlement.find({}).lean()).map(normalize);
 }
 
-export async function save_settlement(settlement) {
-  const row = { ...settlement, created_at: new Date().toISOString() };
+async function insert_settlement(row) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from(TABLE).insert([row]).select().single();
     if (error) throw error;
     return normalize(data);
   }
   return normalize((await RiderSettlement.create(row)).toObject());
+}
+
+export async function save_settlement(settlement) {
+  const saved = await insert_settlement({ ...settlement, created_at: new Date().toISOString() });
+  publish([channel.rider(saved.rider_id), channel.admins], 'settlement', saved.id);
+  return saved;
 }

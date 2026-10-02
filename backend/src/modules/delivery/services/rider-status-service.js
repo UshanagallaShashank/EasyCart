@@ -21,7 +21,7 @@ export async function set_my_online(user_id, payload) {
   const updated = await update_rider(rider.id, updates);
 
   if (parsed.data.is_online) {
-    await refresh_dispatch({ force: true });
+    await refresh_dispatch();
   } else {
     // Offers the rider has not answered go straight to someone else.
     const offers = (await find_orders_by_rider(rider.id)).filter((order) => order.rider_offer_status === 'offered' && order.fulfillment_status === 'rider_assigned');
@@ -41,6 +41,6 @@ export async function update_my_location(user_id, payload) {
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const rider = await get_rider_for_user(user_id);
   const now = new Date().toISOString();
-  await update_rider(rider.id, { ...parsed.data, location_updated_at: now, last_seen_at: now });
+  await update_rider(rider.id, { ...parsed.data, location_updated_at: now, last_seen_at: now }, { silent: true });
   return { ok: true };
 }
