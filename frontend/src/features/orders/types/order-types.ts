@@ -9,7 +9,9 @@ export interface OrderItem {
 
 export type PickupFulfillmentStatus = 'not_started' | 'ready_for_pickup' | 'picked_up';
 export type DeliveryFulfillmentStatus = 'not_started' | 'dispatched' | 'delivered';
-export type FulfillmentStatus = PickupFulfillmentStatus | DeliveryFulfillmentStatus;
+// Set by the rider flow (request a rider -> offered/accepted -> picked up), never chosen by hand.
+export type RiderFulfillmentStatus = 'ready_for_delivery' | 'rider_assigned';
+export type FulfillmentStatus = PickupFulfillmentStatus | DeliveryFulfillmentStatus | RiderFulfillmentStatus;
 
 export interface Order {
   id: string;
@@ -25,6 +27,14 @@ export interface Order {
   delivery_fee: number;
   fulfillment_status: FulfillmentStatus;
   assigned_to: string | null;
+  rider_id?: string | null;
+  rider_offer_status?: 'offered' | 'accepted' | null;
+  // Only in the customer's own view, while the order is on its way.
+  delivery_code?: string | null;
+  // Only in the store's view.
+  pickup_code?: string | null;
+  delivered_at?: string | null;
+  cash_collected?: number | null;
   coupon_code: string | null;
   discount_amount: number;
   created_at: string;

@@ -12,7 +12,14 @@ function removeTrailingSlashes(address: string): string {
   return result;
 }
 
-const BASE_URL = `${removeTrailingSlashes(String(import.meta.env.VITE_API_BASE_URL))}/api`;
+const API_ORIGIN = removeTrailingSlashes(String(import.meta.env.VITE_API_BASE_URL));
+const BASE_URL = `${API_ORIGIN}/api`;
+
+// File links from the API are either full addresses (Supabase) or "/api/..." paths served by the API itself.
+export function resolveApiFileUrl(url: string | null): string | null {
+  if (!url) return null;
+  return url.startsWith('/api/') ? `${API_ORIGIN}${url}` : url;
+}
 
 const tokenGetters: Record<AuthType, () => string | null> = {
   owner: getOwnerToken,

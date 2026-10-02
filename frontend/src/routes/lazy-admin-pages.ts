@@ -8,3 +8,6 @@ export const UsersPage = lazy_page(() => import('@/features/admin/pages/users-pa
 export const SalesInsightsPage = lazy_page(() => import('@/features/admin/pages/sales-insights-page'), 'SalesInsightsPage');
 export const GrowthInsightsPage = lazy_page(() => import('@/features/admin/pages/growth-insights-page'), 'GrowthInsightsPage');
 export const AdminAccountPage = lazy_page(() => import('@/features/admin/pages/admin-account-page'), 'AdminAccountPage');
+export const RidersPage = lazy_page(() => import('@/features/admin-riders/pages/riders-page'), 'RidersPage');
+export const RiderDetailPage = lazy_page(() => import('@/features/admin-riders/pages/rider-detail-page'), 'RiderDetailPage');
+export const DeliveriesPage = lazy_page(() => import('@/features/admin-riders/pages/deliveries-page'), 'DeliveriesPage');

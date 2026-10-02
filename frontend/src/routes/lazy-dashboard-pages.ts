@@ -10,3 +10,4 @@ export const OrderDetailPage = lazy_page(() => import('@/features/orders/pages/o
 export const CustomersPage = lazy_page(() => import('@/features/tenant-customers/pages/customers-page'), 'CustomersPage');
 export const CustomerDetailPage = lazy_page(() => import('@/features/tenant-customers/pages/customer-detail-page'), 'CustomerDetailPage');
 export const CouponsPage = lazy_page(() => import('@/features/coupons/pages/coupons-page'), 'CouponsPage');
+export const StoreDeliveryPage = lazy_page(() => import('@/features/delivery/pages/store-delivery-page'), 'StoreDeliveryPage');

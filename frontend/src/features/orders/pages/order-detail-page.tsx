@@ -10,6 +10,7 @@ import { OrderProgress } from '../components/order-progress';
 import { OrderItemsList } from '../components/order-items-list';
 import { OrderNextStep } from '../components/order-next-step';
 import { formatMoney, formatOrderDate } from '../lib/order-rules';
+import { StoreDeliveryCard } from '@/features/delivery/components/store-delivery-card';
 
 export function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -72,6 +73,8 @@ export function OrderDetailPage() {
           </div>
 
           <div className="flex min-w-0 flex-col gap-5">
+            {order.fulfillment_method === 'delivery' && <StoreDeliveryCard order={order} />}
+
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
               <h2 className="mb-3 text-sm font-semibold text-slate-900">Status</h2>
               <div className="flex flex-wrap gap-2">
