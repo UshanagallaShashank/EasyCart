@@ -51,7 +51,7 @@ export function CartPage() {
                   exit={{ opacity: 0, x: -40 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <CartLineRow line={line} />
+                  <CartLineRow line={line} slug={slug!} />
                 </motion.div>
               ))}
             </AnimatePresence>
