@@ -7,9 +7,10 @@ import { PageBody } from '@/components/page-body';
 import { format_price } from '@/lib/format-price';
 import { ToneBadge } from '@/features/delivery/components/tone-badge';
 import { ProofPhoto } from '@/features/delivery/components/proof-photo';
+import { OrderSettlementCard } from '@/features/delivery/components/order-settlement-card';
 import { RIDER_ORDER_STAGE, formatDateTime, formatDistance, mapsLink } from '@/features/delivery/lib/delivery-labels';
 import type { RiderOrder } from '@/features/delivery/types/delivery-types';
-import { useRiderOrder } from '../hooks/use-rider-queries';
+import { useRiderOrder, useRiderPayStore } from '../hooks/use-rider-queries';
 import { FormSection } from '../components/form-section';
 import { PickupStep } from '../components/pickup-step';
 import { DeliverStep } from '../components/deliver-step';
@@ -44,6 +45,7 @@ function Bill({ order }: { order: RiderOrder }) {
 export function RiderOrderPage() {
   const { id } = useParams<{ id: string }>();
   const { data: order, isLoading, isError } = useRiderOrder(id!);
+  const payStore = useRiderPayStore(id!);
   const back = <Link to="/rider" className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700"><ArrowLeft className="size-3.5" /> Home</Link>;
 
   if (isLoading) return <PageBody><Skeleton className="h-96 w-full rounded-2xl" /></PageBody>;
@@ -60,14 +62,23 @@ export function RiderOrderPage() {
         {order.stage === 'offered' && <OfferCard order={order} onAccepted={() => undefined} />}
 
         {order.stage === 'delivered' && (
-          <section className="flex flex-col gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:flex-row sm:items-start">
-            <PartyPopper className="size-8 shrink-0 text-emerald-600" />
-            <div className="min-w-0 flex-1">
-              <p className="text-lg font-bold text-emerald-900">Delivered {formatDateTime(order.delivered_at)}</p>
-              <p className="text-sm text-emerald-800">You earned {format_price(order.earning)} on this order.</p>
-              <div className="mt-3 max-w-sm"><ProofPhoto url={order.proof_photo_url} cashCollected={order.cash_collected} /></div>
-            </div>
-          </section>
+          <div className="flex flex-col gap-4">
+            <section className="flex flex-col gap-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-5 sm:flex-row sm:items-start">
+              <PartyPopper className="size-8 shrink-0 text-emerald-600" />
+              <div className="min-w-0 flex-1">
+                <p className="text-lg font-bold text-emerald-900">Delivered {formatDateTime(order.delivered_at)}</p>
+                <p className="text-sm text-emerald-800">You earned {format_price(order.earning)} on this order.</p>
+                <div className="mt-3 max-w-sm"><ProofPhoto url={order.proof_photo_url} cashCollected={order.cash_collected} /></div>
+              </div>
+            </section>
+            <OrderSettlementCard
+              orderId={order.id}
+              settlement={order.settlement}
+              storeName={order.store.name}
+              role="rider"
+              onSettle={(payload) => payStore.mutateAsync(payload)}
+            />
+          </div>
         )}
 
         <div className="grid gap-5 lg:grid-cols-2">
