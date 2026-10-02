@@ -1,5 +1,5 @@
 // One delivery from the rider's side: store and customer details, the bill, and the step they are on.
-import { Link, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { ArrowLeft, Navigation, Phone, ReceiptText, Store, UserRound, PartyPopper } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/page-header';
@@ -46,7 +46,14 @@ export function RiderOrderPage() {
   const { id } = useParams<{ id: string }>();
   const { data: order, isLoading, isError } = useRiderOrder(id!);
   const payStore = useRiderPayStore(id!);
-  const back = <Link to="/rider" className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700"><ArrowLeft className="size-3.5" /> Home</Link>;
+  const navigate = useNavigate();
+  // Back goes where the rider came from (Home or History); opened from a fresh link, it goes Home.
+  const cameFromApp = useLocation().key !== 'default';
+  const back = (
+    <button type="button" onClick={() => (cameFromApp ? navigate(-1) : navigate('/rider'))} className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700">
+      <ArrowLeft className="size-3.5" /> Back
+    </button>
+  );
 
   if (isLoading) return <PageBody><Skeleton className="h-96 w-full rounded-2xl" /></PageBody>;
   if (isError || !order) return <div className="flex h-full flex-1 flex-col"><PageHeader title="Order not found" eyebrow={back} description="It may have been taken back by the store or offered to someone else." /></div>;
