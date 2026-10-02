@@ -1,7 +1,8 @@
 // The customer's view of their delivery: the secret code to give the rider, who is coming, and proof once delivered.
 import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useQuery } from '@tanstack/react-query';
-import { AlertTriangle, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, MapPin, ShieldCheck } from 'lucide-react';
+import { mapsLink } from '../lib/delivery-labels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCustomerOrderDelivery } from '../api/handover-api';
@@ -11,7 +12,15 @@ import { ProofPhoto } from './proof-photo';
 
 const LIVE = ['not_started', 'ready_for_delivery', 'rider_assigned', 'dispatched'];
 
-export function CustomerDeliveryCard({ orderId }: { orderId: string }) {
+interface CustomerDeliveryCardProps {
+  orderId: string;
+  address: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export function CustomerDeliveryCard({ orderId, address, latitude, longitude }: CustomerDeliveryCardProps) {
+  const pinLink = mapsLink({ latitude: latitude ?? null, longitude: longitude ?? null });
   const { data: delivery, isLoading } = useQuery({
     queryKey: ['my-orders', orderId, 'delivery'],
     queryFn: async () => (await getCustomerOrderDelivery(orderId)).delivery,
@@ -38,6 +47,16 @@ export function CustomerDeliveryCard({ orderId }: { orderId: string }) {
         {delivery.rider && <HandoverRiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your delivery partner'} />}
         {delivery.rider && delivery.stage !== 'delivered' && <p className="text-[11px] text-slate-500">Check the name, photo and number plate match the person at your door.</p>}
         {delivery.stage === 'delivered' && <ProofPhoto url={delivery.proof_photo_url} cashCollected={delivery.cash_collected} />}
+        {address && (
+          <div className="flex items-start gap-2 border-t border-slate-100 pt-3 text-sm text-slate-600">
+            <MapPin className="mt-0.5 size-4 shrink-0 text-sky-500" />
+            <p className="min-w-0 break-words">
+              <span className="block text-xs font-semibold text-slate-400">Delivering to</span>
+              {address}
+              {pinLink && <a href={pinLink} target="_blank" rel="noreferrer" className="mt-0.5 block text-xs font-semibold text-sky-600 hover:underline">View pin on map</a>}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

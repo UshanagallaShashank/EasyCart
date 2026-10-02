@@ -149,7 +149,7 @@ export function CustomerLocationBadge({ store }: { store?: PublicStore }) {
         aria-label="Select delivery location"
       >
         {isOutOfRange ? <AlertTriangle className="size-3.5 text-amber-600" /> : <MapPin className="size-3.5 text-sky-500" />}
-        <span className="max-w-[130px] truncate">{activeAddr?.label || 'Location'} ({activePincode})</span>
+        <span className="hidden max-w-[130px] truncate sm:inline">{activeAddr?.label || 'Location'} ({activePincode})</span>
         {isOutOfRange && <span className="rounded-full bg-amber-200/80 px-1.5 py-0.2 text-[9px] font-bold text-amber-900 uppercase">Out of radius</span>}
         <ChevronDown className={`size-3 ${isOutOfRange ? 'text-amber-600' : 'text-sky-400'}`} />
       </button>
