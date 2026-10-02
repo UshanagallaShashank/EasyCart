@@ -10,7 +10,6 @@ import { OrderProgress } from '../components/order-progress';
 import { OrderItemsList } from '../components/order-items-list';
 import { OrderNextStep } from '../components/order-next-step';
 import { formatMoney, formatOrderDate } from '../lib/order-rules';
-import { DeliveryPinLink } from '@/features/delivery/components/delivery-pin-link';
 import { StoreDeliveryCard } from '@/features/delivery/components/store-delivery-card';
 
 export function OrderDetailPage() {
@@ -109,7 +108,6 @@ export function OrderDetailPage() {
                     <span className="min-w-0 break-words">
                       <span className="block text-xs font-semibold text-slate-400">Deliver to</span>
                       {order.delivery_address}
-                      <DeliveryPinLink latitude={order.delivery_latitude} longitude={order.delivery_longitude} />
                     </span>
                   </>
                 ) : (

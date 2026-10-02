@@ -71,7 +71,7 @@ export function CustomerOrderDetailPage() {
         <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
           {/* A live delivery comes first: it holds the code the customer gives the rider. */}
           {isLiveDelivery ? (
-            <CustomerDeliveryCard orderId={order.id} address={order.delivery_address} latitude={order.delivery_latitude} longitude={order.delivery_longitude} />
+            <CustomerDeliveryCard orderId={order.id} address={order.delivery_address} />
           ) : (
             <Card>
               <CardContent className="flex flex-col gap-4 pt-6">

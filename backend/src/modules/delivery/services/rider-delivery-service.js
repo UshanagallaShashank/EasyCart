@@ -9,7 +9,6 @@ import { pickup_schema, deliver_schema, issues_message } from '../delivery-schem
 import { MAX_CODE_ATTEMPTS, code_matches } from '../lib/delivery-codes.js';
 import { haversine_km } from '../lib/haversine-km.js';
 import { is_offer_expired } from '../lib/delivery-stages.js';
-import { order_point } from '../lib/order-point.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
@@ -51,7 +50,6 @@ async function to_rider_order(order, rider) {
     },
     customer: accepted ? { name: customer?.username ?? 'Customer', phone_number: customer?.phone_number ?? null } : null,
     delivery_address: accepted ? order.delivery_address : null,
-    delivery_point: accepted ? order_point(order) : null,
     items: accepted ? order.items.map(({ name, quantity, variant_label }) => ({ name, quantity, variant_label: variant_label ?? null })) : [],
     item_count: item_count(order),
     subtotal: order.items.reduce((total, item) => total + item.price * item.quantity, 0),
