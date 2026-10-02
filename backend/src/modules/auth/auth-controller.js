@@ -1,4 +1,4 @@
-import { create_user, login_user } from './auth-service.js';
+import { create_user, login_user, get_current_profile, update_current_profile } from './auth-service.js';
 import { create_platform_admin } from './admin-signup-service.js';
 import { AppError } from '../../platform/shared/app-error.js';
 
@@ -37,3 +37,22 @@ export async function handle_admin_signup(req, res, next) {
     next(err);
   }
 }
+
+export async function handle_get_profile(req, res, next) {
+  try {
+    const user = await get_current_profile(req.user.id);
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_update_profile(req, res, next) {
+  try {
+    const user = await update_current_profile(req.user.id, req.body);
+    res.status(200).json({ user, message: 'Profile updated successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+

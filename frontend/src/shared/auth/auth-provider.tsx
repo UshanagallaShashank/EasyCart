@@ -23,7 +23,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     window.location.assign('/login');
   }
 
+  function updateUser(partialUser: Partial<User>) {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partialUser };
+      setStoredUser(updated);
+      return updated;
+    });
+  }
+
   setUnauthorizedHandler(logout);
 
-  return <AuthContext.Provider value={{ user, login, logout }}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={{ user, login, logout, updateUser }}>{children}</AuthContext.Provider>;
 }

@@ -23,7 +23,16 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     window.location.assign('/login');
   }
 
+  function updateUser(partialUser: Partial<CustomerUser>) {
+    setUser((prev) => {
+      if (!prev) return null;
+      const updated = { ...prev, ...partialUser };
+      setStoredUser(updated);
+      return updated;
+    });
+  }
+
   setUnauthorizedHandler(logout, 'customer');
 
-  return <CustomerAuthContext.Provider value={{ user, login, logout }}>{children}</CustomerAuthContext.Provider>;
+  return <CustomerAuthContext.Provider value={{ user, login, logout, updateUser }}>{children}</CustomerAuthContext.Provider>;
 }
