@@ -1,6 +1,6 @@
 // Rider home: application status until approved; then the online switch, new offers, current deliveries and today's numbers.
 import { useNavigate } from 'react-router-dom';
-import { Bike, IndianRupee, ShieldCheck, Wallet } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/page-header';
 import { PageBody } from '@/components/page-body';
@@ -11,7 +11,6 @@ import { ApplicationStatusCard } from '../components/application-status-card';
 import { OnlineToggleCard } from '../components/online-toggle-card';
 import { OfferCard } from '../components/offer-card';
 import { ActiveDeliveryCard } from '../components/active-delivery-card';
-import { StatTile } from '../components/stat-tile';
 
 const SAFETY_TIPS = [
   'Never hand over an order without the customer\'s 6-digit code.',
@@ -38,11 +37,19 @@ export function RiderHomePage() {
         {approved && (
           <>
             <OnlineToggleCard rider={home?.rider ?? rider} />
-            <div className="grid grid-cols-3 gap-3">
-              <StatTile icon={Bike} label="Today" value={String(home?.summary.deliveries_today ?? 0)} hint="deliveries" />
-              <StatTile icon={IndianRupee} label="Earned today" value={formatRupeesShort(home?.summary.earnings_today ?? 0)} />
-              <StatTile icon={Wallet} label="Cash in hand" value={formatRupeesShort(home?.summary.cash_in_hand ?? 0)} hint="to hand in" />
-            </div>
+            {/* Today's numbers in one strip: readable on a phone without wrapping. */}
+            <dl className="grid grid-cols-3 divide-x divide-slate-100 rounded-2xl border border-slate-200/80 bg-white py-3 shadow-xs">
+              {[
+                { label: 'Deliveries today', value: String(home?.summary.deliveries_today ?? 0) },
+                { label: 'Earned today', value: formatRupeesShort(home?.summary.earnings_today ?? 0) },
+                { label: 'Cash to hand in', value: formatRupeesShort(home?.summary.cash_in_hand ?? 0) }
+              ].map((stat) => (
+                <div key={stat.label} className="flex min-w-0 flex-col-reverse items-center gap-0.5 px-2 text-center">
+                  <dt className="text-[11px] leading-tight text-slate-500">{stat.label}</dt>
+                  <dd className="text-lg font-bold text-slate-900 tabular-nums">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
 
             {homeLoading ? <Skeleton className="h-48 w-full rounded-2xl" /> : (
               <>

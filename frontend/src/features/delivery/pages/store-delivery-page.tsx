@@ -1,7 +1,7 @@
 // Store owner's delivery hub: pickup location, every delivery order and its rider, and partners near the store.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Bike, ChevronRight, Radar } from 'lucide-react';
+import { Bike, ChevronRight, Radar, X } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
 import { PageBody } from '@/components/page-body';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -91,6 +91,33 @@ function NearbyRiders() {
   );
 }
 
+const HOW_IT_WORKS_KEY = 'easycart.delivery.how-it-works.closed';
+
+function readClosed(): boolean {
+  try { return localStorage.getItem(HOW_IT_WORKS_KEY) === '1'; } catch { return false; }
+}
+
+// A first-time explainer: hidden once the store has completed a delivery, or when the owner closes it.
+function HowItWorks() {
+  const { data: deliveries } = useStoreDeliveries();
+  const [closed, setClosed] = useState(readClosed);
+  const experienced = deliveries?.some((row) => row.stage === 'delivered');
+  if (closed || experienced || !deliveries) return null;
+
+  function close() {
+    setClosed(true);
+    try { localStorage.setItem(HOW_IT_WORKS_KEY, '1'); } catch { /* the box simply shows again next time */ }
+  }
+
+  return (
+    <div className="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+      <Bike className="mt-0.5 size-5 shrink-0 text-sky-600" />
+      <p className="flex-1">How it works: pack the order, open it and tap <strong>Packed, send for delivery</strong>. We find the nearest rider automatically, you give them the pickup code, and they can only finish the delivery with the customer's own code.</p>
+      <button type="button" onClick={close} aria-label="Close" className="rounded-lg p-1 text-sky-500 hover:bg-sky-100 hover:text-sky-700"><X className="size-4" /></button>
+    </div>
+  );
+}
+
 function StoreSettlements() {
   const { data, isLoading } = useStoreSettlements();
   return <SettlementsPanel side="store" rows={data?.orders} isLoading={isLoading} />;
@@ -101,10 +128,7 @@ export function StoreDeliveryPage() {
     <div className="flex h-full flex-1 flex-col overflow-hidden">
       <PageHeader title="Delivery" description="Verified EasyCart partners pick up from your store and deliver with code, photo and cash checks." />
       <PageBody>
-        <div className="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
-          <Bike className="mt-0.5 size-5 shrink-0 text-sky-600" />
-          <p>How it works: pack the order, open it and tap <strong>Packed, send for delivery</strong>. We find the nearest rider automatically, you give them the pickup code, and they can only finish the delivery with the customer's own code.</p>
-        </div>
+        <HowItWorks />
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
             {/* What needs attention now comes first; money to reconcile follows. */}
