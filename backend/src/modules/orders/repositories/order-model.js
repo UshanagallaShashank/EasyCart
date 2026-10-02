@@ -18,6 +18,8 @@ const order_schema = new mongoose.Schema(
     payment_method: { type: String, default: 'cash_on_delivery' },
     fulfillment_method: { type: String, enum: ['pickup', 'delivery'], default: 'pickup' },
     delivery_address: { type: String, default: null },
+    delivery_latitude: { type: Number, default: null },
+    delivery_longitude: { type: Number, default: null },
     delivery_fee: { type: Number, default: 0 },
     fulfillment_status: { type: String, default: 'not_started' },
     assigned_to: { type: String, default: null },

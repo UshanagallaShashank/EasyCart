@@ -21,7 +21,7 @@ import { is_rider_flow } from '../../delivery/lib/delivery-stages.js';
 export async function create_order(
   tenant_id,
   customer_id,
-  { items, total, payment_method, fulfillment_method, delivery_address, delivery_fee, coupon_code, discount_amount }
+  { items, total, payment_method, fulfillment_method, delivery_address, delivery_latitude, delivery_longitude, delivery_fee, coupon_code, discount_amount }
 ) {
   const order = await save_order({
     id: randomUUID(),
@@ -34,6 +34,8 @@ export async function create_order(
     payment_method,
     fulfillment_method,
     delivery_address,
+    // Only saved when the customer dropped a pin, so orders without one never touch the new columns.
+    ...(delivery_latitude !== null && delivery_latitude !== undefined ? { delivery_latitude, delivery_longitude } : {}),
     delivery_fee,
     fulfillment_status: 'not_started',
     assigned_to: null,

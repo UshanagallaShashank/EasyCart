@@ -13,11 +13,18 @@ export const checkout_schema = z
     payment_method: z.enum(['cash_on_delivery']),
     fulfillment_method: z.enum(['pickup', 'delivery']).default('pickup'),
     delivery_address: z.string().trim().min(1).optional(),
+    // The pin the customer dropped on the map for this address (optional, always both or neither).
+    delivery_latitude: z.number().min(-90).max(90).optional(),
+    delivery_longitude: z.number().min(-180).max(180).optional(),
     coupon_code: z.string().trim().min(1).optional()
   })
   .refine((data) => data.fulfillment_method !== 'delivery' || !!data.delivery_address, {
     message: 'Delivery address is required for delivery orders',
     path: ['delivery_address']
+  })
+  .refine((data) => (data.delivery_latitude === undefined) === (data.delivery_longitude === undefined), {
+    message: 'The map pin needs both latitude and longitude',
+    path: ['delivery_latitude']
   });
 
 export const order_status_schema = z.object({

@@ -24,6 +24,9 @@ export interface Order {
   payment_method: 'cash_on_delivery';
   fulfillment_method: 'pickup' | 'delivery';
   delivery_address: string | null;
+  /** The map pin the customer dropped for a delivery address, when there is one. */
+  delivery_latitude?: number | null;
+  delivery_longitude?: number | null;
   delivery_fee: number;
   fulfillment_status: FulfillmentStatus;
   assigned_to: string | null;

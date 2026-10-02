@@ -32,6 +32,8 @@ import {
   DialogFooter
 } from '@/components/ui/dialog';
 import { AlertTriangle } from 'lucide-react';
+import { MapPinPicker } from '../components/map-pin-picker';
+import type { Point } from '@/features/delivery/lib/use-current-position';
 
 export interface SavedAddress {
   id: string;
@@ -44,6 +46,9 @@ export interface SavedAddress {
   state?: string;
   zip?: string;
   cityStateZip?: string;
+  /** The pin dropped on the map for this address (optional). */
+  latitude?: number;
+  longitude?: number;
 }
 
 const DEFAULT_ADDRESSES: SavedAddress[] = [
@@ -102,6 +107,7 @@ export function StorefrontAddressPage() {
   const [newCity, setNewCity] = useState('');
   const [newState, setNewState] = useState('');
   const [newPinCode, setNewPinCode] = useState('');
+  const [newPoint, setNewPoint] = useState<Point | null>(null);
 
   // Confirmation dialog states
   const [selectConfirmAddress, setSelectConfirmAddress] = useState<SavedAddress | null>(null);
@@ -147,6 +153,7 @@ export function StorefrontAddressPage() {
     setNewCity('');
     setNewState('');
     setNewPinCode('');
+    setNewPoint(null);
     setShowAddForm(true);
   }
 
@@ -160,6 +167,7 @@ export function StorefrontAddressPage() {
     setNewCity(addr.city || '');
     setNewState(addr.state || '');
     setNewPinCode(addr.zip || '');
+    setNewPoint(addr.latitude !== undefined && addr.longitude !== undefined ? { latitude: addr.latitude, longitude: addr.longitude } : null);
     setShowAddForm(true);
   }
 
@@ -218,7 +226,9 @@ export function StorefrontAddressPage() {
             city: newCity.trim(),
             state: newState.trim(),
             zip: newPinCode.trim(),
-            cityStateZip: cityStateZipStr
+            cityStateZip: cityStateZipStr,
+            latitude: newPoint?.latitude,
+            longitude: newPoint?.longitude
           };
         }
         return addr;
@@ -253,7 +263,9 @@ export function StorefrontAddressPage() {
         city: newCity.trim(),
         state: newState.trim(),
         zip: newPinCode.trim(),
-        cityStateZip: cityStateZipStr
+        cityStateZip: cityStateZipStr,
+        latitude: newPoint?.latitude,
+        longitude: newPoint?.longitude
       };
 
       const updated = [...addressList, newAddr];
@@ -269,6 +281,7 @@ export function StorefrontAddressPage() {
     setNewCity('');
     setNewState('');
     setNewPinCode('');
+    setNewPoint(null);
     setNewRecipient('');
     setNewPhone('');
     setEditingAddressId(null);
@@ -428,6 +441,11 @@ export function StorefrontAddressPage() {
                           <MapPin className="size-3.5 shrink-0 text-sky-500 mt-0.5" />
                           <span>{fullAddress || addr.street}</span>
                         </div>
+                        {addr.latitude !== undefined ? (
+                          <p className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700"><CheckCircle2 className="size-3" /> Map pin set</p>
+                        ) : (
+                          <p className="mt-1.5 text-[11px] font-medium text-amber-700">No map pin yet. Edit this address and drop a pin so the rider finds you faster.</p>
+                        )}
                       </div>
                     </div>
 
@@ -639,6 +657,14 @@ export function StorefrontAddressPage() {
                         className="h-9 rounded-xl text-xs bg-white border-slate-200 focus-visible:ring-sky-500 px-2.5"
                       />
                     </div>
+                  </div>
+
+                  {/* Map pin: lets the rider find the exact spot and gives a real arrival time */}
+                  <div>
+                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1">
+                      Pin on map <span className="text-slate-400 font-normal lowercase">(recommended)</span>
+                    </label>
+                    <MapPinPicker value={newPoint} onChange={setNewPoint} />
                   </div>
 
                   {/* Action Buttons */}
