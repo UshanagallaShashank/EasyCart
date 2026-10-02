@@ -158,7 +158,7 @@ export function AdminNotificationBell() {
           )}
         </div>
 
-        <div className="max-h-96 overflow-y-auto divide-y divide-slate-100">
+        <div className="max-h-[300px] overflow-y-auto divide-y divide-slate-100 scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
           {!notifications.length ? (
             <div className="p-6 text-center">
               <CheckCircle2 className="mx-auto size-8 text-emerald-500 mb-2" />
@@ -172,8 +172,8 @@ export function AdminNotificationBell() {
                 <DropdownMenuItem
                   key={n.id}
                   onSelect={() => handleItemClick(n)}
-                  className={`flex items-start gap-3 p-3.5 cursor-pointer transition-colors hover:bg-slate-50 focus:bg-slate-50 ${
-                    !n.is_read ? 'bg-sky-50/40' : 'opacity-75'
+                  className={`flex items-start gap-3 p-3.5 cursor-pointer transition-colors focus:bg-sky-50/90 focus:text-slate-900 focus:**:text-slate-900 hover:bg-sky-50/90 hover:text-slate-900 ${
+                    !n.is_read ? 'bg-sky-50/50' : 'bg-white'
                   }`}
                 >
                   <span className={`mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg ${tone}`}>
