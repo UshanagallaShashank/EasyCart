@@ -18,9 +18,9 @@ export const RIDER_STATUS: Record<RiderStatus, { label: string; tone: StatusTone
 };
 
 export const DELIVERY_STAGE: Record<DeliveryStage, { label: string; tone: StatusTone }> = {
-  not_started: { label: 'Preparing', tone: 'neutral' },
-  ready_for_delivery: { label: 'Finding rider', tone: 'warning' },
-  rider_assigned: { label: 'Rider on the way to store', tone: 'warning' },
+  not_started: { label: 'Packing', tone: 'neutral' },
+  ready_for_delivery: { label: 'Finding a rider', tone: 'warning' },
+  rider_assigned: { label: 'Rider picking up', tone: 'warning' },
   dispatched: { label: 'Out for delivery', tone: 'warning' },
   delivered: { label: 'Delivered', tone: 'success' },
   cancelled: { label: 'Cancelled', tone: 'danger' }
@@ -28,7 +28,7 @@ export const DELIVERY_STAGE: Record<DeliveryStage, { label: string; tone: Status
 
 // "rider_assigned" covers both an unanswered offer and an accepted one; the offer status tells them apart.
 export function deliveryStageLabel(stage: DeliveryStage, offer: 'offered' | 'accepted' | null): { label: string; tone: StatusTone } {
-  if (stage === 'rider_assigned' && offer === 'offered') return { label: 'Offered to a rider', tone: 'warning' };
+  if (stage === 'rider_assigned' && offer === 'offered') return { label: 'Finding a rider', tone: 'warning' };
   return DELIVERY_STAGE[stage] ?? { label: stage, tone: 'neutral' };
 }
 

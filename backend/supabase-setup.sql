@@ -89,6 +89,8 @@ create table orders (
   payment_method text not null default 'cash_on_delivery',
   fulfillment_method text not null default 'pickup',
   delivery_address text,
+  delivery_latitude numeric,
+  delivery_longitude numeric,
   delivery_fee numeric not null default 0,
   fulfillment_status text not null default 'not_started',
   assigned_to text,

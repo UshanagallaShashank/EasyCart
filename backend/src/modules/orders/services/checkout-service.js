@@ -43,7 +43,8 @@ export async function checkout(tenant_id, customer_id, payload) {
     coupon_code = coupon.code;
   }
 
-  const { fulfillment_method, delivery_address } = parsed.data;
+  const { fulfillment_method, delivery_address, delivery_latitude, delivery_longitude } = parsed.data;
+  const has_pin = fulfillment_method === 'delivery' && delivery_latitude !== undefined && delivery_longitude !== undefined;
   let delivery_fee = 0;
   if (fulfillment_method === 'delivery') {
     const store = await get_own_store(tenant_id);
@@ -58,6 +59,8 @@ export async function checkout(tenant_id, customer_id, payload) {
     payment_method: parsed.data.payment_method,
     fulfillment_method,
     delivery_address: fulfillment_method === 'delivery' ? delivery_address : null,
+    delivery_latitude: has_pin ? delivery_latitude : null,
+    delivery_longitude: has_pin ? delivery_longitude : null,
     delivery_fee,
     coupon_code,
     discount_amount

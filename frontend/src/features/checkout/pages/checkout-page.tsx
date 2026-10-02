@@ -34,6 +34,9 @@ export interface SavedAddress {
   state?: string;
   zip?: string;
   cityStateZip?: string;
+  /** The pin dropped on the map for this address (optional). */
+  latitude?: number;
+  longitude?: number;
 }
 
 const DEFAULT_ADDRESSES: SavedAddress[] = [
@@ -219,12 +222,18 @@ export function CheckoutPage() {
   }
 
   function handlePlaceOrder() {
+    // The pin dropped on the active address, if any, goes with the order so the rider can navigate to the exact spot.
+    const pin = fulfillmentMethod === 'delivery' && activeAddressObj?.latitude !== undefined && activeAddressObj?.longitude !== undefined
+      ? { delivery_latitude: activeAddressObj.latitude, delivery_longitude: activeAddressObj.longitude }
+      : {};
+
     checkoutMutation.mutate(
       {
         items: lines.map((l) => ({ product_id: l.product_id, variant_label: l.variant_label, quantity: l.quantity })),
         payment_method: 'cash_on_delivery',
         fulfillment_method: fulfillmentMethod,
         delivery_address: fulfillmentMethod === 'delivery' ? deliveryAddress : undefined,
+        ...pin,
         coupon_code: appliedCoupon ? appliedCoupon.code : undefined
       },
       {
@@ -308,6 +317,11 @@ export function CheckoutPage() {
                       <p className="text-xs text-slate-700 font-medium leading-relaxed">
                         {lines.location}
                       </p>
+                    )}
+
+                    {/* Nudge: a pin makes delivery faster and gives a real arrival time */}
+                    {activeAddressObj?.latitude === undefined && (
+                      <p className="pt-1 text-[11px] font-medium text-amber-700">No map pin on this address. <Link to={`/${slug}/address`} className="font-semibold underline">Add a pin</Link> so the rider finds you faster.</p>
                     )}
 
                     {/* 3rd line: Phone */}

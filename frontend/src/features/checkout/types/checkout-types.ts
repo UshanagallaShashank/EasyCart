@@ -10,5 +10,8 @@ export interface CheckoutPayload {
   payment_method: 'cash_on_delivery';
   fulfillment_method: 'pickup' | 'delivery';
   delivery_address?: string;
+  /** The map pin of the delivery address, when the customer dropped one. */
+  delivery_latitude?: number;
+  delivery_longitude?: number;
   coupon_code?: string;
 }
