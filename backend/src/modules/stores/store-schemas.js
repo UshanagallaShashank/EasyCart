@@ -8,9 +8,17 @@ export const store_settings_schema = z
     banner_url: z.union([z.string().url(), z.literal('')]).optional(),
     theme: z.enum(['default', 'light', 'dark']).optional(),
     delivery_fee: z.number().min(0).optional(),
-    promotion_banner_text: z.string().trim().max(200).optional()
+    promotion_banner_text: z.string().trim().max(200).optional(),
+    // Where riders collect orders from; used to offer each delivery to the nearest rider.
+    latitude: z.number().min(-90).max(90).nullable().optional(),
+    longitude: z.number().min(-180).max(180).nullable().optional(),
+    address_line: z.string().trim().max(200).nullable().optional()
   })
-  .partial();
+  .partial()
+  .refine((data) => (data.latitude === undefined) === (data.longitude === undefined), {
+    message: 'Latitude and longitude must be set together',
+    path: ['latitude']
+  });
 
 export function validate_store_settings_input(data) {
   return store_settings_schema.safeParse(data);

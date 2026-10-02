@@ -1,0 +1,26 @@
+// The delivery steps an order goes through once a rider is involved, and the rules between them.
+//   ready_for_delivery -> rider_assigned (offered, then accepted) -> dispatched (picked up) -> delivered
+export const RIDER_STAGES = ['ready_for_delivery', 'rider_assigned', 'dispatched', 'delivered'];
+export const ACTIVE_RIDER_STAGES = ['rider_assigned', 'dispatched'];
+
+// A rider who has not been heard from for this long is treated as offline.
+export const ONLINE_STALE_MS = 30 * 60 * 1000;
+// How long a rider has to accept an offered order before it moves to the next nearest rider.
+export const OFFER_SECONDS = 120;
+// A rider can carry this many orders at once.
+export const MAX_ACTIVE_ORDERS = 2;
+
+export function is_rider_flow(order) {
+  return Boolean(order.rider_id) || RIDER_STAGES.slice(0, 3).includes(order.fulfillment_status);
+}
+
+export function is_rider_available(rider, now = Date.now()) {
+  if (rider.status !== 'approved' || !rider.is_online) return false;
+  const seen = rider.last_seen_at ? new Date(rider.last_seen_at).getTime() : 0;
+  return now - seen < ONLINE_STALE_MS;
+}
+
+export function is_offer_expired(order, now = Date.now()) {
+  if (order.fulfillment_status !== 'rider_assigned' || order.rider_offer_status !== 'offered') return false;
+  return Boolean(order.rider_offer_expires_at) && new Date(order.rider_offer_expires_at).getTime() <= now;
+}

@@ -1,6 +1,17 @@
 // Service for generating and managing platform-admin notifications.
 import { find_all_tenants } from '../../tenants/repositories/tenant-repository.js';
 import { find_users_by_ids } from '../../users/repositories/user-repository.js';
+import { find_riders_by_status } from '../../delivery/repositories/rider-repository.js';
+
+// Delivery partner applications waiting for review. Empty if the riders table is not set up yet.
+async function find_pending_riders() {
+  try {
+    return await find_riders_by_status('pending');
+  } catch (err) {
+    console.warn('Could not read delivery partner applications:', err?.message || err);
+    return [];
+  }
+}
 
 // Track read notification IDs in-memory for this server session.
 const read_admin_notification_ids = new Set();
@@ -53,6 +64,21 @@ export async function list_admin_notifications() {
       priority: 'medium',
       is_read: read_admin_notification_ids.has(id),
       created_at: tenant.created_at
+    });
+  }
+
+  // 3. Delivery partner applications (needs admin review before the rider can take orders)
+  for (const rider of await find_pending_riders()) {
+    const id = `pending-rider-${rider.id}-${rider.submitted_at ?? ''}`;
+    notifications.push({
+      id,
+      type: 'rider_request',
+      title: 'Delivery Partner Application',
+      message: `${rider.full_name}${rider.city ? ` from ${rider.city}` : ''} applied to deliver and is waiting for document review.`,
+      link: `/admin/riders/${rider.id}`,
+      priority: 'high',
+      is_read: read_admin_notification_ids.has(id),
+      created_at: rider.submitted_at ?? rider.created_at
     });
   }
 
