@@ -13,6 +13,7 @@ import { customerOrdersPath, getLastStoreSlug } from '@/features/storefront/lib/
 import { CustomerPageShell } from '../components/customer-page-shell';
 import { OrderProgress } from '../components/order-progress';
 import { CancelOrderDialog } from '../components/cancel-order-dialog';
+import { DeliveryPinLink } from '@/features/delivery/components/delivery-pin-link';
 import { CustomerDeliveryCard } from '@/features/delivery/components/customer-delivery-card';
 
 export function CustomerOrderDetailPage() {
@@ -59,11 +60,13 @@ export function CustomerOrderDetailPage() {
     >
       <div className="grid gap-5 lg:grid-cols-3">
         <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
-          <Card>
-            <CardContent className="pt-6">
-              <OrderProgress status={order.status} />
-            </CardContent>
-          </Card>
+          {(order.fulfillment_method !== 'delivery' || order.status === 'cancelled') && (
+            <Card>
+              <CardContent className="pt-6">
+                <OrderProgress status={order.status} />
+              </CardContent>
+            </Card>
+          )}
 
           <Card>
             <CardHeader>
@@ -96,9 +99,9 @@ export function CustomerOrderDetailPage() {
             <CardContent className="flex flex-wrap gap-2">
               <Badge className={STATUS_TONE_CLASSNAME[getOrderStatusTone(order.status)]}>{order.status}</Badge>
               <Badge className={STATUS_TONE_CLASSNAME[getPaymentStatusTone(order.payment_status)]}>{order.payment_status}</Badge>
-              <Badge className={STATUS_TONE_CLASSNAME[getFulfillmentStatusTone(order.fulfillment_status)]}>
+              {order.fulfillment_method !== 'delivery' && <Badge className={STATUS_TONE_CLASSNAME[getFulfillmentStatusTone(order.fulfillment_status)]}>
                 {order.fulfillment_status.replaceAll('_', ' ')}
-              </Badge>
+              </Badge>}
             </CardContent>
           </Card>
 
@@ -110,7 +113,10 @@ export function CustomerOrderDetailPage() {
               {order.fulfillment_method === 'delivery' ? (
                 <>
                   <MapPin className="mt-0.5 size-4 shrink-0 text-sky-500" />
-                  <p>{order.delivery_address}</p>
+                  <p>
+                    {order.delivery_address}
+                    <DeliveryPinLink latitude={order.delivery_latitude} longitude={order.delivery_longitude} />
+                  </p>
                 </>
               ) : (
                 <>

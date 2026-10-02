@@ -4,10 +4,8 @@ import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCustomerOrderDelivery } from '../api/handover-api';
-import { deliveryStageLabel } from '../lib/delivery-labels';
-import { ToneBadge } from './tone-badge';
+import { DeliveryJourney } from './delivery-journey';
 import { HandoverRiderCard } from './handover-rider-card';
-import { DeliveryTimeline } from './delivery-timeline';
 import { ProofPhoto } from './proof-photo';
 
 const LIVE = ['not_started', 'ready_for_delivery', 'rider_assigned', 'dispatched'];
@@ -21,15 +19,13 @@ export function CustomerDeliveryCard({ orderId }: { orderId: string }) {
 
   if (isLoading) return <Skeleton className="h-48 w-full rounded-2xl" />;
   if (!delivery) return null;
-  const stage = deliveryStageLabel(delivery.stage, delivery.rider_offer_status);
-
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between gap-3">
-        <CardTitle>Delivery</CardTitle>
-        <ToneBadge tone={stage.tone} label={stage.label} />
+      <CardHeader>
+        <CardTitle>Where is my order?</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
+        <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="customer" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta ?? delivery.dropoff_eta} />
         {delivery.delivery_code && (
           <div className="rounded-xl bg-gradient-to-br from-sky-600 to-sky-700 p-4 text-center text-white shadow-md shadow-sky-500/20">
             <p className="flex items-center justify-center gap-1.5 text-xs font-semibold tracking-wider text-sky-100 uppercase"><ShieldCheck className="size-3.5" /> Your delivery code</p>
@@ -41,7 +37,6 @@ export function CustomerDeliveryCard({ orderId }: { orderId: string }) {
         {delivery.rider && <HandoverRiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your delivery partner'} />}
         {delivery.rider && delivery.stage !== 'delivered' && <p className="text-[11px] text-slate-500">Check the name, photo and number plate match the person at your door.</p>}
         {delivery.stage === 'delivered' && <ProofPhoto url={delivery.proof_photo_url} cashCollected={delivery.cash_collected} />}
-        <DeliveryTimeline timeline={delivery.timeline} />
       </CardContent>
     </Card>
   );
