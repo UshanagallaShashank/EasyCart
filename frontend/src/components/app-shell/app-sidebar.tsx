@@ -1,5 +1,8 @@
 import { Link } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
+import { useAuth } from '@/shared/auth/auth-context';
 import { SidebarItem } from './sidebar-item';
+import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 import type { NavSection } from './nav-types';
 
 interface AppSidebarProps {
@@ -11,6 +14,8 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ title, homeTo, sections, ariaLabel, onNavigate }: AppSidebarProps) {
+  const { user, logout } = useAuth();
+
   return (
     <div className="flex h-full flex-col border-r border-slate-200/80 bg-slate-50">
       <Link to={homeTo} onClick={onNavigate} className="flex items-center gap-3 px-5 pt-5 pb-4">
