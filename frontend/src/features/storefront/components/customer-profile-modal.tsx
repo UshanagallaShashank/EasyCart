@@ -1,5 +1,6 @@
 // Modal dialog for viewing customer profile details and quick account actions.
-import { User, Mail, Phone, ShieldCheck, PackageCheck, LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { User, Mail, Phone, ShieldCheck, PackageCheck, LogOut, Edit } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +13,7 @@ import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
+import { SelfProfileEditDialog } from '@/components/self-profile-edit-dialog';
 import { customerOrdersPath, getLastStoreSlug } from '../lib/customer-paths';
 
 interface CustomerProfileModalProps {
@@ -21,7 +23,8 @@ interface CustomerProfileModalProps {
 }
 
 export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfileModalProps) {
-  const { user, logout } = useCustomerAuth();
+  const { user, logout, updateUser } = useCustomerAuth();
+  const [editOpen, setEditOpen] = useState(false);
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -90,6 +93,14 @@ export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfi
           <Button
             type="button"
             variant="outline"
+            onClick={() => setEditOpen(true)}
+            className="h-10 rounded-xl gap-2 font-semibold text-slate-700 border-slate-200 hover:bg-slate-50 cursor-pointer"
+          >
+            <Edit className="size-4" /> Edit Profile
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
             onClick={handleViewOrders}
             className="h-10 rounded-xl gap-2 font-semibold text-sky-600 border-sky-200 hover:bg-sky-50"
           >
@@ -108,6 +119,18 @@ export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfi
             }
           />
         </div>
+
+        <SelfProfileEditDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          initialData={{
+            username: user.username,
+            email: user.email,
+            phone_number: user.phone_number
+          }}
+          authType="customer"
+          onSuccess={(updated) => updateUser(updated)}
+        />
       </DialogContent>
     </Dialog>
   );

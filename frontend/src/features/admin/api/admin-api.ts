@@ -1,5 +1,14 @@
 import { apiRequest } from '@/shared/api/api-client';
-import type { AdminTenant, AdminTenantDetail, PlatformStats, PlatformUser, StoreRequest, AdminNotification } from '../types/admin-types';
+import type {
+  AdminTenant,
+  AdminTenantDetail,
+  PlatformStats,
+  PlatformUser,
+  PlatformUserDetail,
+  UpdatePlatformUserPayload,
+  StoreRequest,
+  AdminNotification
+} from '../types/admin-types';
 
 export function listTenants(): Promise<{ tenants: AdminTenant[] }> {
   return apiRequest('/admin/tenants');
@@ -49,6 +58,17 @@ export function getPlatformStats(): Promise<PlatformStats> {
 
 export function listPlatformUsers(): Promise<{ users: PlatformUser[] }> {
   return apiRequest('/admin/users');
+}
+
+export function getPlatformUser(id: string): Promise<{ user: PlatformUserDetail }> {
+  return apiRequest(`/admin/users/${id}`);
+}
+
+export function updatePlatformUser(id: string, updates: UpdatePlatformUserPayload): Promise<{ user: PlatformUser; message: string }> {
+  return apiRequest(`/admin/users/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(updates)
+  });
 }
 
 export function fetchPublicStoreCategories(): Promise<{ categories: string[] }> {

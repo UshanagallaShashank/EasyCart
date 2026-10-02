@@ -6,7 +6,8 @@ dotenv.config();
 export const PORT = process.env.PORT || 5000;
 export const NODE_ENV = process.env.NODE_ENV || 'development';
 export const IS_PRODUCTION = NODE_ENV === 'production';
-export const JWT_SECRET = process.env.JWT_SECRET ;
+export const DEV_JWT_SECRET = 'easycart_dev_secret_key_12345';
+export const JWT_SECRET = process.env.JWT_SECRET || DEV_JWT_SECRET;
 
 // Which database to use: "mongodb" or "supabase"
 export const DB_PROVIDER = process.env.DB_PROVIDER || 'mongodb';
