@@ -2,6 +2,7 @@
 // Profile and log out sit in the top bar, as in the admin area.
 import { Suspense, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { BellRing } from 'lucide-react';
 import { LogOut, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PageLoading } from '@/components/page-loading';
@@ -12,7 +13,8 @@ import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 import { useAuth } from '@/shared/auth/auth-context';
 import { useLiveUpdates } from '@/shared/live/use-live-updates';
 import { RiderAvatar } from '@/features/delivery/components/rider-avatar';
-import { useMyRider } from '@/features/rider/hooks/use-rider-queries';
+import { useMyRider, useRiderHome } from '@/features/rider/hooks/use-rider-queries';
+import { useOfferAlert } from '@/features/rider/hooks/use-offer-alert';
 import { ALL_RIDER_SECTIONS, riderBottomLinks, riderSections } from './rider-links';
 
 function OnlinePill({ isOnline }: { isOnline: boolean }) {
@@ -30,8 +32,13 @@ export function RiderLayout() {
   const { data: rider } = useMyRider();
   const isApproved = rider?.status === 'approved';
   const sections = riderSections(isApproved);
-  const title = find_nav_title(ALL_RIDER_SECTIONS, useLocation());
+  const location = useLocation();
+  const title = find_nav_title(ALL_RIDER_SECTIONS, location);
   useLiveUpdates('owner');
+  // Offers are watched on every rider page, so a new one is never missed while on another screen.
+  const { data: home } = useRiderHome(isApproved);
+  useOfferAlert(home?.offers);
+  const offerCount = home?.offers.length ?? 0;
 
   const sidebar = (onNavigate?: () => void) => <AppSidebar title="Delivery partner" homeTo="/rider" sections={sections} ariaLabel="Delivery partner" onNavigate={onNavigate} />;
   const name = rider?.full_name || user?.username || 'Rider';
@@ -52,6 +59,11 @@ export function RiderLayout() {
             <button type="button" aria-label="Log out" title="Log out" className="flex size-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600"><LogOut className="size-4" /></button>
           } />
         </header>
+        {offerCount > 0 && location.pathname !== '/rider' && (
+          <Link to="/rider" className="flex shrink-0 items-center justify-center gap-2 bg-sky-600 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-700">
+            <BellRing className="size-4 animate-pulse" /> {offerCount === 1 ? 'New order offer' : `${offerCount} new order offers`} · tap to view
+          </Link>
+        )}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden"><Suspense fallback={<PageLoading />}><Outlet /></Suspense></main>
         <nav aria-label="Rider quick links" className={cn('safe-bottom grid shrink-0 border-t border-slate-200/80 bg-white lg:hidden', isApproved ? 'grid-cols-4' : 'grid-cols-3')}>
           {riderBottomLinks(isApproved).map(({ item, label }) => (
