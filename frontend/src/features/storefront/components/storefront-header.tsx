@@ -67,8 +67,8 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
         transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
         className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/90 backdrop-blur-md px-4 py-3 shadow-xs sm:px-6 sm:py-3.5"
       >
-        <div className="mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <div className="mx-auto flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-3">
             {/* Mobile Menu Toggle */}
             <button
               type="button"
@@ -79,7 +79,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
               {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
 
-            <Link to={`/${slug}`} className="flex items-center gap-3 group">
+            <Link to={`/${slug}`} className="flex min-w-0 items-center gap-3 group">
               {store.logo_url ? (
                 <img src={store.logo_url} alt={store.name} className="size-9 sm:size-10 rounded-xl object-cover ring-2 ring-sky-500/20 shadow-xs transition-transform group-hover:scale-105" />
               ) : (
@@ -87,9 +87,9 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
                   {store.name.charAt(0).toUpperCase()}
                 </span>
               )}
-              <div className="flex items-center gap-2">
-                <span className="max-w-[9rem] truncate font-heading text-base font-bold text-slate-900 transition-colors group-hover:text-sky-600 sm:max-w-none sm:text-lg">{store.name}</span>
-                <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="min-w-0 truncate font-heading text-base font-bold text-slate-900 transition-colors group-hover:text-sky-600 sm:max-w-none sm:text-lg">{store.name}</span>
+                <span className="hidden rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] sm:inline font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
                   Store
                 </span>
               </div>
@@ -97,7 +97,7 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
           </div>
 
           {/* Top bar right area: Location + Cart + User / Account */}
-          <nav className="flex items-center gap-2.5">
+          <nav className="flex shrink-0 items-center gap-2">
             <CustomerLocationBadge store={store} />
 
             <Link
