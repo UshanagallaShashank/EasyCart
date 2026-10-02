@@ -68,7 +68,7 @@ function getOrderNotificationInfo(order: Order) {
       tone: 'bg-emerald-100 text-emerald-700'
     };
   }
-  if (order.fulfillment_status === 'out_for_delivery' || order.status === 'confirmed') {
+  if (order.fulfillment_status === 'dispatched' || order.status === 'confirmed') {
     return {
       title: `Order ${orderIdText} Out for Delivery`,
       message: `Driver is on the way with your items!`,
