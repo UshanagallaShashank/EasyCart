@@ -69,6 +69,7 @@ export interface PlatformStats {
 }
 
 export type PlatformRole = 'tenant_owner' | 'customer' | 'platform_admin';
+export type UserStatus = 'active' | 'inactive';
 
 export interface PlatformUser {
   id: string;
@@ -76,9 +77,30 @@ export interface PlatformUser {
   email: string;
   phone_number: string;
   role: PlatformRole;
+  status?: UserStatus;
+  last_active_at?: string | null;
   created_at: string;
-  store: { id: string; name: string; slug: string } | null;
+  store: { id: string; name: string; slug: string; status?: string } | null;
 }
+
+export interface PlatformUserDetail extends PlatformUser {
+  tenant_id?: string | null;
+  orders_count?: number;
+  total_spent?: number;
+  recent_orders?: {
+    id: string;
+    total: number;
+    status: string;
+    payment_status: string;
+    created_at: string;
+  }[];
+}
+
+export interface UpdatePlatformUserPayload {
+  role?: PlatformRole;
+  status?: UserStatus;
+}
+
 
 export interface AdminNotification {
   id: string;
