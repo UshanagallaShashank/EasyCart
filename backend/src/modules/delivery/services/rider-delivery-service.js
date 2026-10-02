@@ -13,9 +13,8 @@ import { order_point } from '../lib/order-point.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
-import { dispatch_order, refresh_dispatch, store_point } from './dispatch-service.js';
+import { dispatch_order, store_point } from './dispatch-service.js';
 import { save_delivery_file, delivery_file_url } from './delivery-file-service.js';
-import { get_order_settlement } from '../repositories/order-settlement-store.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
 
 function item_count(order) {
@@ -33,10 +32,9 @@ function stage_of(order) {
 // and neither handover code is ever included.
 async function to_rider_order(order, rider) {
   const accepted = order.rider_offer_status === 'accepted';
-  const [store, customer, settlement_record] = await Promise.all([
+  const [store, customer] = await Promise.all([
     find_store_by_tenant_id(order.tenant_id),
-    accepted ? find_user_by_id(order.customer_id) : Promise.resolve(null),
-    get_order_settlement(order.id)
+    accepted ? find_user_by_id(order.customer_id) : Promise.resolve(null)
   ]);
   const store_location = store_point(store);
   return {
@@ -69,7 +67,7 @@ async function to_rider_order(order, rider) {
     delivered_at: order.delivered_at ?? null,
     cash_collected: order.cash_collected ?? null,
     proof_photo_url: order.delivery_photo_path ? await delivery_file_url(order.delivery_photo_path) : null,
-    settlement: calculate_order_settlement(order, settlement_record)
+    settlement: calculate_order_settlement(order)
   };
 }
 
@@ -81,7 +79,6 @@ async function find_my_order(rider, order_id) {
 
 export async function get_rider_home(user_id) {
   const rider = await get_rider_for_user(user_id);
-  if (rider.status === 'approved') await refresh_dispatch();
   const [orders, settlements] = await Promise.all([find_orders_by_rider(rider.id), find_settlements_by_rider(rider.id)]);
   const live = orders.filter((order) => order.status !== 'cancelled' && ['rider_assigned', 'dispatched'].includes(order.fulfillment_status) && !is_offer_expired(order));
   const views = await Promise.all(live.map((order) => to_rider_order(order, rider)));

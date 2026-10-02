@@ -6,13 +6,22 @@ import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repos
 import { to_admin_order } from '../../orders/lib/order-views.js';
 import { find_all_riders, find_rider_by_id, find_riders_by_ids, update_rider } from '../repositories/rider-repository.js';
 import { find_all_settlements, find_settlements_by_rider, save_settlement } from '../repositories/settlement-repository.js';
-import { find_all_delivery_orders, find_orders_by_rider } from '../repositories/delivery-order-repository.js';
+import { find_all_delivery_orders, find_orders_by_rider, find_orders_by_riders } from '../repositories/delivery-order-repository.js';
 import { reject_schema, review_schema, settlement_schema, issues_message } from '../delivery-schemas.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { is_rider_available, ACTIVE_RIDER_STAGES } from '../lib/delivery-stages.js';
 import { sort_riders_by_distance, with_distance } from '../lib/sort-riders-by-distance.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { refresh_dispatch, store_point } from './dispatch-service.js';
+
+function group_by(rows, field) {
+  const groups = new Map();
+  for (const row of rows) {
+    if (!groups.has(row[field])) groups.set(row[field], []);
+    groups.get(row[field]).push(row);
+  }
+  return groups;
+}
 
 async function find_rider_or_404(id) {
   const rider = await find_rider_by_id(id);
@@ -22,19 +31,17 @@ async function find_rider_or_404(id) {
 
 // Every rider with their money summary. With near_tenant_id, sorted nearest to that store first.
 export async function list_riders_for_admin({ near_tenant_id } = {}) {
-  const [riders, orders, settlements, tenants] = await Promise.all([
-    find_all_riders(),
-    find_all_delivery_orders(),
-    find_all_settlements(),
-    find_all_tenants()
-  ]);
+  const [riders, settlements, tenants] = await Promise.all([find_all_riders(), find_all_settlements(), find_all_tenants()]);
+  // Only orders that ever had a rider, grouped once, instead of scanning every order for every rider.
+  const orders_by_rider = group_by(await find_orders_by_riders(riders.map((rider) => rider.id)), 'rider_id');
+  const settlements_by_rider = group_by(settlements, 'rider_id');
   const stores = await find_stores_by_tenant_ids(tenants.filter((tenant) => tenant.status === 'active').map((tenant) => tenant.id));
   const origin = near_tenant_id ? store_point(stores.find((store) => store.tenant_id === near_tenant_id)) : null;
   const ordered = origin ? sort_riders_by_distance(riders, origin) : with_distance(riders, null);
 
   const rows = ordered.map((rider) => {
-    const own_orders = orders.filter((order) => order.rider_id === rider.id);
-    const money = summarize_rider_money(own_orders, settlements.filter((row) => row.rider_id === rider.id));
+    const own_orders = orders_by_rider.get(rider.id) ?? [];
+    const money = summarize_rider_money(own_orders, settlements_by_rider.get(rider.id) ?? []);
     return {
       id: rider.id,
       full_name: rider.full_name,
@@ -106,7 +113,7 @@ export async function suspend_rider(id, payload) {
   const parsed = reject_schema.safeParse(payload ?? {});
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const result = await set_status(id, ['approved'], { status: 'suspended', review_note: parsed.data.note, is_online: false }, 'Only approved riders can be suspended');
-  await refresh_dispatch({ force: true });
+  await refresh_dispatch();
   return result;
 }
 
@@ -124,7 +131,6 @@ export async function record_settlement(id, admin_user_id, payload) {
 
 // Every delivery order on the platform with its store and rider names.
 export async function list_deliveries_for_admin() {
-  await refresh_dispatch();
   const orders = await find_all_delivery_orders();
   const [stores, riders] = await Promise.all([
     find_stores_by_tenant_ids([...new Set(orders.map((order) => order.tenant_id))]),

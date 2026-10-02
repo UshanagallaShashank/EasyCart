@@ -1,4 +1,5 @@
-// Queries and mutations for the rider app. The home screen refreshes every 15 seconds so new offers appear on their own.
+// Queries and mutations for the rider app. New offers and changes arrive live (shared/live); the slow refresh is only a backup.
+import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '@/features/delivery/api/rider-api';
 import type { Rider } from '@/features/delivery/types/delivery-types';
@@ -17,11 +18,11 @@ export function useMyRider() {
 }
 
 export function useRiderHome(enabled = true) {
-  return useQuery({ queryKey: riderKeys.home, queryFn: api.getRiderHome, enabled, refetchInterval: 15_000, refetchOnWindowFocus: true, staleTime: 5_000 });
+  return useQuery({ queryKey: riderKeys.home, queryFn: api.getRiderHome, enabled, refetchInterval: BACKUP_REFRESH_MS });
 }
 
 export function useRiderOrder(id: string) {
-  return useQuery({ queryKey: riderKeys.order(id), queryFn: async () => (await api.getRiderOrder(id)).order, refetchInterval: 20_000, staleTime: 5_000 });
+  return useQuery({ queryKey: riderKeys.order(id), queryFn: async () => (await api.getRiderOrder(id)).order, refetchInterval: BACKUP_REFRESH_MS });
 }
 
 export function useRiderHistory() {
@@ -32,9 +33,7 @@ export function useRiderEarnings() {
   return useQuery({
     queryKey: riderKeys.earnings,
     queryFn: api.getRiderEarnings,
-    refetchInterval: 10_000,
-    staleTime: 4_000,
-    refetchOnWindowFocus: true
+    refetchInterval: BACKUP_REFRESH_MS
   });
 }
 
@@ -42,9 +41,7 @@ export function useRiderSettlements() {
   return useQuery({
     queryKey: riderKeys.settlements,
     queryFn: api.getRiderSettlements,
-    refetchInterval: 10_000,
-    staleTime: 4_000,
-    refetchOnWindowFocus: true
+    refetchInterval: BACKUP_REFRESH_MS
   });
 }
 

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { Banknote, CheckCircle2, HandCoins, QrCode, Store, Wallet } from 'lucide-react';
+import { Banknote, CheckCircle2, HandCoins, QrCode } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';

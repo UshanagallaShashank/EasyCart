@@ -19,6 +19,8 @@ import { coupon_router } from './modules/coupons/routes/coupon-route.js';
 import { notification_router } from './modules/notifications/routes/notification-route.js';
 import { delivery_router } from './modules/delivery/routes/delivery-route.js';
 import { private_file_router } from './platform/storage/private-file-route.js';
+import { live_router } from './platform/live/live-route.js';
+import { start_dispatch_loop } from './modules/delivery/services/dispatch-service.js';
 
 // Browsers may only call this API from the listed websites. Calls with no origin (curl, server to server) are allowed.
 // With no list set (local development), or with "*" in the list, every website is allowed.
@@ -38,6 +40,7 @@ export function create_express_app() {
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use('/api', health_router);
   app.use('/api', private_file_router);
+  app.use('/api', live_router);
   app.use('/api', api_limiter);
   app.use('/api', auth_router);
   app.use('/api', store_router);
@@ -60,6 +63,9 @@ export const app = create_express_app();
 export async function start_server_main() {
   if (IS_PRODUCTION) assert_production_env();
   await connect_db();
+
+  // Hands waiting deliveries to riders and moves unanswered offers on, every few seconds.
+  start_dispatch_loop();
 
   const server = app.listen(PORT, () => {
     process.stdout.write(`Server running on port ${PORT}\n`);
