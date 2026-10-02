@@ -52,7 +52,7 @@ export function StoreLocationCard() {
           <Label htmlFor="store-address" className="text-xs font-semibold text-slate-700">Store address for riders</Label>
           <Input id="store-address" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Shop no., street, landmark" maxLength={200} />
         </div>
-        <div className="flex flex-col gap-3 rounded-xl bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col items-start gap-3 rounded-xl bg-slate-50 px-4 py-3">
           <div className="min-w-0 text-sm">
             {point ? <><p className="font-semibold text-slate-900">Location pinned</p><p className="font-mono text-xs text-slate-500">{point.latitude.toFixed(5)}, {point.longitude.toFixed(5)}</p>{link && <a href={link} target="_blank" rel="noreferrer" className="text-xs font-semibold text-sky-600 hover:underline">Check on map</a>}</> : <p className="text-slate-500">Not pinned yet</p>}
             {error && <p className="mt-1 text-xs font-medium text-rose-600">{error}</p>}

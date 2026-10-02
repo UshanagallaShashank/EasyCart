@@ -5,7 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/page-header';
 import { PageBody } from '@/components/page-body';
 import { EmptyState } from '@/components/empty-state';
-import { format_price } from '@/lib/format-price';
+import { formatRupeesShort } from '@/features/delivery/lib/delivery-labels';
 import { useMyRider, useRiderHome } from '../hooks/use-rider-queries';
 import { ApplicationStatusCard } from '../components/application-status-card';
 import { OnlineToggleCard } from '../components/online-toggle-card';
@@ -40,8 +40,8 @@ export function RiderHomePage() {
             <OnlineToggleCard rider={home?.rider ?? rider} />
             <div className="grid grid-cols-3 gap-3">
               <StatTile icon={Bike} label="Today" value={String(home?.summary.deliveries_today ?? 0)} hint="deliveries" />
-              <StatTile icon={IndianRupee} label="Earned today" value={format_price(home?.summary.earnings_today ?? 0)} />
-              <StatTile icon={Wallet} label="Cash in hand" value={format_price(home?.summary.cash_in_hand ?? 0)} hint="hand in to EasyCart" />
+              <StatTile icon={IndianRupee} label="Earned today" value={formatRupeesShort(home?.summary.earnings_today ?? 0)} />
+              <StatTile icon={Wallet} label="Cash in hand" value={formatRupeesShort(home?.summary.cash_in_hand ?? 0)} hint="to hand in" />
             </div>
 
             {homeLoading ? <Skeleton className="h-48 w-full rounded-2xl" /> : (
