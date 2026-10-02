@@ -25,7 +25,15 @@ export function customerStoreRequestPath(slug: string): string {
   return `/${slug}/customer/store-request`;
 }
 
-// The last shop this visitor opened in this browser tab, or null if they have not opened one.
+const LAST_STORE_KEY = 'last_store_slug';
+
+// Remembers the shop being browsed, for this tab and for later visits in this browser.
+export function rememberStoreSlug(slug: string): void {
+  sessionStorage.setItem(LAST_STORE_KEY, slug);
+  localStorage.setItem(LAST_STORE_KEY, slug);
+}
+
+// The last shop this visitor opened (this tab first, then earlier visits), or null if they have never opened one.
 export function getLastStoreSlug(): string | null {
-  return sessionStorage.getItem('last_store_slug');
+  return sessionStorage.getItem(LAST_STORE_KEY) ?? localStorage.getItem(LAST_STORE_KEY);
 }
