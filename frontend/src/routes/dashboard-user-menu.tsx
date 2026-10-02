@@ -91,10 +91,11 @@ export function DashboardUserMenu() {
           <DropdownMenuSeparator className="my-1 border-slate-100" />
 
           <DropdownMenuItem
-            className="cursor-pointer gap-2.5 py-2.5 px-3 font-medium text-rose-600 focus:text-rose-700 focus:bg-rose-50 rounded-xl"
+            variant="destructive"
+            className="cursor-pointer gap-2.5 py-2.5 px-3 font-semibold rounded-xl"
             onSelect={() => setShowLogoutConfirm(true)}
           >
-            <LogOut className="size-4 text-rose-500" />
+            <LogOut className="size-4" />
             <span>Log out</span>
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -1,31 +1,49 @@
+import { Link } from 'react-router-dom';
 import { Package, Trash2, Minus, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { useCart } from '../cart-context';
 import type { CartLine } from '../types/cart-types';
 
-export function CartLineRow({ line }: { line: CartLine }) {
+export function CartLineRow({ line, slug }: { line: CartLine; slug?: string }) {
   const { removeItem, updateQuantity } = useCart();
 
   const isMaxStockReached = line.max_stock !== undefined && line.quantity >= line.max_stock;
 
-  return (
-    <div className="flex flex-wrap items-center gap-4 rounded-3xl border border-slate-100 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-slate-200">
+  const productLink = slug ? `/${slug}/products/${line.product_id}` : null;
+
+  const imageAndDetails = (
+    <>
       {line.image ? (
-        <img src={line.image} alt={line.name} className="size-14 sm:size-16 rounded-2xl border border-slate-100 bg-slate-50 object-cover" />
+        <img src={line.image} alt={line.name} className="size-14 sm:size-16 rounded-2xl border border-slate-100 bg-slate-50 object-cover shrink-0 transition-transform group-hover:scale-105" />
       ) : (
-        <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-slate-300">
+        <div className="flex size-14 sm:size-16 items-center justify-center rounded-2xl border border-slate-100 bg-slate-50 text-slate-300 shrink-0">
           <Package className="size-6 text-slate-300" />
         </div>
       )}
 
       <div className="min-w-0 flex-1">
-        <h3 className="font-heading text-base font-bold text-[#0F172A] truncate">{line.name}</h3>
+        <h3 className="font-heading text-base font-bold text-[#0F172A] truncate transition-colors group-hover:text-sky-600">{line.name}</h3>
         <p className="text-xs text-slate-400 font-medium">
           Rs. {line.price.toFixed(2)} each {line.variant_label ? `· ${line.variant_label}` : ''}
         </p>
+      </div>
+    </>
+  );
+
+  return (
+    <div className="flex flex-wrap items-center gap-4 rounded-3xl border border-slate-100 bg-white p-4 sm:p-5 shadow-xs transition-all hover:border-slate-200">
+      {productLink ? (
+        <Link to={productLink} className="group flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer">
+          {imageAndDetails}
+        </Link>
+      ) : (
+        <div className="flex items-center gap-3.5 min-w-0 flex-1">
+          {imageAndDetails}
+        </div>
+      )}
 
         {/* Quantity Controls Pill */}
-        <div className="mt-2.5 inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs shadow-2xs">
+        <div className="inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-xs shadow-2xs">
           <button
             type="button"
             onClick={() => updateQuantity(line.product_id, Math.max(1, line.quantity - 1), line.variant_label)}
@@ -49,7 +67,6 @@ export function CartLineRow({ line }: { line: CartLine }) {
             <Plus className="size-3" />
           </button>
         </div>
-      </div>
 
       <div className="flex items-center gap-4 ml-auto sm:ml-0">
         <p className="font-heading text-base font-extrabold text-[#0F172A] tabular-nums">
