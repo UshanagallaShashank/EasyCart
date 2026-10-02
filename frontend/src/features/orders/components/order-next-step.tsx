@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ApiError } from '@/shared/api/api-error';
 import { useUpdateOrderStatus } from '../hooks/use-update-order-status';
 import type { Order } from '../types/order-types';
+import { isRiderHandled } from '../lib/order-rules';
 
 const NEXT_STEP: Partial<Record<Order['status'], { status: Order['status']; label: string }>> = {
   pending: { status: 'confirmed', label: 'Confirm order' },
@@ -15,6 +16,8 @@ export function OrderNextStep({ order }: { order: Order }) {
   const update = useUpdateOrderStatus();
   const next = NEXT_STEP[order.status];
   if (!next) return null;
+  // A rider-handled order becomes fulfilled when the rider hands it over with the customer's code.
+  if (next.status === 'fulfilled' && isRiderHandled(order)) return null;
 
   function advance_order() {
     update.mutate({ id: order.id, status: next!.status }, {
