@@ -1,6 +1,7 @@
 import { useParams, Outlet } from 'react-router-dom';
 import { Suspense, useEffect } from 'react';
 import { PageLoading } from '@/components/page-loading';
+import { rememberStoreSlug } from '@/features/storefront/lib/customer-paths';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CartProvider } from '@/features/cart/cart-provider';
 import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
@@ -15,7 +16,7 @@ export function StorefrontLayout() {
 
   // Remember which store the customer last visited so My Orders can link back home
   useEffect(() => {
-    if (slug) sessionStorage.setItem('last_store_slug', slug);
+    if (slug) rememberStoreSlug(slug);
   }, [slug]);
 
   if (isLoading) {

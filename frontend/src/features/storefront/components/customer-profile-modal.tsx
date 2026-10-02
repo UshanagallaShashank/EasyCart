@@ -30,7 +30,6 @@ export function CustomerProfileModal({ open, onOpenChange, slug }: CustomerProfi
     onOpenChange(false);
     logout();
     toast.success('Logged out successfully');
-    if (slug) navigate(`/${slug}`);
   }
 
   function handleViewOrders() {

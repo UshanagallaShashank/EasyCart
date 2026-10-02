@@ -10,7 +10,7 @@ import { LoginPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-
 import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage } from './lazy-dashboard-pages';
 import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage } from './lazy-admin-pages';
 import { LegacyShopRedirect, BareCustomerRedirect } from './legacy-redirects';
-import { NoStorePage } from './no-store-page';
+import { CustomerHomePage } from './customer-home-page';
 import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
 import { getLastStoreSlug, customerOrdersPath } from '@/features/storefront/lib/customer-paths';
 import { StorefrontHomePage, StorefrontProductsPage, StorefrontProductDetailPage, StorefrontAddressPage, CartPage, CheckoutPage, CustomerOrdersPage, CustomerOrderDetailPage, CustomerStoreRequestPage } from './lazy-shop-pages';
@@ -21,7 +21,7 @@ function HomeRedirect() {
   const lastSlug = getLastStoreSlug();
 
   if (!user && customer && lastSlug) return <Navigate to={customerOrdersPath(lastSlug)} replace />;
-  if (!user && customer) return <NoStorePage />;
+  if (!user && customer) return <CustomerHomePage />;
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={user.role === 'platform_admin' ? '/admin' : '/dashboard'} replace />;
 }

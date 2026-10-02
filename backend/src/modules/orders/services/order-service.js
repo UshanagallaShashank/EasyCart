@@ -12,6 +12,8 @@ import { adjust_stock } from '../../products/services/product-service.js';
 import { notify_order_placed } from '../../notifications/services/notification-service.js';
 import { find_order_by_id, find_order_by_id_for_customer, save_order, update_order } from '../repositories/order-repository.js';
 import { find_orders_by_tenant, find_orders_by_customer } from '../repositories/order-query-repository.js';
+import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repository.js';
+import { pick_customer_stores } from '../lib/pick-customer-stores.js';
 
 export async function create_order(
   tenant_id,
@@ -49,6 +51,14 @@ export async function list_orders_for_tenant(tenant_id) {
 
 export async function list_orders_for_customer(customer_id) {
   return find_orders_by_customer(customer_id);
+}
+
+// The stores this customer shops at (the ones they have ordered from), used to send them to the right store after sign-in.
+export async function list_stores_for_customer(customer_id) {
+  const orders = await find_orders_by_customer(customer_id);
+  const tenant_ids = [...new Set(orders.map((order) => order.tenant_id))];
+  const stores = await find_stores_by_tenant_ids(tenant_ids);
+  return pick_customer_stores(orders, stores);
 }
 
 export async function get_order_for_tenant(tenant_id, id) {
