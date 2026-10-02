@@ -103,8 +103,9 @@ export function StoreDeliveryPage() {
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
-            <StoreSettlementsPanel />
+            {/* What needs attention now comes first; money to reconcile follows. */}
             <DeliveriesList />
+            <StoreSettlementsPanel />
           </div>
           <div className="flex min-w-0 flex-col gap-5"><StoreLocationCard /><NearbyRiders /></div>
         </div>
