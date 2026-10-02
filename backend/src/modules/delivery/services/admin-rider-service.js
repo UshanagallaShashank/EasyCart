@@ -9,7 +9,7 @@ import { find_all_settlements, find_settlements_by_rider, save_settlement } from
 import { find_all_delivery_orders, find_orders_by_rider, find_orders_by_riders } from '../repositories/delivery-order-repository.js';
 import { reject_schema, review_schema, settlement_schema, issues_message } from '../delivery-schemas.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
-import { is_rider_available, ACTIVE_RIDER_STAGES } from '../lib/delivery-stages.js';
+import { is_rider_available, ACTIVE_RIDER_STAGES, delivery_stage } from '../lib/delivery-stages.js';
 import { sort_riders_by_distance, with_distance } from '../lib/sort-riders-by-distance.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { store_point } from './dispatch-service.js';
@@ -152,7 +152,7 @@ export async function list_deliveries_for_admin() {
     tenant_id: order.tenant_id,
     rider_id: order.rider_id ?? null,
     rider_name: rider_names.get(order.rider_id) ?? null,
-    stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
+    stage: delivery_stage(order),
     rider_offer_status: order.rider_offer_status ?? null,
     delivery_address: order.delivery_address,
     total: Number(order.total),

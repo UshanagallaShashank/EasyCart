@@ -9,7 +9,7 @@ import { ProofPhoto } from '@/features/delivery/components/proof-photo';
 import { OrderSettlementCard } from '@/features/delivery/components/order-settlement-card';
 import { formatDateTime, formatDistance, mapsLink } from '@/features/delivery/lib/delivery-labels';
 import type { RiderOrder } from '@/features/delivery/types/delivery-types';
-import { useRiderOrder, useRiderPayStore } from '../hooks/use-rider-queries';
+import { useRiderOrder } from '../hooks/use-rider-queries';
 import { FormSection } from '../components/form-section';
 import { PickupStep } from '../components/pickup-step';
 import { DeliverStep } from '../components/deliver-step';
@@ -45,7 +45,6 @@ function Bill({ order }: { order: RiderOrder }) {
 export function RiderOrderPage() {
   const { id } = useParams<{ id: string }>();
   const { data: order, isLoading, isError } = useRiderOrder(id!);
-  const payStore = useRiderPayStore(id!);
   const navigate = useNavigate();
   // Back goes where the rider came from (Home or History); opened from a fresh link, it goes Home.
   const cameFromApp = useLocation().key !== 'default';
@@ -77,13 +76,7 @@ export function RiderOrderPage() {
                 <div className="mt-3 max-w-sm"><ProofPhoto url={order.proof_photo_url} cashCollected={order.cash_collected} /></div>
               </div>
             </section>
-            <OrderSettlementCard
-              orderId={order.id}
-              settlement={order.settlement}
-              storeName={order.store.name}
-              role="rider"
-              onSettle={(payload) => payStore.mutateAsync(payload)}
-            />
+            <OrderSettlementCard side="rider" settlement={order.settlement} counterpart={order.store.name} />
           </div>
         )}
 

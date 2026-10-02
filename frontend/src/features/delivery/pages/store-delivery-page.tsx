@@ -8,8 +8,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
 import { FilterPills } from '@/components/filter-pills';
 import { format_price } from '@/lib/format-price';
-import { useRidersNearby, useStoreDeliveries } from '../hooks/use-store-delivery';
-import { StoreSettlementsPanel } from '../components/store-settlements-panel';
+import { useRidersNearby, useStoreDeliveries, useStoreSettlements } from '../hooks/use-store-delivery';
+import { SettlementsPanel } from '../components/settlement/settlements-panel';
 import { ToneBadge } from '../components/tone-badge';
 import { VEHICLE_LABELS, deliveryStageLabel, formatDateTime, formatDistance } from '../lib/delivery-labels';
 
@@ -91,6 +91,11 @@ function NearbyRiders() {
   );
 }
 
+function StoreSettlements() {
+  const { data, isLoading } = useStoreSettlements();
+  return <SettlementsPanel side="store" rows={data?.orders} isLoading={isLoading} />;
+}
+
 export function StoreDeliveryPage() {
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden">
@@ -104,7 +109,7 @@ export function StoreDeliveryPage() {
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
             {/* What needs attention now comes first; money to reconcile follows. */}
             <DeliveriesList />
-            <StoreSettlementsPanel />
+            <StoreSettlements />
           </div>
           <div className="flex min-w-0 flex-col gap-5"><NearbyRiders /></div>
         </div>

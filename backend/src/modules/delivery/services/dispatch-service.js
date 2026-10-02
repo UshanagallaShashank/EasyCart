@@ -46,11 +46,12 @@ export async function dispatch_order(order) {
   });
 }
 
-// Moves an unanswered offer on to the next rider.
-async function pass_on_expired_offer(order) {
-  const declined_rider_ids = [...(order.declined_rider_ids ?? []), order.rider_id];
+// Takes an unanswered offer back from its rider (declined, ran out, went offline, suspended)
+// and offers it to the next nearest rider. That rider is not asked again for this order.
+export async function pass_offer_on(order) {
   const released = await update_order_if(order.id, { rider_id: order.rider_id, rider_offer_status: 'offered' }, {
-    fulfillment_status: 'ready_for_delivery', rider_id: null, rider_offer_status: null, rider_offer_expires_at: null, declined_rider_ids
+    fulfillment_status: 'ready_for_delivery', rider_id: null, rider_offer_status: null, rider_offer_expires_at: null,
+    declined_rider_ids: [...(order.declined_rider_ids ?? []), order.rider_id]
   });
   if (released) await dispatch_order(released);
 }
@@ -66,7 +67,7 @@ export function refresh_dispatch() {
     const orders = await find_orders_in_stages(['ready_for_delivery', 'rider_assigned']);
     for (const order of orders) {
       if (order.fulfillment_status === 'ready_for_delivery' && !order.rider_id) await dispatch_order(order);
-      else if (is_offer_expired(order)) await pass_on_expired_offer(order);
+      else if (is_offer_expired(order)) await pass_offer_on(order);
     }
   })().finally(() => { running = null; });
   return running;
