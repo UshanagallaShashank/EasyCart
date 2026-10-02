@@ -70,3 +70,10 @@ export function mapsLink(point: { latitude: number | null; longitude: number | n
   if (fallbackAddress) return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(fallbackAddress)}`;
   return null;
 }
+
+const WHOLE_RUPEES = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
+
+// Short rupee amount for small tiles: "Rs. 2,450" (paise only shown when there are any).
+export function formatRupeesShort(amount: number): string {
+  return Number.isInteger(amount) ? `Rs. ${WHOLE_RUPEES.format(amount)}` : `Rs. ${amount.toFixed(2)}`;
+}

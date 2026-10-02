@@ -5,7 +5,7 @@ export function StatTile({ icon: Icon, label, value, hint }: { icon: LucideIcon;
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
       <span className="flex items-center gap-1.5 text-xs font-medium text-slate-500"><Icon className="size-3.5 text-sky-500" /> {label}</span>
-      <span className="truncate text-xl font-bold tracking-tight text-slate-900 tabular-nums">{value}</span>
+      <span className="text-lg font-bold tracking-tight break-words text-slate-900 tabular-nums sm:text-xl">{value}</span>
       {hint && <span className="truncate text-[11px] text-slate-400">{hint}</span>}
     </div>
   );
