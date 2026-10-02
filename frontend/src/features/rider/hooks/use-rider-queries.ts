@@ -8,7 +8,8 @@ export const riderKeys = {
   home: ['rider', 'home'] as const,
   order: (id: string) => ['rider', 'order', id] as const,
   history: ['rider', 'history'] as const,
-  earnings: ['rider', 'earnings'] as const
+  earnings: ['rider', 'earnings'] as const,
+  settlements: ['rider', 'settlements'] as const
 };
 
 export function useMyRider() {
@@ -28,7 +29,36 @@ export function useRiderHistory() {
 }
 
 export function useRiderEarnings() {
-  return useQuery({ queryKey: riderKeys.earnings, queryFn: api.getRiderEarnings });
+  return useQuery({
+    queryKey: riderKeys.earnings,
+    queryFn: api.getRiderEarnings,
+    refetchInterval: 10_000,
+    staleTime: 4_000,
+    refetchOnWindowFocus: true
+  });
+}
+
+export function useRiderSettlements() {
+  return useQuery({
+    queryKey: riderKeys.settlements,
+    queryFn: api.getRiderSettlements,
+    refetchInterval: 10_000,
+    staleTime: 4_000,
+    refetchOnWindowFocus: true
+  });
+}
+
+export function useRiderPayStore(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload?: { method?: string; note?: string }) => api.payStoreForOrder(orderId, payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rider'] });
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['store-deliveries'] });
+      queryClient.invalidateQueries({ queryKey: ['store-settlements'] });
+    }
+  });
 }
 
 // Any change to the rider profile updates the cached profile right away.

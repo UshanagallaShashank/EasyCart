@@ -14,6 +14,8 @@ import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
 import { dispatch_order, refresh_dispatch, store_point } from './dispatch-service.js';
 import { save_delivery_file, delivery_file_url } from './delivery-file-service.js';
+import { get_order_settlement } from '../repositories/order-settlement-store.js';
+import { calculate_order_settlement } from './order-settlement-service.js';
 
 function item_count(order) {
   return order.items.reduce((total, item) => total + item.quantity, 0);
@@ -30,9 +32,10 @@ function stage_of(order) {
 // and neither handover code is ever included.
 async function to_rider_order(order, rider) {
   const accepted = order.rider_offer_status === 'accepted';
-  const [store, customer] = await Promise.all([
+  const [store, customer, settlement_record] = await Promise.all([
     find_store_by_tenant_id(order.tenant_id),
-    accepted ? find_user_by_id(order.customer_id) : Promise.resolve(null)
+    accepted ? find_user_by_id(order.customer_id) : Promise.resolve(null),
+    get_order_settlement(order.id)
   ]);
   const store_location = store_point(store);
   return {
@@ -63,7 +66,8 @@ async function to_rider_order(order, rider) {
     picked_up_at: order.picked_up_at ?? null,
     delivered_at: order.delivered_at ?? null,
     cash_collected: order.cash_collected ?? null,
-    proof_photo_url: order.delivery_photo_path ? await delivery_file_url(order.delivery_photo_path) : null
+    proof_photo_url: order.delivery_photo_path ? await delivery_file_url(order.delivery_photo_path) : null,
+    settlement: calculate_order_settlement(order, settlement_record)
   };
 }
 

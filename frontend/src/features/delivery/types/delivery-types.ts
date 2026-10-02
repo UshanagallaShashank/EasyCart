@@ -103,6 +103,7 @@ export interface RiderOrder {
   delivered_at: string | null;
   cash_collected: number | null;
   proof_photo_url: string | null;
+  settlement?: OrderSettlementInfo | null;
 }
 
 export interface RiderHome {
@@ -139,6 +140,7 @@ export interface OrderDelivery {
   cash_collected: number | null;
   proof_photo_url: string | null;
   delivery_locked: boolean;
+  settlement?: OrderSettlementInfo | null;
 }
 
 export interface StoreOrderDelivery extends OrderDelivery {
@@ -171,6 +173,83 @@ export interface StoreDeliveryRow {
   total: number;
   created_at: string;
   delivered_at: string | null;
+  settlement?: OrderSettlementInfo | null;
+}
+
+export interface OrderSettlementInfo {
+  order_id: string;
+  cash_collected: number;
+  rider_earning: number;
+  store_amount: number;
+  net_to_store: number;
+  is_cod: boolean;
+  is_settled: boolean;
+  settled_at: string | null;
+  settled_by: string | null;
+  method: 'cash' | 'upi' | string | null;
+  note: string | null;
+}
+
+export interface StoreSettlementSummary {
+  summary: {
+    pending_cash_from_riders: number;
+    pending_rider_payouts: number;
+    settled_cash_total: number;
+    settled_orders_count: number;
+    pending_orders_count: number;
+  };
+  orders: {
+    order_id: string;
+    created_at: string;
+    delivered_at: string | null;
+    rider_id: string | null;
+    rider_name: string | null;
+    rider_phone: string | null;
+    total: number;
+    cash_collected: number;
+    rider_earning: number;
+    store_amount: number;
+    net_to_store: number;
+    is_cod: boolean;
+    is_settled: boolean;
+    settled_at: string | null;
+    settled_by: string | null;
+    method: string | null;
+    note: string | null;
+  }[];
+}
+
+export interface RiderSettlementSummary {
+  summary: {
+    pending_cash_to_stores: number;
+    pending_ride_earnings: number;
+    settled_cash_total: number;
+    settled_store_cash?: number;
+    settled_orders_count: number;
+    pending_orders_count: number;
+    total_orders_count?: number;
+  };
+  orders: {
+    order_id: string;
+    store_id: string;
+    store_name: string;
+    store_address: string | null;
+    created_at: string;
+    delivered_at: string | null;
+    total: number;
+    cash_collected: number;
+    rider_earning: number;
+    store_amount: number;
+    net_to_store: number;
+    is_cod: boolean;
+    is_settled: boolean;
+    settled_at: string | null;
+    settled_by: string | null;
+    method: string | null;
+    note: string | null;
+    has_cash_deposit?: boolean;
+    has_payout?: boolean;
+  }[];
 }
 
 export interface AdminRiderRow {

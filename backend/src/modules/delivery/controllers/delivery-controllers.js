@@ -4,6 +4,7 @@ import * as status from '../services/rider-status-service.js';
 import * as rider_delivery from '../services/rider-delivery-service.js';
 import * as handover from '../services/handover-service.js';
 import * as admin from '../services/admin-rider-service.js';
+import * as order_settlement from '../services/order-settlement-service.js';
 
 // Wraps a service call so errors reach the shared error handler.
 function respond(run, status_code = 200) {
@@ -58,3 +59,33 @@ export const handle_admin_suspend_rider = respond(async (req) => admin.suspend_r
 export const handle_admin_reactivate_rider = respond(async (req) => admin.reactivate_rider(req.params.id));
 export const handle_admin_record_settlement = respond(async (req) => admin.record_settlement(req.params.id, req.user.id, req.body));
 export const handle_admin_list_deliveries = respond(async () => ({ deliveries: await admin.list_deliveries_for_admin() }));
+
+// Payment & settlements
+export const handle_store_settle_order = respond(async (req) =>
+  order_settlement.settle_order_payment({
+    tenant_id: req.tenant_id,
+    order_id: req.params.id,
+    user_id: req.user.id,
+    method: req.body?.method,
+    note: req.body?.note,
+    settled_by: 'store_owner'
+  })
+);
+
+export const handle_store_list_settlements = respond(async (req) =>
+  order_settlement.get_store_delivery_settlements(req.tenant_id)
+);
+
+export const handle_rider_pay_store = respond(async (req) =>
+  order_settlement.rider_pay_store({
+    user_id: req.user.id,
+    order_id: req.params.id,
+    method: req.body?.method,
+    note: req.body?.note
+  })
+);
+
+export const handle_rider_list_settlements = respond(async (req) =>
+  order_settlement.get_rider_delivery_settlements(req.user.id)
+);
+

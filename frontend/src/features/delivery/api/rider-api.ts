@@ -1,7 +1,7 @@
 // Calls the delivery partner (rider) endpoints. Riders sign in like store owners, so the staff token is used.
 import { apiRequest } from '@/shared/api/api-client';
 import type { StaffAuthResponse } from '@/features/auth/types/auth-types';
-import type { DocumentKind, Rider, RiderHome, RiderMoney, DailyPoint, Settlement, RiderOrder, RiderProfileFields } from '../types/delivery-types';
+import type { DocumentKind, Rider, RiderHome, RiderMoney, DailyPoint, Settlement, RiderOrder, RiderProfileFields, OrderSettlementInfo, RiderSettlementSummary } from '../types/delivery-types';
 
 export interface RiderSignupPayload {
   username: string;
@@ -32,3 +32,7 @@ export const declineOffer = (id: string): Promise<{ ok: boolean }> => apiRequest
 export const confirmPickup = (id: string, pickup_code: string): Promise<{ order: RiderOrder }> => apiRequest(`/riders/me/orders/${id}/pickup`, json('POST', { pickup_code }));
 export const completeDelivery = (id: string, payload: { delivery_code: string; cash_collected: number; photo: string }): Promise<{ order: RiderOrder }> =>
   apiRequest(`/riders/me/orders/${id}/deliver`, json('POST', payload));
+export const payStoreForOrder = (id: string, payload?: { method?: string; note?: string }): Promise<{ ok: boolean; settlement: OrderSettlementInfo }> =>
+  apiRequest(`/riders/me/orders/${id}/pay-store`, json('POST', payload ?? {}));
+export const getRiderSettlements = (): Promise<RiderSettlementSummary> => apiRequest('/riders/me/settlements');
+

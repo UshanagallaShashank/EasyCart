@@ -28,16 +28,20 @@ delivery_router.put('/riders/me/location', rider_only, c.handle_update_my_locati
 delivery_router.get('/riders/me/home', rider_only, c.handle_get_rider_home);
 delivery_router.get('/riders/me/history', rider_only, c.handle_list_rider_history);
 delivery_router.get('/riders/me/earnings', rider_only, c.handle_get_rider_earnings);
+delivery_router.get('/riders/me/settlements', rider_only, c.handle_rider_list_settlements);
 delivery_router.get('/riders/me/orders/:id', rider_only, c.handle_get_rider_order);
 delivery_router.post('/riders/me/orders/:id/accept', rider_only, c.handle_accept_offer);
 delivery_router.post('/riders/me/orders/:id/decline', rider_only, c.handle_decline_offer);
 delivery_router.post('/riders/me/orders/:id/pickup', rider_only, sensitive_route_limiter, c.handle_confirm_pickup);
 delivery_router.post('/riders/me/orders/:id/deliver', rider_only, sensitive_route_limiter, c.handle_complete_delivery);
+delivery_router.post('/riders/me/orders/:id/pay-store', rider_only, sensitive_route_limiter, c.handle_rider_pay_store);
 
 // Store owner
 delivery_router.get('/delivery/riders-nearby', owner_only, c.handle_list_riders_near_store);
 delivery_router.get('/delivery/orders', owner_only, c.handle_list_store_deliveries);
+delivery_router.get('/delivery/settlements', owner_only, c.handle_store_list_settlements);
 delivery_router.get('/orders/:id/delivery', owner_only, c.handle_get_store_order_delivery);
+delivery_router.post('/orders/:id/delivery/settle', owner_only, sensitive_route_limiter, c.handle_store_settle_order);
 delivery_router.post('/orders/:id/delivery/request-rider', owner_only, c.handle_request_rider);
 delivery_router.post('/orders/:id/delivery/cancel-rider', owner_only, c.handle_cancel_rider_request);
 delivery_router.post('/orders/:id/delivery/new-pickup-code', owner_only, c.handle_reissue_pickup_code);

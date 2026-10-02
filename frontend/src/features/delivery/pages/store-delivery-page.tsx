@@ -10,6 +10,7 @@ import { FilterPills } from '@/components/filter-pills';
 import { format_price } from '@/lib/format-price';
 import { useRidersNearby, useStoreDeliveries } from '../hooks/use-store-delivery';
 import { StoreLocationCard } from '../components/store-location-card';
+import { StoreSettlementsPanel } from '../components/store-settlements-panel';
 import { ToneBadge } from '../components/tone-badge';
 import { VEHICLE_LABELS, deliveryStageLabel, formatDateTime, formatDistance } from '../lib/delivery-labels';
 
@@ -101,7 +102,10 @@ export function StoreDeliveryPage() {
           <p>Open a delivery order and tap <strong>Request rider</strong> when it is packed. The nearest partner accepts, shows you the pickup code screen, and can only complete the order with the customer's own code.</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
-          <div className="flex min-w-0 flex-col gap-5 lg:col-span-2"><DeliveriesList /></div>
+          <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
+            <StoreSettlementsPanel />
+            <DeliveriesList />
+          </div>
           <div className="flex min-w-0 flex-col gap-5"><StoreLocationCard /><NearbyRiders /></div>
         </div>
       </PageBody>

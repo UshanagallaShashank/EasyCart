@@ -6,13 +6,14 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/shared/api/api-error';
 import type { Order } from '@/features/orders/types/order-types';
-import { useStoreDeliveryAction, useStoreOrderDelivery } from '../hooks/use-store-delivery';
+import { useStoreDeliveryAction, useStoreOrderDelivery, useSettleOrderDelivery } from '../hooks/use-store-delivery';
 import { deliveryStageLabel } from '../lib/delivery-labels';
 import type { StoreAction } from '../api/handover-api';
 import { ToneBadge } from './tone-badge';
 import { HandoverRiderCard } from './handover-rider-card';
 import { DeliveryTimeline } from './delivery-timeline';
 import { ProofPhoto } from './proof-photo';
+import { OrderSettlementCard } from './order-settlement-card';
 
 const DONE_MESSAGE: Record<StoreAction, string> = {
   'request-rider': 'Looking for the nearest rider',
@@ -24,6 +25,7 @@ const DONE_MESSAGE: Record<StoreAction, string> = {
 export function StoreDeliveryCard({ order }: { order: Order }) {
   const { data: delivery, isLoading } = useStoreOrderDelivery(order.id, true);
   const action = useStoreDeliveryAction(order.id);
+  const settleMutation = useSettleOrderDelivery(order.id);
   const run = (name: StoreAction) => action.mutate(name, {
     onSuccess: () => toast.success(DONE_MESSAGE[name]),
     onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Something went wrong')
@@ -76,7 +78,18 @@ export function StoreDeliveryCard({ order }: { order: Order }) {
         {delivery.pickup_locked && <p className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-xs text-rose-700"><AlertTriangle className="size-4 shrink-0" /> Too many wrong pickup codes. Make a new one if this is really your rider.</p>}
         {delivery.delivery_locked && <p className="flex items-center gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-xs text-rose-700"><AlertTriangle className="size-4 shrink-0" /> The rider entered the customer's code wrong 5 times. Call the customer before issuing a new code.</p>}
 
-        {delivery.stage === 'delivered' && <ProofPhoto url={delivery.proof_photo_url} cashCollected={delivery.cash_collected} />}
+        {delivery.stage === 'delivered' && (
+          <div className="flex flex-col gap-3">
+            <ProofPhoto url={delivery.proof_photo_url} cashCollected={delivery.cash_collected} />
+            <OrderSettlementCard
+              orderId={order.id}
+              settlement={delivery.settlement}
+              partnerName={delivery.rider?.full_name}
+              role="store"
+              onSettle={(payload) => settleMutation.mutateAsync(payload)}
+            />
+          </div>
+        )}
 
         {delivery.stage !== 'not_started' && <DeliveryTimeline timeline={delivery.timeline} />}
 

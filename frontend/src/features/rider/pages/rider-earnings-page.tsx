@@ -9,6 +9,7 @@ import { SettlementList } from '@/features/delivery/components/settlement-list';
 import { useRiderEarnings } from '../hooks/use-rider-queries';
 import { StatTile } from '../components/stat-tile';
 import { FormSection } from '../components/form-section';
+import { RiderStoreSettlements } from '../components/rider-store-settlements';
 
 export function RiderEarningsPage() {
   const { data, isLoading } = useRiderEarnings();
@@ -23,12 +24,13 @@ export function RiderEarningsPage() {
               <StatTile icon={IndianRupee} label="Today" value={format_price(data.summary.earnings_today)} hint={`${data.summary.deliveries_today} deliveries`} />
               <StatTile icon={CalendarDays} label="Last 7 days" value={format_price(data.summary.earnings_this_week)} hint={`${data.summary.deliveries_this_week} deliveries`} />
               <StatTile icon={Bike} label="All time" value={format_price(data.summary.earnings)} hint={`${data.summary.deliveries} deliveries`} />
-              <StatTile icon={Wallet} label="Cash in hand" value={format_price(data.summary.cash_in_hand)} hint="Hand this in to EasyCart" />
-              <StatTile icon={HandCoins} label="Payout due" value={format_price(data.summary.payout_due)} hint="Paid to your UPI" />
+              <StatTile icon={Wallet} label="Cash in hand" value={format_price(data.summary.cash_in_hand)} hint="Hand this in to the store" />
+              <StatTile icon={HandCoins} label="Payout due" value={format_price(data.summary.payout_due)} hint="Ride fees owed to you" />
               <StatTile icon={Banknote} label="Paid out" value={format_price(data.summary.paid_out)} />
             </div>
             <EarningsChart daily={data.daily} />
-            <FormSection icon={HandCoins} title="Cash and payouts" description="Recorded by the EasyCart team when you hand in cash or get paid.">
+            <RiderStoreSettlements />
+            <FormSection icon={HandCoins} title="Cash and payouts" description="Recorded settlements and ride payouts so far.">
               <SettlementList settlements={data.settlements} />
             </FormSection>
           </>

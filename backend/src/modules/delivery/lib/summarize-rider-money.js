@@ -16,7 +16,8 @@ export function summarize_rider_money(orders, settlements, now = new Date()) {
   const this_week = delivered.filter((order) => order.delivered_at && new Date(order.delivered_at) >= week_start);
 
   const sum = (rows, field) => round(rows.reduce((total, row) => total + Number(row[field] ?? 0), 0));
-  const earnings = sum(delivered, 'rider_earning');
+  const sum_earnings = (rows) => round(rows.reduce((total, row) => total + Number(row.rider_earning ?? row.delivery_fee ?? 0), 0));
+  const earnings = sum_earnings(delivered);
   const cash_collected = sum(delivered, 'cash_collected');
   const cash_deposited = sum(settlements.filter((row) => row.kind === 'cash_deposit'), 'amount');
   const paid_out = sum(settlements.filter((row) => row.kind === 'payout'), 'amount');
@@ -26,13 +27,13 @@ export function summarize_rider_money(orders, settlements, now = new Date()) {
     deliveries_today: today.length,
     deliveries_this_week: this_week.length,
     earnings,
-    earnings_today: sum(today, 'rider_earning'),
-    earnings_this_week: sum(this_week, 'rider_earning'),
+    earnings_today: sum_earnings(today),
+    earnings_this_week: sum_earnings(this_week),
     cash_collected,
     cash_deposited,
-    cash_in_hand: round(cash_collected - cash_deposited),
+    cash_in_hand: round(Math.max(0, cash_collected - cash_deposited)),
     paid_out,
-    payout_due: round(earnings - paid_out)
+    payout_due: round(Math.max(0, earnings - paid_out))
   };
 }
 
