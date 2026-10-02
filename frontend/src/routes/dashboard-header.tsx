@@ -27,6 +27,9 @@ export function DashboardHeader() {
             <Menu className="size-5" />
           </button>
           <span className="truncate text-sm font-semibold text-slate-900">{title ?? store?.name}</span>
+          <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
+            Owner
+          </span>
         </div>
         <div className="flex items-center gap-3">
           <NotificationBell />
