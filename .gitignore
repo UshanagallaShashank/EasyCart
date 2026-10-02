@@ -9,4 +9,4 @@ build/
 Coverage/
 .idea/
 .vscode/
-.claude/
+.claude/.private-uploads/

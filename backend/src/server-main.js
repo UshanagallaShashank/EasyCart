@@ -17,6 +17,8 @@ import { admin_router } from './modules/admin/routes/admin-route.js';
 import { tenant_customer_router } from './modules/tenant-customers/routes/tenant-customer-route.js';
 import { coupon_router } from './modules/coupons/routes/coupon-route.js';
 import { notification_router } from './modules/notifications/routes/notification-route.js';
+import { delivery_router } from './modules/delivery/routes/delivery-route.js';
+import { private_file_router } from './platform/storage/private-file-route.js';
 
 // Browsers may only call this API from the listed websites. Calls with no origin (curl, server to server) are allowed.
 // With no list set (local development), or with "*" in the list, every website is allowed.
@@ -35,6 +37,7 @@ export function create_express_app() {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
   app.use('/api', health_router);
+  app.use('/api', private_file_router);
   app.use('/api', api_limiter);
   app.use('/api', auth_router);
   app.use('/api', store_router);
@@ -46,6 +49,7 @@ export function create_express_app() {
   app.use('/api', tenant_customer_router);
   app.use('/api', coupon_router);
   app.use('/api', notification_router);
+  app.use('/api', delivery_router);
   app.use('/api', not_found_handler);
   app.use(error_handler);
   return app;

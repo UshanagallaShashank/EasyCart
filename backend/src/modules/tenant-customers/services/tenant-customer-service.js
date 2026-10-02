@@ -1,5 +1,6 @@
 // Derives "this tenant's customers" from order history — no separate customer-tenant table.
 import { AppError } from '../../../platform/shared/app-error.js';
+import { to_owner_order } from '../../orders/lib/order-views.js';
 import { find_orders_by_tenant, find_orders_by_customer_and_tenant } from '../../orders/repositories/order-query-repository.js';
 import { find_users_by_ids } from '../../users/repositories/user-repository.js';
 
@@ -55,6 +56,6 @@ export async function get_tenant_customer_history(tenant_id, customer_id) {
     customer_id,
     username: user?.username ?? null,
     email: user?.email ?? null,
-    orders
+    orders: orders.map(to_owner_order)
   };
 }
