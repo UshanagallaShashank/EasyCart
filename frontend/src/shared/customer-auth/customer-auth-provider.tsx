@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { CustomerAuthContext } from './customer-auth-context';
 import { setToken, clearToken } from './token-storage';
 import { getStoredUser, setStoredUser, clearStoredUser } from './user-storage';
+import { customerLoginPath, getLastStoreSlug } from '@/features/storefront/lib/customer-paths';
 import { setUnauthorizedHandler } from '@/shared/api/api-client';
 import type { CustomerUser } from '@/features/customer-auth/types/customer-auth-types';
 
@@ -28,7 +29,8 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
 
   setUnauthorizedHandler(() => {
     logout();
-    navigate('/customer/login');
+    const shopSlug = getLastStoreSlug();
+    navigate(shopSlug ? customerLoginPath(shopSlug) : '/login');
   }, 'customer');
 
   return <CustomerAuthContext.Provider value={{ user, login, logout }}>{children}</CustomerAuthContext.Provider>;

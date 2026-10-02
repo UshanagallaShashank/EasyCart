@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Home, Package, PackageCheck, MapPin, Edit3, Store as StoreIcon } from 'lucide-react';
 import type { PublicStore } from '../types/storefront-types';
+import { customerOrdersPath } from '../lib/customer-paths';
 
 export interface SavedAddress {
   id: string;
@@ -84,7 +85,7 @@ export function StorefrontSidebar({ store, slug, onNavigate }: StorefrontSidebar
 
   const homePath = `/${slug}`;
   const productsPath = `/${slug}/products`;
-  const ordersPath = `/${slug}/orders`;
+  const ordersPath = customerOrdersPath(slug);
   const addressPath = `/${slug}/address`;
 
   const links = [

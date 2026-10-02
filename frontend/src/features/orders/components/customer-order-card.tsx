@@ -2,13 +2,14 @@ import { Link, useParams } from 'react-router-dom';
 import { ChevronRight, Store, Truck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getOrderStatusTone, getPaymentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
+import { customerOrderPath, getLastStoreSlug } from '@/features/storefront/lib/customer-paths';
 import type { Order } from '../types/order-types';
 import { formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
 
 export function CustomerOrderCard({ order }: { order: Order }) {
   const { slug } = useParams<{ slug?: string }>();
-  const lastSlug = slug || sessionStorage.getItem('last_store_slug');
-  const targetPath = lastSlug ? `/${lastSlug}/orders/${order.id}` : `/customer/orders/${order.id}`;
+  const shopSlug = slug || getLastStoreSlug();
+  const targetPath = shopSlug ? customerOrderPath(shopSlug, order.id) : '/';
 
   const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const firstItem = order.items[0];

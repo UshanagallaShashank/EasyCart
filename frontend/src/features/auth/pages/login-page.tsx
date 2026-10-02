@@ -14,7 +14,7 @@ export function LoginPage() {
           <AuthCardHeader title="Sign in to Easy Cart" subtitle="Your effortless shopping companion." />
           <LoginForm />
           <p className="text-center text-xs text-slate-500 pt-1">
-            Don't have a store? <Link to="/register" className="text-sky-600 font-semibold hover:underline">Create one</Link>
+            New here? <Link to="/register" className="text-sky-600 font-semibold hover:underline">Create an account</Link>
           </p>
         </AuthCard>
       </main>

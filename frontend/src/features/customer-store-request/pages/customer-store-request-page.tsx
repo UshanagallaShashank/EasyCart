@@ -1,5 +1,6 @@
 import { useState, useId, type FormEvent } from 'react';
-import { Link, Navigate, useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
+import { customerOrdersPath } from '@/features/storefront/lib/customer-paths';
 import { Store, Clock, CheckCircle2, XCircle, ArrowRight, ArrowLeft, ExternalLink, Sparkles, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -41,8 +42,6 @@ export const STORE_TYPES = [
 export function CustomerStoreRequestPage() {
   const { user } = useCustomerAuth();
   const { slug: storeSlug } = useParams<{ slug: string }>();
-  // Opened without a store in the address: use the last store the customer visited, so the storefront menus show.
-  const lastStoreSlug = sessionStorage.getItem('last_store_slug');
   const { data: request, isLoading } = useMyStoreRequest();
   const submitRequest = useSubmitStoreRequest();
 
@@ -126,9 +125,7 @@ export function CustomerStoreRequestPage() {
     );
   }
 
-  if (!storeSlug && lastStoreSlug) return <Navigate to={`/${lastStoreSlug}/store-request`} replace />;
-
-  const ordersPath = storeSlug ? `/${storeSlug}/orders` : '/customer/orders';
+  const ordersPath = storeSlug ? customerOrdersPath(storeSlug) : '/';
 
   const backLink = (
     <Link

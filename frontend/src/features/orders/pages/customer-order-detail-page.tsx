@@ -9,6 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { getOrderStatusTone, getPaymentStatusTone, getFulfillmentStatusTone, STATUS_TONE_CLASSNAME } from '@/lib/status-colors';
 import { useMyOrder } from '../hooks/use-my-order';
 import { canCustomerCancel, formatMoney, formatOrderDate, shortOrderId } from '../lib/order-rules';
+import { customerOrdersPath, getLastStoreSlug } from '@/features/storefront/lib/customer-paths';
 import { CustomerPageShell } from '../components/customer-page-shell';
 import { OrderProgress } from '../components/order-progress';
 import { CancelOrderDialog } from '../components/cancel-order-dialog';
@@ -17,8 +18,8 @@ export function CustomerOrderDetailPage() {
   const { id, slug } = useParams<{ id: string; slug?: string }>();
   const { data: order, isLoading, isError } = useMyOrder(id!);
   const [cancelOpen, setCancelOpen] = useState(false);
-  const lastSlug = slug || sessionStorage.getItem('last_store_slug');
-  const backPath = lastSlug ? `/${lastSlug}/orders` : '/customer/orders';
+  const shopSlug = slug || getLastStoreSlug();
+  const backPath = shopSlug ? customerOrdersPath(shopSlug) : '/';
 
   const backLink = (
     <Link to={backPath} className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 hover:text-sky-700">
