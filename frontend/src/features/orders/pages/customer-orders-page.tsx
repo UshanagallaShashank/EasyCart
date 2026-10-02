@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Store, Sparkles } from 'lucide-react';
+import { Store, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { EmptyState } from '@/components/empty-state';
 import type { Order } from '../types/order-types';
 import { useMyOrders } from '../hooks/use-my-orders';
@@ -28,8 +29,31 @@ export function CustomerOrdersPage() {
   const requestSlug = routeSlug ?? getLastStoreSlug();
   const storeRequestPath = requestSlug ? customerStoreRequestPath(requestSlug) : '/';
   const [filter, setFilter] = useState<OrderFilter>('all');
+  const [yearFilter, setYearFilter] = useState<string>('all');
 
-  const visibleOrders = (orders ?? []).filter((order) => matchesFilter(order, filter));
+  // Sort orders descending by creation date so the latest order is always at the top
+  const sortedOrders = [...(orders ?? [])].sort((a, b) => {
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+
+  // Extract unique years from customer's orders
+  const availableYears = Array.from(
+    new Set(
+      sortedOrders
+        .map((order) => {
+          const date = new Date(order.created_at);
+          return isNaN(date.getTime()) ? null : date.getFullYear().toString();
+        })
+        .filter((y): y is string => y !== null)
+    )
+  ).sort((a, b) => b.localeCompare(a));
+
+  // Filter orders by status and year
+  const visibleOrders = sortedOrders.filter((order) => {
+    const matchesStatus = matchesFilter(order, filter);
+    const matchesYear = yearFilter === 'all' || new Date(order.created_at).getFullYear().toString() === yearFilter;
+    return matchesStatus && matchesYear;
+  });
 
   const storeRequestLabel =
     storeRequest?.status === 'pending' ? 'Store request pending' : storeRequest?.status === 'active' ? 'My Store' : 'Open a store';
@@ -68,15 +92,39 @@ export function CustomerOrdersPage() {
           </div>
         )}
 
-        <Tabs value={filter} onValueChange={(value) => setFilter(value as OrderFilter)}>
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="active">Active</TabsTrigger>
-            <TabsTrigger value="completed">Completed</TabsTrigger>
-            <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {/* Filter Controls: Status Tabs & Year Filter Dropdown */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50/60 p-2.5 rounded-2xl border border-slate-100">
+          <Tabs value={filter} onValueChange={(value) => setFilter(value as OrderFilter)}>
+            <TabsList className="bg-white/80">
+              <TabsTrigger value="all">All</TabsTrigger>
+              <TabsTrigger value="active">Active</TabsTrigger>
+              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="cancelled">Cancelled</TabsTrigger>
+            </TabsList>
+          </Tabs>
 
+          {/* Year Filter Option */}
+          {availableYears.length > 0 && (
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <span className="text-xs font-bold text-slate-500 flex items-center gap-1.5">
+                <Calendar className="size-3.5 text-sky-500" /> Filter Year:
+              </span>
+              <Select value={yearFilter} onValueChange={setYearFilter}>
+                <SelectTrigger className="w-32 h-9 text-xs font-bold rounded-xl bg-white border-slate-200 shadow-2xs">
+                  <SelectValue placeholder="All Years" />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl">
+                  <SelectItem value="all">All Years</SelectItem>
+                  {availableYears.map((year) => (
+                    <SelectItem key={year} value={year}>{year}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+
+        {/* Dedicated Scrollable Container for Orders */}
         {isLoading ? (
           <div className="flex flex-col gap-3">
             <Skeleton className="h-24 w-full rounded-2xl" />
@@ -84,9 +132,9 @@ export function CustomerOrdersPage() {
             <Skeleton className="h-24 w-full rounded-2xl" />
           </div>
         ) : !visibleOrders.length ? (
-          <EmptyState message={filter === 'all' ? 'No orders yet.' : `No ${filter} orders.`} />
+          <EmptyState message={filter === 'all' && yearFilter === 'all' ? 'No orders yet.' : `No matching orders found.`} />
         ) : (
-          <div className="flex flex-col gap-3">
+          <div className="max-h-[calc(100vh-320px)] min-h-[300px] overflow-y-auto pr-1.5 space-y-3 rounded-2xl scrollbar-thin scrollbar-thumb-slate-200 hover:scrollbar-thumb-slate-300">
             {visibleOrders.map((order) => (
               <CustomerOrderCard key={order.id} order={order} />
             ))}

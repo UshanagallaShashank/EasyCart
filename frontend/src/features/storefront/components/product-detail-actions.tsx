@@ -1,5 +1,4 @@
-// Variant selection, quantity controls, and cart submission on product detail page.
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ShoppingBag, Zap, Truck, ShieldCheck, Minus, Plus } from 'lucide-react';
@@ -9,10 +8,9 @@ import { useCart } from '@/features/cart/cart-context';
 import type { Product } from '@/features/products/types/product-types';
 
 export function ProductDetailActions({ product, slug }: { product: Product; slug?: string }) {
-  const { addItem, lines } = useCart();
+  const { addItem, updateQuantity, lines } = useCart();
   const navigate = useNavigate();
   const [variantLabel, setVariantLabel] = useState<string | undefined>();
-  const [quantity, setQuantity] = useState(1);
 
   const variant = product.variants.find((v) => v.label === variantLabel);
   const price = variant?.price ?? product.price;
@@ -25,25 +23,42 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
     (l) => l.product_id === product.id && l.variant_label === variantLabel
   )?.quantity ?? 0;
 
+  const [quantity, setQuantity] = useState(() => (existingInCart > 0 ? existingInCart : 1));
+
+  // Sync quantity selector when opening detail page or changing variant
+  useEffect(() => {
+    if (existingInCart > 0) {
+      setQuantity(existingInCart);
+    } else {
+      setQuantity(1);
+    }
+  }, [product.id, variantLabel, existingInCart]);
+
   function handleAddToCart() {
     if (availableStock <= 0) {
       toast.error('Item is out of stock');
       return;
     }
-    if (existingInCart + quantity > availableStock) {
-      toast.error(`Stock is only ${availableStock} left (${existingInCart} already in cart). Cannot add ${quantity} more.`);
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} items available in stock`);
       return;
     }
-    addItem({
-      product_id: product.id,
-      name: product.name,
-      price,
-      quantity,
-      variant_label: variantLabel,
-      image: product.images[0],
-      max_stock: availableStock
-    });
-    toast.success(`Added ${quantity} × ${product.name} to cart`);
+
+    if (existingInCart > 0) {
+      updateQuantity(product.id, quantity, variantLabel);
+      toast.success(`Updated ${product.name} quantity to ${quantity} in cart`);
+    } else {
+      addItem({
+        product_id: product.id,
+        name: product.name,
+        price,
+        quantity,
+        variant_label: variantLabel,
+        image: product.images[0],
+        max_stock: availableStock
+      });
+      toast.success(`Added ${quantity} × ${product.name} to cart`);
+    }
   }
 
   function handleBuyNow() {
@@ -51,19 +66,24 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
       toast.error('Item is out of stock');
       return;
     }
-    if (existingInCart + quantity > availableStock) {
-      toast.error(`Stock is only ${availableStock} left. Cannot add ${quantity} items.`);
+    if (quantity > availableStock) {
+      toast.error(`Only ${availableStock} items available in stock`);
       return;
     }
-    addItem({
-      product_id: product.id,
-      name: product.name,
-      price,
-      quantity,
-      variant_label: variantLabel,
-      image: product.images[0],
-      max_stock: availableStock
-    });
+
+    if (existingInCart > 0) {
+      updateQuantity(product.id, quantity, variantLabel);
+    } else {
+      addItem({
+        product_id: product.id,
+        name: product.name,
+        price,
+        quantity,
+        variant_label: variantLabel,
+        image: product.images[0],
+        max_stock: availableStock
+      });
+    }
     if (slug) {
       navigate(`/${slug}/cart`);
     }
@@ -112,14 +132,14 @@ export function ProductDetailActions({ product, slug }: { product: Product; slug
           </button>
         </div>
 
-        {/* Add to Cart Navy Pill */}
+        {/* Add to Cart / Update Cart Navy Pill */}
         <Button
           type="button"
           onClick={handleAddToCart}
           disabled={isOutOfStock}
           className="h-11 rounded-full bg-[#0F172A] px-7 text-xs font-bold text-white hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed shadow-md shadow-slate-900/10 gap-2 cursor-pointer flex-1 sm:flex-none justify-center"
         >
-          <ShoppingBag className="size-4" /> {isOutOfStock ? 'Out of stock' : 'Add to cart'}
+          <ShoppingBag className="size-4" /> {isOutOfStock ? 'Out of stock' : existingInCart > 0 ? 'Update cart' : 'Add to cart'}
         </Button>
       </div>
 
