@@ -11,9 +11,8 @@ import { useUpdateAssignment } from '../hooks/use-update-assignment';
 import { ApiError } from '@/shared/api/api-error';
 import { format_status_label } from '@/lib/format-status-label';
 import type { Order, PickupFulfillmentStatus, DeliveryFulfillmentStatus } from '../types/order-types';
-import { isRiderHandled } from '../lib/order-rules';
+import { allowedStatuses, isClosed, isRiderHandled } from '../lib/order-rules';
 
-const STATUSES: Order['status'][] = ['pending', 'confirmed', 'fulfilled', 'cancelled'];
 const PAYMENT_STATUSES: Order['payment_status'][] = ['unpaid', 'paid'];
 const PICKUP_FULFILLMENT_STATUSES: PickupFulfillmentStatus[] = ['not_started', 'ready_for_pickup', 'picked_up'];
 const DELIVERY_FULFILLMENT_STATUSES: DeliveryFulfillmentStatus[] = ['not_started', 'dispatched', 'delivered'];
@@ -71,6 +70,13 @@ export function OrderStatusControls({ order }: { order: Order }) {
     }
   }
 
+  if (order.status === 'cancelled') {
+    return <p className="text-sm text-slate-500">This order was cancelled. Its items went back into stock, and it can no longer be changed.</p>;
+  }
+  if (isClosed(order) && riderHandled) {
+    return <p className="text-sm text-slate-500">Delivered by the delivery partner with the customer's code. Nothing left to update.</p>;
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-1 items-end gap-4 sm:grid-cols-2 xl:flex xl:flex-wrap xl:gap-6">
@@ -79,7 +85,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
           <Select value={status} onValueChange={(v) => setStatus(v as Order['status'])}>
             <SelectTrigger className="w-full xl:w-40"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {STATUSES.map((s) => <SelectItem key={s} value={s}>{format_status_label(s)}</SelectItem>)}
+              {allowedStatuses(order).map((s) => <SelectItem key={s} value={s}>{format_status_label(s)}</SelectItem>)}
             </SelectContent>
           </Select>
         </div>

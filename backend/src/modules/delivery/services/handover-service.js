@@ -70,6 +70,8 @@ export async function get_store_order_delivery(tenant_id, order_id) {
     pickup_locked: (order.pickup_code_attempts ?? 0) >= MAX_CODE_ATTEMPTS,
     delivery_locked: (order.delivery_code_attempts ?? 0) >= MAX_CODE_ATTEMPTS,
     store_has_location: Boolean(store_point(store)),
+    // How many riders passed on (or let the offer run out). Shown so the store knows to search again.
+    declined_count: (order.declined_rider_ids ?? []).length,
     settlement: calculate_order_settlement(order)
   };
 }
@@ -79,6 +81,7 @@ export async function get_store_order_delivery(tenant_id, order_id) {
 export async function request_rider(tenant_id, order_id) {
   const order = await find_store_order(tenant_id, order_id);
   if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
+  if (order.status === 'fulfilled') throw new AppError('This order is already complete', 400);
   if (!['not_started', 'ready_for_delivery'].includes(order.fulfillment_status)) throw new AppError('A rider is already handling this order', 400);
 
   const ready = await update_order(order.id, tenant_id, {
@@ -107,6 +110,7 @@ export async function cancel_rider_request(tenant_id, order_id) {
 
 export async function reissue_pickup_code(tenant_id, order_id) {
   const order = await find_store_order(tenant_id, order_id);
+  if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
   if (!['ready_for_delivery', 'rider_assigned'].includes(order.fulfillment_status)) throw new AppError('The order has already been picked up', 400);
   await update_order(order.id, tenant_id, { pickup_code: create_pickup_code(), pickup_code_attempts: 0 });
   return get_store_order_delivery(tenant_id, order_id);

@@ -12,7 +12,8 @@ import { summarize_rider_money, rider_daily_series } from '../lib/summarize-ride
 import { is_rider_available, ACTIVE_RIDER_STAGES } from '../lib/delivery-stages.js';
 import { sort_riders_by_distance, with_distance } from '../lib/sort-riders-by-distance.js';
 import { to_full_rider } from '../lib/rider-views.js';
-import { refresh_dispatch, store_point } from './dispatch-service.js';
+import { store_point } from './dispatch-service.js';
+import { release_offers } from './rider-status-service.js';
 
 function group_by(rows, field) {
   const groups = new Map();
@@ -113,7 +114,7 @@ export async function suspend_rider(id, payload) {
   const parsed = reject_schema.safeParse(payload ?? {});
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const result = await set_status(id, ['approved'], { status: 'suspended', review_note: parsed.data.note, is_online: false }, 'Only approved riders can be suspended');
-  await refresh_dispatch();
+  await release_offers(id);
   return result;
 }
 
@@ -125,6 +126,13 @@ export async function record_settlement(id, admin_user_id, payload) {
   const parsed = settlement_schema.safeParse(payload ?? {});
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const rider = await find_rider_or_404(id);
+  // Recording more than the rider holds (or is owed) would show negative balances, so it is refused with the real figure.
+  const [orders, settlements] = await Promise.all([find_orders_by_rider(rider.id), find_settlements_by_rider(rider.id)]);
+  const money = summarize_rider_money(orders, settlements);
+  const limit = parsed.data.kind === 'cash_deposit' ? money.cash_in_hand : money.payout_due;
+  if (parsed.data.amount > limit + 0.009) {
+    throw new AppError(parsed.data.kind === 'cash_deposit' ? `The rider only holds Rs. ${limit.toFixed(2)} in cash` : `Only Rs. ${limit.toFixed(2)} is due to this rider`, 400);
+  }
   await save_settlement({ id: randomUUID(), rider_id: rider.id, kind: parsed.data.kind, amount: parsed.data.amount, note: parsed.data.note || null, recorded_by: admin_user_id });
   return get_rider_for_admin(id);
 }

@@ -3,7 +3,7 @@ import { find_store_by_tenant_id } from '../../stores/repositories/store-reposit
 import { find_riders_by_status } from '../repositories/rider-repository.js';
 import { find_orders_by_riders, find_orders_in_stages, update_order_if } from '../repositories/delivery-order-repository.js';
 import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
-import { ACTIVE_RIDER_STAGES, MAX_ACTIVE_ORDERS, OFFER_SECONDS, is_offer_expired, is_rider_available } from '../lib/delivery-stages.js';
+import { ACTIVE_RIDER_STAGES, MAX_ACTIVE_ORDERS, MAX_DISPATCH_KM, OFFER_SECONDS, is_offer_expired, is_rider_available } from '../lib/delivery-stages.js';
 
 export function store_point(store) {
   if (!store || store.latitude === null || store.latitude === undefined) return null;
@@ -25,7 +25,7 @@ async function count_active_orders(riders) {
 export function choose_rider(riders, active_counts, declined_ids, origin, now = Date.now()) {
   const declined = new Set(declined_ids ?? []);
   const free = riders.filter((rider) => is_rider_available(rider, now) && !declined.has(rider.id) && (active_counts.get(rider.id) ?? 0) < MAX_ACTIVE_ORDERS);
-  return sort_riders_by_distance(free, origin)[0] ?? null;
+  return sort_riders_by_distance(free, origin).find((rider) => rider.distance_km === null || rider.distance_km <= MAX_DISPATCH_KM) ?? null;
 }
 
 // Offers one order to the best rider. Leaves it waiting ("ready_for_delivery") when nobody is free.

@@ -22,3 +22,26 @@ export function shortOrderId(id: string): string {
 export function isRiderHandled(order: Order): boolean {
   return Boolean(order.rider_id) || order.fulfillment_status === 'ready_for_delivery' || order.fulfillment_status === 'rider_assigned';
 }
+
+// Where the store may move an order next, matching the server's rules: closed orders never reopen,
+// a rider-handled order is fulfilled only by the rider's handover, and cannot be cancelled once the rider has it.
+const NEXT_STATUS: Record<Order['status'], Order['status'][]> = {
+  pending: ['confirmed', 'fulfilled', 'cancelled'],
+  confirmed: ['fulfilled', 'cancelled'],
+  fulfilled: [],
+  cancelled: []
+};
+
+export function allowedStatuses(order: Order): Order['status'][] {
+  const riderHandled = isRiderHandled(order);
+  const next = NEXT_STATUS[order.status].filter((status) => {
+    if (status === 'fulfilled' && riderHandled && order.fulfillment_status !== 'delivered') return false;
+    if (status === 'cancelled' && order.rider_id && order.fulfillment_status === 'dispatched') return false;
+    return true;
+  });
+  return [order.status, ...next];
+}
+
+export function isClosed(order: Order): boolean {
+  return order.status === 'fulfilled' || order.status === 'cancelled';
+}

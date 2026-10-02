@@ -107,8 +107,14 @@ export async function get_rider_earnings(user_id) {
   return { summary: summarize_rider_money(orders, settlements), daily: rider_daily_series(orders), settlements };
 }
 
+// New work only goes to riders in good standing. A rider suspended mid-delivery can still finish handing over what they carry.
+function assert_can_take_work(rider) {
+  if (rider.status !== 'approved') throw new AppError('Your account cannot take orders right now', 403);
+}
+
 export async function accept_offer(user_id, order_id) {
   const rider = await get_rider_for_user(user_id);
+  assert_can_take_work(rider);
   const order = await find_my_order(rider, order_id);
   if (order.rider_offer_status !== 'offered' || is_offer_expired(order)) throw new AppError('This offer has expired', 409);
   const accepted = await update_order_if(order.id, { rider_id: rider.id, rider_offer_status: 'offered' }, {
@@ -147,6 +153,7 @@ export async function confirm_pickup(user_id, order_id, payload) {
   const parsed = pickup_schema.safeParse(payload);
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const rider = await get_rider_for_user(user_id);
+  assert_can_take_work(rider);
   const order = await find_my_order(rider, order_id);
   if (order.status === 'cancelled') throw new AppError('This order was cancelled', 409);
   if (order.fulfillment_status !== 'rider_assigned' || order.rider_offer_status !== 'accepted') throw new AppError('Accept the order before picking it up', 400);

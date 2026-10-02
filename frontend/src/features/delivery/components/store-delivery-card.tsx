@@ -56,6 +56,12 @@ export function StoreDeliveryCard({ order }: { order: Order }) {
           <p className="flex items-center gap-2 text-xs text-slate-500"><Loader2 className="size-4 shrink-0 animate-spin text-sky-500" /> Searching. This page updates by itself, there is nothing to press.</p>
         )}
 
+        {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && (
+          <p className="rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+            {delivery.declined_count} {delivery.declined_count === 1 ? 'rider' : 'riders'} nearby passed on this order. Tap <strong>Search again</strong> to offer it to everyone again, or deliver it yourself.
+          </p>
+        )}
+
         {delivery.rider && <HandoverRiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your rider'} />}
 
         {delivery.pickup_code && (

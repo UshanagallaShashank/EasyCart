@@ -153,6 +153,7 @@ export interface StoreOrderDelivery extends OrderDelivery {
   pickup_code: string | null;
   pickup_locked: boolean;
   store_has_location: boolean;
+  declined_count?: number;
 }
 
 export interface CustomerOrderDelivery extends OrderDelivery {
