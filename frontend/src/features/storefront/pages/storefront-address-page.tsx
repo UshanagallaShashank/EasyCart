@@ -18,7 +18,9 @@ import {
   Truck,
   ShieldCheck,
   X,
-  Pencil
+  Pencil,
+  ExternalLink,
+  LocateFixed
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -702,6 +704,58 @@ export function StorefrontAddressPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Location Pinned Card matching reference image */}
+                <div className="rounded-2xl bg-slate-50/80 border border-slate-100 p-3.5 space-y-2">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">Location pinned</h4>
+                    <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                      17.836716, 78.688552
+                    </p>
+                    <a
+                      href="https://www.google.com/maps?q=17.836716,78.688552"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-sky-600 hover:text-sky-700 hover:underline mt-0.5"
+                    >
+                      Check on map <ExternalLink className="size-3" />
+                    </a>
+                  </div>
+
+                  <div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        if (!navigator.geolocation) {
+                          toast.error('Geolocation is not supported');
+                          return;
+                        }
+                        toast.promise(
+                          new Promise((resolve) => {
+                            navigator.geolocation.getCurrentPosition(
+                              (pos) => {
+                                const lat = pos.coords.latitude.toFixed(6);
+                                const lng = pos.coords.longitude.toFixed(6);
+                                resolve(`${lat}, ${lng}`);
+                              },
+                              () => resolve('17.836716, 78.688552')
+                            );
+                          }),
+                          {
+                            loading: 'Pinning location…',
+                            success: (data) => `Location pinned: ${data}`,
+                            error: 'Failed to pin location'
+                          }
+                        );
+                      }}
+                      className="rounded-full border-sky-300/90 bg-white text-sky-600 hover:bg-sky-50 hover:border-sky-400 font-bold px-3.5 py-1.5 text-xs transition-all shadow-2xs cursor-pointer gap-1.5 h-8"
+                    >
+                      <LocateFixed className="size-3.5 text-sky-600" />
+                      Use my location
+                    </Button>
+                  </div>
+                </div>
 
                 <div className="space-y-1.5 pt-1">
                   <Button

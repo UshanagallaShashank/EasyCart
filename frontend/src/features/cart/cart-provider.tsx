@@ -21,10 +21,14 @@ export function CartProvider({ slug, children }: { slug: string; children: React
   function addItem(line: CartLine) {
     setLines((prev) => {
       const existing = prev.find((l) => sameLine(l, line.product_id, line.variant_label));
+      const maxStock = line.max_stock ?? existing?.max_stock;
       if (existing) {
-        return prev.map((l) => (l === existing ? { ...l, quantity: l.quantity + line.quantity } : l));
+        const rawQty = existing.quantity + line.quantity;
+        const newQty = maxStock !== undefined ? Math.min(maxStock, rawQty) : rawQty;
+        return prev.map((l) => (l === existing ? { ...l, quantity: newQty, max_stock: maxStock } : l));
       }
-      return [...prev, line];
+      const newQty = line.max_stock !== undefined ? Math.min(line.max_stock, line.quantity) : line.quantity;
+      return [...prev, { ...line, quantity: newQty }];
     });
   }
 
@@ -33,7 +37,14 @@ export function CartProvider({ slug, children }: { slug: string; children: React
   }
 
   function updateQuantity(productId: string, quantity: number, variantLabel?: string) {
-    setLines((prev) => prev.map((l) => (sameLine(l, productId, variantLabel) ? { ...l, quantity } : l)));
+    setLines((prev) =>
+      prev.map((l) => {
+        if (!sameLine(l, productId, variantLabel)) return l;
+        const maxStock = l.max_stock;
+        const newQty = maxStock !== undefined ? Math.min(maxStock, Math.max(1, quantity)) : Math.max(1, quantity);
+        return { ...l, quantity: newQty };
+      })
+    );
   }
 
   function clear() {

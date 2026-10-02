@@ -12,6 +12,11 @@ function to_form_values(store: Store): StoreSettingsPayload {
     banner_url: store.banner_url ?? '',
     theme: store.theme,
     delivery_fee: store.delivery_fee,
+    max_delivery_radius_km: store.max_delivery_radius_km ?? 5,
+    pincode: store.pincode ?? '',
+    address: store.address ?? 'gajwel',
+    latitude: store.latitude ?? 17.83672,
+    longitude: store.longitude ?? 78.68855,
     promotion_banner_text: store.promotion_banner_text ?? ''
   };
 }
@@ -31,6 +36,11 @@ export function useStoreForm(store: Store) {
     (form.banner_url || '') !== (store.banner_url || '') ||
     form.theme !== store.theme ||
     Number(form.delivery_fee) !== Number(store.delivery_fee) ||
+    Number(form.max_delivery_radius_km ?? 5) !== Number(store.max_delivery_radius_km ?? 5) ||
+    (form.pincode || '') !== (store.pincode || '') ||
+    (form.address || '') !== (store.address || '') ||
+    Number(form.latitude ?? 17.83672) !== Number(store.latitude ?? 17.83672) ||
+    Number(form.longitude ?? 78.68855) !== Number(store.longitude ?? 78.68855) ||
     (form.promotion_banner_text || '') !== (store.promotion_banner_text || '');
 
   function handle_submit(e: FormEvent) {
