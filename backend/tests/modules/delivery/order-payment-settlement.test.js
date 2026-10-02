@@ -1,16 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import {
-  calculate_order_settlement,
-  settle_order_payment
-} from '../../../src/modules/delivery/services/order-settlement-service.js';
+import { describe, it, expect } from 'vitest';
+import { calculate_order_settlement } from '../../../src/modules/delivery/services/order-settlement-service.js';
 import { summarize_rider_money } from '../../../src/modules/delivery/lib/summarize-rider-money.js';
-import { _clear_settlement_cache, get_order_settlement } from '../../../src/modules/delivery/repositories/order-settlement-store.js';
 
 describe('Order Delivery Payment & Settlement', () => {
-  beforeEach(() => {
-    _clear_settlement_cache();
-  });
-
   describe('calculate_order_settlement', () => {
     it('calculates COD order breakdown correctly (cash collected, store share, rider ride earning)', () => {
       const cod_order = {
@@ -75,6 +67,13 @@ describe('Order Delivery Payment & Settlement', () => {
       expect(breakdown.method).toBe('cash');
       expect(breakdown.note).toBe('Settled at store counter');
     });
+  });
+
+  it('reads the settlement saved on the order itself', () => {
+    const order = { id: 'ord-4', total: 300, delivery_fee: 30, cash_collected: 300, fulfillment_status: 'delivered', settled_at: '2026-10-02T10:00:00.000Z', settled_by: 'rider', settlement_method: 'upi', settlement_note: null };
+    const breakdown = calculate_order_settlement(order);
+    expect(breakdown).toMatchObject({ is_settled: true, settled_by: 'rider', method: 'upi', store_amount: 270, has_cash_deposit: true, has_payout: true });
+    expect(calculate_order_settlement({ ...order, settled_at: null }).is_settled).toBe(false);
   });
 
   describe('reconciliation with summarize_rider_money', () => {

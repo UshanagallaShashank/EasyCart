@@ -4,7 +4,7 @@ const ALLOWED_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp
 
 export function checkDocument(file: File): string | null {
   const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-  const isImage = ['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+  const isImage = (ALLOWED_TYPES.includes(file.type) && file.type !== 'application/pdf') || /\.(jpe?g|png|webp)$/i.test(file.name);
 
   if (!isPdf && !isImage) return 'Please choose a PDF, JPG, PNG or WEBP file';
   if (file.size > MAX_DOCUMENT_MB * 1024 * 1024) return `File must be ${MAX_DOCUMENT_MB}MB or smaller`;

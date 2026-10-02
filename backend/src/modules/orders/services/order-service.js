@@ -108,7 +108,7 @@ export async function update_order_status(tenant_id, id, payload) {
     throw new AppError('The order is fulfilled when the delivery partner hands it over with the customer\'s code', 400);
   }
   const updates = parsed.data.status === 'cancelled' && order.rider_id ? { ...parsed.data, ...RELEASE_RIDER } : parsed.data;
-  return to_owner_order(await update_order(id, tenant_id, updates));
+  return to_owner_order(await update_order(id, tenant_id, updates, order.rider_id));
 }
 
 export async function update_order_payment_status(tenant_id, id, payload) {

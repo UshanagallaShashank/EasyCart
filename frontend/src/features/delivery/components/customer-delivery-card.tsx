@@ -1,4 +1,5 @@
 // The customer's view of their delivery: the secret code to give the rider, who is coming, and proof once delivered.
+import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,7 +15,7 @@ export function CustomerDeliveryCard({ orderId }: { orderId: string }) {
   const { data: delivery, isLoading } = useQuery({
     queryKey: ['my-orders', orderId, 'delivery'],
     queryFn: async () => (await getCustomerOrderDelivery(orderId)).delivery,
-    refetchInterval: (query) => (LIVE.includes(query.state.data?.stage ?? '') ? 20_000 : false)
+    refetchInterval: (query) => (LIVE.includes(query.state.data?.stage ?? '') ? BACKUP_REFRESH_MS : false)
   });
 
   if (isLoading) return <Skeleton className="h-48 w-full rounded-2xl" />;

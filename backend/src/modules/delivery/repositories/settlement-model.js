@@ -5,6 +5,7 @@ const settlement_schema = new mongoose.Schema(
   {
     id: { type: String, required: true, unique: true },
     rider_id: { type: String, required: true, index: true },
+    order_id: { type: String, default: null },
     kind: { type: String, enum: ['cash_deposit', 'payout'], required: true },
     amount: { type: Number, required: true },
     note: { type: String, default: null },

@@ -1,4 +1,5 @@
 // Admin queries for delivery partners. Every review action returns the updated detail, which replaces the cache.
+import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as api from '@/features/delivery/api/admin-rider-api';
 import type { AdminRiderDetail } from '@/features/delivery/types/delivery-types';
@@ -12,7 +13,7 @@ export function useAdminRider(id: string) {
 }
 
 export function useAdminDeliveries() {
-  return useQuery({ queryKey: ['admin', 'deliveries'], queryFn: async () => (await api.listAdminDeliveries()).deliveries, refetchInterval: 30_000 });
+  return useQuery({ queryKey: ['admin', 'deliveries'], queryFn: async () => (await api.listAdminDeliveries()).deliveries, refetchInterval: BACKUP_REFRESH_MS });
 }
 
 export function useAdminRiderAction<T>(id: string, run: (input: T) => Promise<AdminRiderDetail>) {

@@ -32,6 +32,10 @@ export function setUnauthorizedHandler(handler: () => void, authType: AuthType =
   onUnauthorized[authType] = handler;
 }
 
+export function apiUrl(path: string): string {
+  return `${BASE_URL}${path}`;
+}
+
 export async function apiRequest<T>(path: string, options: RequestInit = {}, authType: AuthType = 'owner'): Promise<T> {
   const token = tokenGetters[authType]();
   const headers: Record<string, string> = { ...(options.headers as Record<string, string>) };

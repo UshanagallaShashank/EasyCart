@@ -1,6 +1,5 @@
 // Storefront page for managing saved delivery addresses in the right-side main area.
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   MapPin,
@@ -10,7 +9,6 @@ import {
   Plus,
   Trash2,
   CheckCircle2,
-  ArrowLeft,
   Check,
   Sparkles,
   Phone,
@@ -78,8 +76,6 @@ const DEFAULT_ADDRESSES: SavedAddress[] = [
 ];
 
 export function StorefrontAddressPage() {
-  const { slug } = useParams<{ slug: string }>();
-
   // Load addresses list
   const [addressList, setAddressList] = useState<SavedAddress[]>(() => {
     const raw = localStorage.getItem('customer_saved_addresses');

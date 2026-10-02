@@ -1,5 +1,5 @@
 // Platform admin notification bell with unread badge and dropdown menu.
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, Store, Ban, CheckCircle2, CheckCheck, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
