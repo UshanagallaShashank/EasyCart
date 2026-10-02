@@ -94,25 +94,20 @@ export function OrderDetailPage() {
           </div>
 
           <div className="flex min-w-0 flex-col gap-5">
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">Status</h2>
+            {/* Status and where the order goes, in one card. */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+              <h2 className="text-sm font-semibold text-slate-900">Details</h2>
               <div className="flex flex-wrap gap-2">
                 <StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} />
                 <StatusBadge tone={getPaymentStatusTone(order.payment_status)} value={order.payment_status} />
                 {order.fulfillment_method !== 'delivery' && <StatusBadge tone={getFulfillmentStatusTone(order.fulfillment_status)} value={order.fulfillment_status} />}
               </div>
-              <p className="mt-3 text-xs text-slate-400">Placed {formatOrderDate(order.created_at)}</p>
-            </div>
-
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-              <h2 className="mb-3 text-sm font-semibold text-slate-900">
-                {order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}
-              </h2>
-              <div className="flex items-start gap-2 text-sm text-slate-600">
+              <div className="flex items-start gap-2 border-t border-slate-100 pt-3 text-sm text-slate-600">
                 {order.fulfillment_method === 'delivery' ? (
                   <>
                     <MapPin className="mt-0.5 size-4 shrink-0 text-sky-500" />
-                    <span>
+                    <span className="min-w-0 break-words">
+                      <span className="block text-xs font-semibold text-slate-400">Deliver to</span>
                       {order.delivery_address}
                       <DeliveryPinLink latitude={order.delivery_latitude} longitude={order.delivery_longitude} />
                     </span>
@@ -124,6 +119,7 @@ export function OrderDetailPage() {
                   </>
                 )}
               </div>
+              <p className="text-xs text-slate-400">Placed {formatOrderDate(order.created_at)}</p>
             </div>
 
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">

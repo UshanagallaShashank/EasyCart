@@ -92,6 +92,22 @@ function ReviewStep({ rider, onEdit }: { rider: Rider; onEdit(step: Step): void 
   );
 }
 
+// How far along the application is, so the rider knows how much is left.
+function ApplicationProgress({ done, total, docsDone, docsTotal }: { done: number; total: number; docsDone: number; docsTotal: number }) {
+  const percent = Math.round((done / total) * 100);
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="flex justify-between text-xs font-medium text-slate-600">
+        <span>{done} of {total} steps done</span>
+        <span>{docsDone} of {docsTotal} required documents</span>
+      </div>
+      <div className="h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} aria-label="Application progress">
+        <div className="h-full rounded-full bg-sky-500 transition-all" style={{ width: `${percent}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export function RiderOnboardingPage() {
   const { data: rider, isLoading } = useMyRider();
   const [step, setStep] = useState<Step>('details');
@@ -112,6 +128,7 @@ export function RiderOnboardingPage() {
       <PageHeader title="Partner application" description="Takes about 5 minutes. Keep your licence, RC and ID handy." />
       <PageBody>
         <ApplicationStatusCard rider={rider} />
+        <ApplicationProgress done={steps.filter((s) => s.done).length} total={steps.length} docsDone={REQUIRED_DOCUMENT_KINDS.filter((kind) => byKind.has(kind)).length} docsTotal={REQUIRED_DOCUMENT_KINDS.length} />
         <StepTabs<Step> steps={steps} current={step} onChange={setStep} />
 
         {step === 'details' && <RiderProfileForm rider={rider} submitLabel="Save and continue" onSaved={() => setStep('location')} />}
