@@ -32,7 +32,6 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
   function handleLogout() {
     logout();
     toast.success('Logged out successfully');
-    navigate(`/${slug}`);
   }
 
   return (

@@ -1,18 +1,13 @@
 // Owns customer auth state, independent of the owner's auth-provider.
 import { useState, type ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { CustomerAuthContext } from './customer-auth-context';
 import { setToken, clearToken } from './token-storage';
 import { getStoredUser, setStoredUser, clearStoredUser } from './user-storage';
-import { customerLoginPath, getLastStoreSlug } from '@/features/storefront/lib/customer-paths';
 import { setUnauthorizedHandler } from '@/shared/api/api-client';
 import type { CustomerUser } from '@/features/customer-auth/types/customer-auth-types';
 
 export function CustomerAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<CustomerUser | null>(() => getStoredUser());
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   function login(nextUser: CustomerUser, token: string) {
     setToken(token);
@@ -20,18 +15,15 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     setUser(nextUser);
   }
 
+  // Logging out (or an expired session) always lands on the one login page, whichever page you were on.
+  // It reloads the page on purpose: that clears everything held in memory and cannot race with a page's own sign-in check.
   function logout() {
     clearToken();
     clearStoredUser();
-    setUser(null);
-    queryClient.removeQueries({ queryKey: ['my-orders'] });
+    window.location.assign('/login');
   }
 
-  setUnauthorizedHandler(() => {
-    logout();
-    const shopSlug = getLastStoreSlug();
-    navigate(shopSlug ? customerLoginPath(shopSlug) : '/login');
-  }, 'customer');
+  setUnauthorizedHandler(logout, 'customer');
 
   return <CustomerAuthContext.Provider value={{ user, login, logout }}>{children}</CustomerAuthContext.Provider>;
 }

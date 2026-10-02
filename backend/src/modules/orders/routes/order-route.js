@@ -14,7 +14,7 @@ import {
   handle_update_fulfillment_status,
   handle_update_assignment
 } from '../controllers/order-controller.js';
-import { handle_list_my_orders, handle_get_my_order, handle_cancel_my_order } from '../controllers/customer-order-controller.js';
+import { handle_list_my_orders, handle_get_my_order, handle_cancel_my_order, handle_list_my_stores } from '../controllers/customer-order-controller.js';
 
 export const order_router = Router();
 
@@ -30,6 +30,7 @@ order_router.patch('/orders/:id/payment-status', owner_only, handle_update_payme
 order_router.patch('/orders/:id/fulfillment-status', owner_only, handle_update_fulfillment_status);
 order_router.patch('/orders/:id/assignment', owner_only, handle_update_assignment);
 
+order_router.get('/my-stores', customer_only, handle_list_my_stores);
 order_router.get('/my-orders', customer_only, handle_list_my_orders);
 order_router.get('/my-orders/:id', customer_only, handle_get_my_order);
 order_router.patch('/my-orders/:id/cancel', customer_only, handle_cancel_my_order);
