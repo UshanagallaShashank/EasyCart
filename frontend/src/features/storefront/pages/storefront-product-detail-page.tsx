@@ -1,10 +1,10 @@
-// Product details page with image preview, descriptions, and purchase form.
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { usePublicProduct } from '../hooks/use-public-product';
 import { ProductDetailGallery } from '../components/product-detail-gallery';
 import { ProductDetailActions } from '../components/product-detail-actions';
+import { get_stock_status } from '../utils/get-stock-status';
 
 export function StorefrontProductDetailPage() {
   const { slug, id } = useParams<{ slug: string; id: string }>();
@@ -13,7 +13,12 @@ export function StorefrontProductDetailPage() {
   if (isLoading) return <div className="mx-auto max-w-4xl p-6"><Skeleton className="h-96 w-full rounded-3xl" /></div>;
   if (isError || !product) return <p className="p-8 text-center text-slate-500 font-medium">Product not found.</p>;
 
-  const inStock = product.stock_quantity === undefined || product.stock_quantity > 0;
+  const stockStatus = get_stock_status(product);
+  const badgeConfig = {
+    out: { style: 'bg-rose-50 text-rose-700 border border-rose-200/60', dot: 'bg-rose-500', label: 'Out of Stock' },
+    low: { style: 'bg-amber-50 text-amber-700 border border-amber-200/60', dot: 'bg-amber-500', label: `Low Stock: Only ${product.stock_quantity} left` },
+    in: { style: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60', dot: 'bg-emerald-500', label: 'In Stock' },
+  }[stockStatus];
 
   return (
     <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6 sm:pt-6">
@@ -29,11 +34,9 @@ export function StorefrontProductDetailPage() {
         {/* Product Details & Purchase Controls */}
         <div className="flex flex-col">
           <div className="mb-2">
-            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${
-              inStock ? 'bg-amber-50 text-amber-700 border border-amber-200/60' : 'bg-rose-50 text-rose-700 border border-rose-200/60'
-            }`}>
-              <span className="size-1.5 rounded-full bg-amber-500" />
-              {product.stock_quantity ? `Only ${product.stock_quantity} left` : inStock ? 'In Stock' : 'Out of Stock'}
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] font-bold ${badgeConfig.style}`}>
+              <span className={`size-1.5 rounded-full ${badgeConfig.dot}`} />
+              {badgeConfig.label}
             </span>
           </div>
 

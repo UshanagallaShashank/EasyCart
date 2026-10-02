@@ -1,11 +1,16 @@
-// Product card with image preview, stock status, and hover interactions.
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Package, ArrowUpRight } from 'lucide-react';
 import type { Product } from '@/features/products/types/product-types';
+import { get_stock_status } from '../utils/get-stock-status';
 
 export function ProductCard({ product, slug }: { product: Product; slug: string }) {
-  const inStock = product.stock_quantity === undefined || product.stock_quantity > 0;
+  const stockStatus = get_stock_status(product);
+  const badgeConfig = {
+    out: { label: 'Out of Stock', style: 'bg-rose-500/90 text-white' },
+    low: { label: 'Low Stock', style: 'bg-amber-500/90 text-white' },
+    in: { label: 'In Stock', style: 'bg-emerald-500/90 text-white' },
+  }[stockStatus];
 
   return (
     <Link to={`/${slug}/products/${product.id}`} className="group block h-full">
@@ -21,8 +26,8 @@ export function ProductCard({ product, slug }: { product: Product; slug: string 
           ) : (
             <div className="flex size-full items-center justify-center text-slate-300"><Package className="size-10" /></div>
           )}
-          <span className={`absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-xs backdrop-blur-md ${inStock ? 'bg-emerald-500/90 text-white' : 'bg-rose-500/90 text-white'}`}>
-            {inStock ? 'In Stock' : 'Sold Out'}
+          <span className={`absolute top-3 left-3 rounded-full px-2.5 py-0.5 text-[11px] font-bold shadow-xs backdrop-blur-md ${badgeConfig.style}`}>
+            {badgeConfig.label}
           </span>
         </div>
         <div className="flex flex-1 flex-col justify-between p-4">
