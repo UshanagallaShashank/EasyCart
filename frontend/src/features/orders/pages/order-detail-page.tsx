@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Store as StoreIcon } from 'lucide-react';
+import { ArrowLeft, MapPin, Store as StoreIcon, ChevronDown } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { StatusBadge } from '@/components/status-badge';
 import { PageHeader } from '@/components/page-header';
@@ -10,6 +10,7 @@ import { OrderProgress } from '../components/order-progress';
 import { OrderItemsList } from '../components/order-items-list';
 import { OrderNextStep } from '../components/order-next-step';
 import { formatMoney, formatOrderDate } from '../lib/order-rules';
+import { DeliveryPinLink } from '@/features/delivery/components/delivery-pin-link';
 import { StoreDeliveryCard } from '@/features/delivery/components/store-delivery-card';
 
 export function OrderDetailPage() {
@@ -52,19 +53,39 @@ export function OrderDetailPage() {
         }
         description={`Placed ${formatOrderDate(order.created_at)} · ${order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}`}
       >
-        <OrderNextStep order={order} />
+        {/* A delivery order has one path: the delivery card below. Its one tap packs the order and finds a rider. */}
+        {order.fulfillment_method !== 'delivery' && <OrderNextStep order={order} />}
       </PageHeader>
       <div className="flex-1 overflow-y-auto p-4 md:p-8">
         <div className="mx-auto grid w-full max-w-7xl gap-5 lg:grid-cols-3">
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2">
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-              <OrderProgress status={order.status} />
-            </div>
+            {order.fulfillment_method === 'delivery' ? (
+              <>
+                <StoreDeliveryCard order={order} />
+                <details className="group rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-5 text-sm font-semibold text-slate-900 [&::-webkit-details-marker]:hidden">
+                    <span>Manual controls <span className="font-normal text-slate-500">(advanced)</span></span>
+                    <ChevronDown className="size-4 text-slate-400 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="flex flex-col gap-4 border-t border-slate-100 p-5">
+                    <p className="text-xs text-slate-500">Only needed to deliver with your own staff, or to fix a mistake. Normally the delivery card above does all of this for you.</p>
+                    <OrderProgress status={order.status} />
+                    <OrderStatusControls order={order} />
+                  </div>
+                </details>
+              </>
+            ) : (
+              <>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+                  <OrderProgress status={order.status} />
+                </div>
 
-            <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
-              <h2 className="mb-4 text-sm font-semibold text-slate-900">Update order</h2>
-              <OrderStatusControls order={order} />
-            </div>
+                <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+                  <h2 className="mb-4 text-sm font-semibold text-slate-900">Update order</h2>
+                  <OrderStatusControls order={order} />
+                </div>
+              </>
+            )}
 
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
               <h2 className="mb-2 text-sm font-semibold text-slate-900">Items</h2>
@@ -73,14 +94,12 @@ export function OrderDetailPage() {
           </div>
 
           <div className="flex min-w-0 flex-col gap-5">
-            {order.fulfillment_method === 'delivery' && <StoreDeliveryCard order={order} />}
-
             <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
               <h2 className="mb-3 text-sm font-semibold text-slate-900">Status</h2>
               <div className="flex flex-wrap gap-2">
                 <StatusBadge tone={getOrderStatusTone(order.status)} value={order.status} />
                 <StatusBadge tone={getPaymentStatusTone(order.payment_status)} value={order.payment_status} />
-                <StatusBadge tone={getFulfillmentStatusTone(order.fulfillment_status)} value={order.fulfillment_status} />
+                {order.fulfillment_method !== 'delivery' && <StatusBadge tone={getFulfillmentStatusTone(order.fulfillment_status)} value={order.fulfillment_status} />}
               </div>
               <p className="mt-3 text-xs text-slate-400">Placed {formatOrderDate(order.created_at)}</p>
             </div>
@@ -93,7 +112,10 @@ export function OrderDetailPage() {
                 {order.fulfillment_method === 'delivery' ? (
                   <>
                     <MapPin className="mt-0.5 size-4 shrink-0 text-sky-500" />
-                    <span>{order.delivery_address}</span>
+                    <span>
+                      {order.delivery_address}
+                      <DeliveryPinLink latitude={order.delivery_latitude} longitude={order.delivery_longitude} />
+                    </span>
                   </>
                 ) : (
                   <>

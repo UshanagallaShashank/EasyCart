@@ -15,6 +15,7 @@ export function ActiveDeliveryCard({ order }: { order: RiderOrder }) {
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-2"><ToneBadge tone={stage.tone} label={stage.label} /><span className="font-mono text-[11px] text-slate-400">#{order.id.slice(0, 8)}</span></div>
         <p className="mt-1 truncate text-sm font-semibold text-slate-900">{toStore ? order.store.name : order.delivery_address}</p>
+        <p className="mt-0.5 text-xs font-medium text-sky-700">{toStore ? 'Next: go to the store and get the pickup code' : 'Next: deliver it and ask for the customer\'s code'}</p>
         <p className="text-xs text-slate-500">{order.cash_to_collect > 0 ? `Collect ${format_price(order.cash_to_collect)}` : 'Prepaid'} · Earn {format_price(order.earning)}</p>
       </div>
       <ChevronRight className="size-5 shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5" />

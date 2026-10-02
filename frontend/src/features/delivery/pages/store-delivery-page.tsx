@@ -98,7 +98,7 @@ export function StoreDeliveryPage() {
       <PageBody>
         <div className="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
           <Bike className="mt-0.5 size-5 shrink-0 text-sky-600" />
-          <p>Open a delivery order and tap <strong>Request rider</strong> when it is packed. The nearest partner accepts, shows you the pickup code screen, and can only complete the order with the customer's own code.</p>
+          <p>How it works: pack the order, open it and tap <strong>Packed, send for delivery</strong>. We find the nearest rider automatically, you give them the pickup code, and they can only finish the delivery with the customer's own code.</p>
         </div>
         <div className="grid gap-5 lg:grid-cols-3">
           <div className="flex min-w-0 flex-col gap-5 lg:col-span-2"><DeliveriesList /></div>

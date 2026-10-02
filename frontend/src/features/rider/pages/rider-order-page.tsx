@@ -5,15 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/page-header';
 import { PageBody } from '@/components/page-body';
 import { format_price } from '@/lib/format-price';
-import { ToneBadge } from '@/features/delivery/components/tone-badge';
 import { ProofPhoto } from '@/features/delivery/components/proof-photo';
-import { RIDER_ORDER_STAGE, formatDateTime, formatDistance, mapsLink } from '@/features/delivery/lib/delivery-labels';
+import { formatDateTime, formatDistance, mapsLink } from '@/features/delivery/lib/delivery-labels';
 import type { RiderOrder } from '@/features/delivery/types/delivery-types';
 import { useRiderOrder } from '../hooks/use-rider-queries';
 import { FormSection } from '../components/form-section';
 import { PickupStep } from '../components/pickup-step';
 import { DeliverStep } from '../components/deliver-step';
 import { OfferCard } from '../components/offer-card';
+import { RiderJourney } from '../components/rider-journey';
 
 function NavigateButton({ href, label }: { href: string | null; label: string }) {
   if (!href) return null;
@@ -49,14 +49,13 @@ export function RiderOrderPage() {
   if (isLoading) return <PageBody><Skeleton className="h-96 w-full rounded-2xl" /></PageBody>;
   if (isError || !order) return <div className="flex h-full flex-1 flex-col"><PageHeader title="Order not found" eyebrow={back} description="It may have been taken back by the store or offered to someone else." /></div>;
 
-  const stage = RIDER_ORDER_STAGE[order.stage];
-
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden">
       <PageHeader title={`Order #${order.id.slice(0, 8)}`} eyebrow={back} description={`Placed ${formatDateTime(order.created_at)}`}>
-        <ToneBadge tone={stage.tone} label={stage.label} />
       </PageHeader>
       <PageBody>
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs"><RiderJourney stage={order.stage} /></div>
+
         {order.stage === 'offered' && <OfferCard order={order} onAccepted={() => undefined} />}
 
         {order.stage === 'delivered' && (
@@ -88,10 +87,11 @@ export function RiderOrderPage() {
                   <div className="min-w-0 text-sm">
                     <p className="font-semibold text-slate-900">{order.customer.name}</p>
                     <p className="text-xs break-words text-slate-500">{order.delivery_address}</p>
+                    <p className={`mt-1 text-[11px] font-semibold ${order.delivery_point ? 'text-emerald-700' : 'text-amber-700'}`}>{order.delivery_point ? 'Exact map pin from the customer' : 'No map pin, navigating by address'}</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     {order.customer.phone_number && order.stage !== 'delivered' && <a href={`tel:${order.customer.phone_number}`} aria-label="Call customer" className="flex size-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100"><Phone className="size-4" /></a>}
-                    {order.stage === 'to_customer' && <NavigateButton href={mapsLink(null, order.delivery_address)} label="Navigate" />}
+                    {order.stage === 'to_customer' && <NavigateButton href={mapsLink(order.delivery_point, order.delivery_address)} label="Navigate" />}
                   </div>
                 </div>
               </FormSection>
