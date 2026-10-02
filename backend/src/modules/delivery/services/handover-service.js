@@ -11,6 +11,8 @@ import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
 import { to_handover_rider } from '../lib/rider-views.js';
 import { dispatch_order, refresh_dispatch, store_point } from './dispatch-service.js';
 import { delivery_file_url } from './delivery-file-service.js';
+import { get_order_settlement } from '../repositories/order-settlement-store.js';
+import { calculate_order_settlement } from './order-settlement-service.js';
 
 function timeline(order) {
   return {
@@ -47,14 +49,18 @@ async function find_store_order(tenant_id, order_id) {
 export async function get_store_order_delivery(tenant_id, order_id) {
   await refresh_dispatch();
   const order = await find_store_order(tenant_id, order_id);
-  const store = await find_store_by_tenant_id(tenant_id);
+  const [store, settlement_record] = await Promise.all([
+    find_store_by_tenant_id(tenant_id),
+    get_order_settlement(order.id)
+  ]);
   return {
     ...(await base_delivery(order)),
     // The store hands this to the rider at the counter; the rider cannot mark pickup without it.
     pickup_code: ['ready_for_delivery', 'rider_assigned'].includes(order.fulfillment_status) ? order.pickup_code : null,
     pickup_locked: (order.pickup_code_attempts ?? 0) >= MAX_CODE_ATTEMPTS,
     delivery_locked: (order.delivery_code_attempts ?? 0) >= MAX_CODE_ATTEMPTS,
-    store_has_location: Boolean(store_point(store))
+    store_has_location: Boolean(store_point(store)),
+    settlement: calculate_order_settlement(order, settlement_record)
   };
 }
 
@@ -146,16 +152,22 @@ export async function list_store_deliveries(tenant_id) {
   const orders = (await find_orders_by_tenant(tenant_id)).filter((order) => order.fulfillment_method === 'delivery');
   const riders = await find_riders_by_ids([...new Set(orders.map((order) => order.rider_id).filter(Boolean))]);
   const rider_names = new Map(riders.map((rider) => [rider.id, rider.full_name]));
-  return orders
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-    .map((order) => ({
-      id: order.id,
-      stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
-      rider_offer_status: order.rider_offer_status ?? null,
-      rider_name: order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status) ? rider_names.get(order.rider_id) ?? null : null,
-      delivery_address: order.delivery_address,
-      total: order.total,
-      created_at: order.created_at,
-      delivered_at: order.delivered_at ?? null
-    }));
+  return Promise.all(
+    orders
+      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .map(async (order) => {
+        const settlement_record = await get_order_settlement(order.id);
+        return {
+          id: order.id,
+          stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
+          rider_offer_status: order.rider_offer_status ?? null,
+          rider_name: order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status) ? rider_names.get(order.rider_id) ?? null : null,
+          delivery_address: order.delivery_address,
+          total: order.total,
+          created_at: order.created_at,
+          delivered_at: order.delivered_at ?? null,
+          settlement: calculate_order_settlement(order, settlement_record)
+        };
+      })
+  );
 }
