@@ -11,6 +11,7 @@ import { useUpdateAssignment } from '../hooks/use-update-assignment';
 import { ApiError } from '@/shared/api/api-error';
 import { format_status_label } from '@/lib/format-status-label';
 import type { Order, PickupFulfillmentStatus, DeliveryFulfillmentStatus } from '../types/order-types';
+import { isRiderHandled } from '../lib/order-rules';
 
 const STATUSES: Order['status'][] = ['pending', 'confirmed', 'fulfilled', 'cancelled'];
 const PAYMENT_STATUSES: Order['payment_status'][] = ['unpaid', 'paid'];
@@ -35,6 +36,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
     setAssignedTo(order.assigned_to ?? '');
   }, [order.status, order.payment_status, order.fulfillment_status, order.assigned_to]);
 
+  const riderHandled = isRiderHandled(order);
   const fulfillmentStatuses = order.fulfillment_method === 'delivery' ? DELIVERY_FULFILLMENT_STATUSES : PICKUP_FULFILLMENT_STATUSES;
 
   const trimmedAssignedTo = assignedTo.trim();
@@ -81,7 +83,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="flex flex-col gap-2">
+        {!riderHandled && <div className="flex flex-col gap-2">
           <Label>Payment</Label>
           <Select value={paymentStatus} onValueChange={(v) => setPaymentStatus(v as Order['payment_status'])}>
             <SelectTrigger className="w-full xl:w-40"><SelectValue /></SelectTrigger>
@@ -89,8 +91,8 @@ export function OrderStatusControls({ order }: { order: Order }) {
               {PAYMENT_STATUSES.map((s) => <SelectItem key={s} value={s}>{format_status_label(s)}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
-        <div className="flex flex-col gap-2">
+        </div>}
+        {!riderHandled && <div className="flex flex-col gap-2">
           <Label>{order.fulfillment_method === 'delivery' ? 'Delivery status' : 'Pickup status'}</Label>
           <Select value={fulfillmentStatus} onValueChange={(v) => setFulfillmentStatus(v as Order['fulfillment_status'])}>
             <SelectTrigger className="w-full xl:w-40"><SelectValue /></SelectTrigger>
@@ -98,7 +100,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
               {fulfillmentStatuses.map((s) => <SelectItem key={s} value={s}>{format_status_label(s)}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </div>}
         <div className="flex flex-col gap-2">
           <Label htmlFor="assigned_to">Assigned to</Label>
           <Input
@@ -113,6 +115,7 @@ export function OrderStatusControls({ order }: { order: Order }) {
           {isSaving ? 'Saving…' : 'Save'}
         </Button>
       </div>
+      {riderHandled && <p className="text-xs text-slate-500">A delivery partner is handling this order. Payment and delivery status update when they pick it up and hand it over with the customer's code.</p>}
     </div>
   );
 }

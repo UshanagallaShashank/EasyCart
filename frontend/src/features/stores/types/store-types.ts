@@ -10,6 +10,9 @@ export interface Store {
   delivery_fee: number;
   promotion_banner_text: string | null;
   is_published: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+  address_line?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,4 +24,7 @@ export interface StoreSettingsPayload {
   theme?: 'default' | 'light' | 'dark';
   delivery_fee?: number;
   promotion_banner_text?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  address_line?: string | null;
 }

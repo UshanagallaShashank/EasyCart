@@ -17,3 +17,8 @@ export function formatOrderDate(isoDate: string): string {
 export function shortOrderId(id: string): string {
   return `#${id.slice(0, 8)}`;
 }
+
+// Once a rider search starts, the rider's pickup and delivery checks move the order on, not the store's dropdowns.
+export function isRiderHandled(order: Order): boolean {
+  return Boolean(order.rider_id) || order.fulfillment_status === 'ready_for_delivery' || order.fulfillment_status === 'rider_assigned';
+}

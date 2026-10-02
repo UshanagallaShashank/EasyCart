@@ -1,11 +1,12 @@
 // Merchant dashboard navigation entries, grouped into the sections shown in the sidebar.
-import { LayoutDashboard, Store, Tags, Package, ClipboardList, Users, Ticket } from 'lucide-react';
+import { LayoutDashboard, Store, Tags, Package, ClipboardList, Users, Ticket, Bike } from 'lucide-react';
 import type { NavSection } from '@/components/app-shell/nav-types';
 
 export const DASHBOARD_SECTIONS: NavSection[] = [
   { title: 'Home', items: [{ to: '/dashboard/overview', label: 'Overview', icon: LayoutDashboard }] },
   { title: 'Sales', items: [
     { to: '/dashboard/orders', label: 'Orders', icon: ClipboardList },
+    { to: '/dashboard/delivery', label: 'Delivery', icon: Bike },
     { to: '/dashboard/customers', label: 'Customers', icon: Users },
     { to: '/dashboard/coupons', label: 'Coupons', icon: Ticket }
   ] },

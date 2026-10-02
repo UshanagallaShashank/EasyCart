@@ -13,6 +13,7 @@ import { customerOrdersPath, getLastStoreSlug } from '@/features/storefront/lib/
 import { CustomerPageShell } from '../components/customer-page-shell';
 import { OrderProgress } from '../components/order-progress';
 import { CancelOrderDialog } from '../components/cancel-order-dialog';
+import { CustomerDeliveryCard } from '@/features/delivery/components/customer-delivery-card';
 
 export function CustomerOrderDetailPage() {
   const { id, slug } = useParams<{ id: string; slug?: string }>();
@@ -86,6 +87,8 @@ export function CustomerOrderDetailPage() {
         </div>
 
         <div className="flex min-w-0 flex-col gap-5">
+          {order.fulfillment_method === 'delivery' && order.status !== 'cancelled' && <CustomerDeliveryCard orderId={order.id} />}
+
           <Card>
             <CardHeader>
               <CardTitle>Status</CardTitle>
