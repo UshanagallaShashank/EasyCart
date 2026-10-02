@@ -85,7 +85,7 @@ export interface RiderOrder {
   stage: RiderOrderStage;
   created_at: string;
   offer_expires_at: string | null;
-  store: { name: string; address_line: string | null; latitude: number | null; longitude: number | null; distance_km: number | null };
+  store: { name: string; address: string | null; latitude: number | null; longitude: number | null; distance_km: number | null };
   customer: { name: string; phone_number: string | null } | null;
   delivery_address: string | null;
   /** The pin the customer dropped for this address, or null (shown once the rider has accepted). */

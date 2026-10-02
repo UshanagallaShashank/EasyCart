@@ -71,8 +71,7 @@ create index if not exists orders_fulfillment_status_idx on orders (fulfillment_
 -- 4. Store pickup location, so each delivery goes to the nearest rider.
 alter table stores
   add column if not exists latitude double precision,
-  add column if not exists longitude double precision,
-  add column if not exists address_line text;
+  add column if not exists longitude double precision;
 
 -- 5. Private bucket for rider documents and delivery proof photos (no public read policy on purpose).
 insert into storage.buckets (id, name, public, file_size_limit)

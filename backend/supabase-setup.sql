@@ -214,8 +214,7 @@ create index if not exists orders_fulfillment_status_idx on orders (fulfillment_
 -- 4. Store pickup location, so each delivery goes to the nearest rider.
 alter table stores
   add column if not exists latitude double precision,
-  add column if not exists longitude double precision,
-  add column if not exists address_line text;
+  add column if not exists longitude double precision;
 
 -- 5. Private bucket for rider documents and delivery proof photos (no public read policy on purpose).
 insert into storage.buckets (id, name, public, file_size_limit)
@@ -232,3 +231,11 @@ alter table orders
 alter table rider_settlements
   add column if not exists order_id text;
 create index if not exists rider_settlements_order_idx on rider_settlements (order_id);
+
+-- 13. Store location (same as migrations/009-store-location.sql)
+alter table stores
+  add column if not exists address text,
+  add column if not exists pincode text,
+  add column if not exists max_delivery_radius_km numeric not null default 5,
+  add column if not exists latitude double precision,
+  add column if not exists longitude double precision;

@@ -14,10 +14,13 @@ interface AppSidebarProps {
 
 export function AppSidebar({ title, homeTo, sections, ariaLabel, onNavigate }: AppSidebarProps) {
   return (
-    <div className="flex h-full flex-col border-r border-slate-200/80 bg-slate-50">
-      <Link to={homeTo} onClick={onNavigate} className="flex items-center gap-3 px-5 pt-5 pb-4">
+    <div className="flex h-full flex-col border-r border-sky-200/80 bg-gradient-to-b from-sky-100/90 via-sky-50/60 to-indigo-50/40">
+      <Link to={homeTo} onClick={onNavigate} className="flex items-center gap-2 px-5 pt-5 pb-4">
         <img src="/easy-cart-icon.png" alt="EasyCart" className="h-9 w-auto object-contain" />
         <span className="min-w-0 truncate text-sm font-semibold text-slate-900">{title}</span>
+        <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
+          Owner
+        </span>
       </Link>
       <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-2" aria-label={ariaLabel}>
         {sections.map((section) => (

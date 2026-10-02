@@ -4,7 +4,16 @@ import { validate_signup_input, validate_login_input } from './auth-schemas.js';
 import { validate_slug } from '../../platform/shared/slug-validator.js';
 import { hash_password, check_password_matches } from '../../platform/shared/hash.js';
 import { sign_token } from '../../platform/shared/jwt.js';
-import { find_user_by_email, save_user, set_user_tenant_id } from '../users/repositories/user-repository.js';
+import {
+  find_user_by_email,
+  save_user,
+  set_user_tenant_id,
+  find_user_by_id,
+  update_user_fields,
+  find_user_by_email_excluding,
+  find_user_by_username_excluding,
+  update_user_last_active
+} from '../users/repositories/user-repository.js';
 import { find_tenant_by_slug, save_tenant } from '../tenants/repositories/tenant-repository.js';
 import { create_store_for_tenant } from '../stores/services/store-service.js';
 
@@ -73,6 +82,12 @@ export async function login_user(payload) {
     throw new AppError('Invalid email or password', 401);
   }
 
+  if (user.status === 'inactive') {
+    throw new AppError('Your account has been deactivated. Please contact support.', 403);
+  }
+
+  await update_user_last_active(user.id);
+
   const token = sign_token({ sub: user.id, email: user.email, username: user.username, role: user.role, tenant_id: user.tenant_id });
 
   return {
@@ -86,3 +101,66 @@ export async function login_user(payload) {
     token
   };
 }
+
+export async function get_current_profile(userId) {
+  const user = await find_user_by_id(userId);
+  if (!user) throw new AppError('User not found', 404);
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    phone_number: user.phone_number ?? '',
+    role: user.role,
+    tenant_id: user.tenant_id ?? null,
+    created_at: user.created_at
+  };
+}
+
+export async function update_current_profile(userId, updates) {
+  const user = await find_user_by_id(userId);
+  if (!user) throw new AppError('User not found', 404);
+
+  const payload = {};
+  if (updates.email !== undefined) {
+    const email = String(updates.email).trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      throw new AppError('Please provide a valid email address.', 400);
+    }
+    const email_taken = await find_user_by_email_excluding(email, userId);
+    if (email_taken) {
+      throw new AppError('Email is already registered by another user.', 409);
+    }
+    payload.email = email;
+  }
+
+  if (updates.username !== undefined) {
+    const username = String(updates.username).trim();
+    if (username.length < 3 || username.length > 30) {
+      throw new AppError('Username must be between 3 and 30 characters.', 400);
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      throw new AppError('Username can only contain letters, numbers, and underscores.', 400);
+    }
+    const username_taken = await find_user_by_username_excluding(username, userId);
+    if (username_taken) {
+      throw new AppError('Username is already taken.', 409);
+    }
+    payload.username = username;
+  }
+
+  if (updates.phone_number !== undefined) {
+    payload.phone_number = String(updates.phone_number).trim();
+  }
+
+  const updated = await update_user_fields(userId, payload);
+  return {
+    id: updated.id,
+    username: updated.username,
+    email: updated.email,
+    phone_number: updated.phone_number ?? '',
+    role: updated.role,
+    tenant_id: updated.tenant_id ?? null,
+    created_at: updated.created_at
+  };
+}
+
