@@ -27,7 +27,7 @@ export function ProductGrid({ products, isLoading, slug }: { products: Product[]
   }
 
   return (
-    <StaggerList className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
+    <StaggerList key={products.map((p) => p.id).join(',')} className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 2xl:grid-cols-5">
       {products.map((product) => (
         <StaggerItem key={product.id} className="h-full">
           <ProductCard product={product} slug={slug} />
