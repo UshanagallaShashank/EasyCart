@@ -9,6 +9,14 @@ export const ONLINE_STALE_MS = 30 * 60 * 1000;
 export const OFFER_SECONDS = 120;
 // A rider can carry this many orders at once.
 export const MAX_ACTIVE_ORDERS = 2;
+// Riders further than this from the store are not offered its orders. Riders with no location yet are still tried, last.
+export const MAX_DISPATCH_KM = 15;
+
+// A motor vehicle needs a licence that has not expired; a bicycle needs none.
+export function licence_problem(rider, today = new Date()) {
+  if (rider.vehicle_type === 'bicycle' || !rider.license_expiry) return null;
+  return new Date(`${rider.license_expiry}T23:59:59`) < today ? 'Your driving licence has expired. Add the renewed licence under Profile and ask support to update it.' : null;
+}
 
 export function is_rider_flow(order) {
   // "dispatched" alone is not enough: a store delivering with its own staff uses it too.

@@ -8,7 +8,7 @@ import {
 } from '../order-schemas.js';
 import { validate_payment_status_input } from '../payment-schemas.js';
 import { process_payment } from './payment-service.js';
-import { adjust_stock } from '../../products/services/product-service.js';
+import { change_order_stock } from '../../products/services/product-service.js';
 import { notify_order_placed } from '../../notifications/services/notification-service.js';
 import { find_order_by_id, find_order_by_id_for_customer, save_order, update_order } from '../repositories/order-repository.js';
 import { find_orders_by_tenant, find_orders_by_customer } from '../repositories/order-query-repository.js';
@@ -17,13 +17,18 @@ import { pick_customer_stores } from '../lib/pick-customer-stores.js';
 import { to_owner_order, to_customer_order } from '../lib/order-views.js';
 import { create_delivery_code } from '../../delivery/lib/delivery-codes.js';
 import { is_rider_flow } from '../../delivery/lib/delivery-stages.js';
+import { status_change_problem } from '../lib/order-rules.js';
 
 export async function create_order(
   tenant_id,
   customer_id,
   { items, total, payment_method, fulfillment_method, delivery_address, delivery_latitude, delivery_longitude, delivery_fee, coupon_code, discount_amount }
 ) {
-  const order = await save_order({
+  // Stock is taken before the order exists, all or nothing, so a short item never leaves a half-made order behind.
+  await change_order_stock(tenant_id, items, -1);
+  let order;
+  try {
+    order = await save_order({
     id: randomUUID(),
     tenant_id,
     customer_id,
@@ -43,12 +48,14 @@ export async function create_order(
     delivery_code: fulfillment_method === 'delivery' ? create_delivery_code() : null,
     coupon_code: coupon_code ?? null,
     discount_amount: discount_amount ?? 0
-  });
-  await process_payment(order, payment_method);
-  for (const item of items) {
-    await adjust_stock(tenant_id, item.product_id, -item.quantity);
+    });
+  } catch (err) {
+    await change_order_stock(tenant_id, items, 1).catch(() => undefined);
+    throw err;
   }
-  await notify_order_placed(tenant_id, order);
+  await process_payment(order, payment_method);
+  // A failed notification must not fail an order the customer has already placed.
+  await notify_order_placed(tenant_id, order).catch((err) => console.warn('Order notification failed:', err?.message || err));
   return to_customer_order(order);
 }
 
@@ -101,14 +108,16 @@ export async function update_order_status(tenant_id, id, payload) {
     throw new AppError(parsed.error.issues.map((issue) => issue.message).join(', '), 400);
   }
   const order = await find_tenant_order(tenant_id, id);
-  if (order.fulfillment_status === 'delivered' && parsed.data.status === 'cancelled') {
-    throw new AppError('A delivered order cannot be cancelled', 400);
-  }
-  if (parsed.data.status === 'fulfilled' && is_rider_flow(order) && order.fulfillment_status !== 'delivered') {
-    throw new AppError('The order is fulfilled when the delivery partner hands it over with the customer\'s code', 400);
-  }
-  const updates = parsed.data.status === 'cancelled' && order.rider_id ? { ...parsed.data, ...RELEASE_RIDER } : parsed.data;
-  return to_owner_order(await update_order(id, tenant_id, updates, order.rider_id));
+  if (order.status === parsed.data.status) return to_owner_order(order);
+  const problem = status_change_problem(order, parsed.data.status, { rider_handled: is_rider_flow(order) });
+  if (problem) throw new AppError(problem, 400);
+
+  const cancelling = parsed.data.status === 'cancelled';
+  const updates = cancelling ? { ...parsed.data, ...RELEASE_RIDER, pickup_code: null } : parsed.data;
+  const updated = await update_order(id, tenant_id, updates, order.rider_id);
+  // Cancelled items go back on the shelf, whoever cancels.
+  if (cancelling) await change_order_stock(tenant_id, order.items, 1);
+  return to_owner_order(updated);
 }
 
 export async function update_order_payment_status(tenant_id, id, payload) {
@@ -117,6 +126,7 @@ export async function update_order_payment_status(tenant_id, id, payload) {
     throw new AppError(parsed.error.issues.map((issue) => issue.message).join(', '), 400);
   }
   const order = await find_tenant_order(tenant_id, id);
+  if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
   if (is_rider_flow(order)) {
     throw new AppError('The rider marks this order paid when they collect the cash', 400);
   }
@@ -129,6 +139,7 @@ export async function update_order_fulfillment_status(tenant_id, id, payload) {
     throw new AppError(parsed.error.issues.map((issue) => issue.message).join(', '), 400);
   }
   const order = await find_tenant_order(tenant_id, id);
+  if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
   if (!is_valid_fulfillment_status_for_method(order.fulfillment_method, parsed.data.fulfillment_status)) {
     throw new AppError(`Invalid fulfillment status for a ${order.fulfillment_method} order`, 400);
   }
@@ -154,8 +165,6 @@ export async function cancel_order_for_customer(customer_id, id) {
     throw new AppError('Only pending orders that are not yet being prepared can be cancelled', 400);
   }
   const cancelled = await update_order(id, order.tenant_id, { status: 'cancelled' });
-  for (const item of order.items) {
-    await adjust_stock(order.tenant_id, item.product_id, item.quantity);
-  }
+  await change_order_stock(order.tenant_id, order.items, 1);
   return to_customer_order(cancelled);
 }

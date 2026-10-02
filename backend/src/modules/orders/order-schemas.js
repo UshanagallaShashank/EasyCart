@@ -4,15 +4,15 @@ import { z } from 'zod';
 const cart_item_schema = z.object({
   product_id: z.string(),
   variant_label: z.string().optional(),
-  quantity: z.number().int().positive()
+  quantity: z.number().int().positive().max(99, 'You can order up to 99 of one item')
 });
 
 export const checkout_schema = z
   .object({
-    items: z.array(cart_item_schema).min(1),
+    items: z.array(cart_item_schema).min(1, 'Your cart is empty').max(50, 'A single order can have up to 50 different items'),
     payment_method: z.enum(['cash_on_delivery']),
     fulfillment_method: z.enum(['pickup', 'delivery']).default('pickup'),
-    delivery_address: z.string().trim().min(1).optional(),
+    delivery_address: z.string().trim().min(5, 'Please enter the full delivery address').max(300, 'Delivery address is too long').optional(),
     // The pin the customer dropped on the map for this address (optional, always both or neither).
     delivery_latitude: z.number().min(-90).max(90).optional(),
     delivery_longitude: z.number().min(-180).max(180).optional(),
