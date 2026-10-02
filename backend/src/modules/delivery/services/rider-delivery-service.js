@@ -13,7 +13,7 @@ import { order_point } from '../lib/order-point.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
-import { dispatch_order, store_point } from './dispatch-service.js';
+import { pass_offer_on, store_point } from './dispatch-service.js';
 import { save_delivery_file, delivery_file_url } from './delivery-file-service.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
 
@@ -128,11 +128,7 @@ export async function decline_offer(user_id, order_id) {
   const rider = await get_rider_for_user(user_id);
   const order = await find_my_order(rider, order_id);
   if (order.rider_offer_status !== 'offered') throw new AppError('Only new offers can be declined. Ask the store to cancel an accepted delivery.', 400);
-  const released = await update_order_if(order.id, { rider_id: rider.id, rider_offer_status: 'offered' }, {
-    fulfillment_status: 'ready_for_delivery', rider_id: null, rider_offer_status: null, rider_offer_expires_at: null,
-    declined_rider_ids: [...(order.declined_rider_ids ?? []), rider.id]
-  });
-  if (released) await dispatch_order(released);
+  await pass_offer_on(order);
   return { ok: true };
 }
 

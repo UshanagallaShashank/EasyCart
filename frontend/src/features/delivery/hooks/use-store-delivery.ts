@@ -1,7 +1,7 @@
 // Store-side delivery queries. An order's delivery refreshes every 15 seconds while a rider is being found or is on the way.
 import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { getRidersNearby, getStoreDeliveries, getStoreOrderDelivery, getStoreSettlements, runStoreDeliveryAction, settleStoreOrderDelivery, type StoreAction } from '../api/handover-api';
+import { getRidersNearby, getStoreDeliveries, getStoreOrderDelivery, getStoreSettlements, runStoreDeliveryAction, type StoreAction } from '../api/handover-api';
 
 const LIVE_STAGES = ['ready_for_delivery', 'rider_assigned', 'dispatched'];
 
@@ -36,19 +36,4 @@ export function useStoreDeliveries() {
 
 export function useStoreSettlements() {
   return useQuery({ queryKey: ['store-settlements'], queryFn: getStoreSettlements, refetchInterval: BACKUP_REFRESH_MS });
-}
-
-export function useSettleOrderDelivery(orderId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload?: { method?: string; note?: string }) => settleStoreOrderDelivery(orderId, payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['orders', orderId, 'delivery'] });
-      queryClient.invalidateQueries({ queryKey: ['orders', orderId] });
-      queryClient.invalidateQueries({ queryKey: ['orders'] });
-      queryClient.invalidateQueries({ queryKey: ['store-deliveries'] });
-      queryClient.invalidateQueries({ queryKey: ['store-settlements'] });
-      queryClient.invalidateQueries({ queryKey: ['rider'] });
-    }
-  });
 }

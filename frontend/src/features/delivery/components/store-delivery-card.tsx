@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ApiError } from '@/shared/api/api-error';
 import type { Order } from '@/features/orders/types/order-types';
-import { useStoreDeliveryAction, useStoreOrderDelivery, useSettleOrderDelivery } from '../hooks/use-store-delivery';
+import { useStoreDeliveryAction, useStoreOrderDelivery } from '../hooks/use-store-delivery';
 import type { StoreAction } from '../api/handover-api';
 import { DeliveryJourney } from './delivery-journey';
 import { HandoverRiderCard } from './handover-rider-card';
@@ -24,7 +24,6 @@ const DONE_MESSAGE: Record<StoreAction, string> = {
 export function StoreDeliveryCard({ order }: { order: Order }) {
   const { data: delivery, isLoading } = useStoreOrderDelivery(order.id, true);
   const action = useStoreDeliveryAction(order.id);
-  const settleMutation = useSettleOrderDelivery(order.id);
   const run = (name: StoreAction) => action.mutate(name, {
     onSuccess: () => toast.success(DONE_MESSAGE[name]),
     onError: (err) => toast.error(err instanceof ApiError ? err.message : 'Something went wrong')
@@ -78,13 +77,7 @@ export function StoreDeliveryCard({ order }: { order: Order }) {
         {delivery.stage === 'delivered' && (
           <div className="flex flex-col gap-3">
             <ProofPhoto url={delivery.proof_photo_url} cashCollected={delivery.cash_collected} />
-            <OrderSettlementCard
-              orderId={order.id}
-              settlement={delivery.settlement}
-              partnerName={delivery.rider?.full_name}
-              role="store"
-              onSettle={(payload) => settleMutation.mutateAsync(payload)}
-            />
+            <OrderSettlementCard side="store" settlement={delivery.settlement} counterpart={delivery.rider?.full_name} />
           </div>
         )}
 

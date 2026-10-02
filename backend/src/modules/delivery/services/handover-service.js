@@ -6,7 +6,7 @@ import { find_store_by_tenant_id } from '../../stores/repositories/store-reposit
 import { find_rider_by_id, find_riders_by_ids, find_riders_by_status } from '../repositories/rider-repository.js';
 import { find_orders_by_riders } from '../repositories/delivery-order-repository.js';
 import { create_delivery_code, create_pickup_code, MAX_CODE_ATTEMPTS } from '../lib/delivery-codes.js';
-import { ACTIVE_RIDER_STAGES, is_rider_available } from '../lib/delivery-stages.js';
+import { ACTIVE_RIDER_STAGES, delivery_stage, has_confirmed_rider, is_rider_available } from '../lib/delivery-stages.js';
 import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
 import { estimate_arrival } from '../lib/estimate-arrival.js';
 import { to_handover_rider } from '../lib/rider-views.js';
@@ -27,7 +27,7 @@ function timeline(order) {
 
 async function base_delivery(order) {
   const rider = order.rider_id ? await find_rider_by_id(order.rider_id) : null;
-  const accepted = order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status);
+  const accepted = has_confirmed_rider(order);
 
   // While the rider is heading to the store, show how far they are and roughly how long they need.
   // (After pickup there is no customer location on record, so no arrival time is shown for that last leg.)
@@ -41,7 +41,7 @@ async function base_delivery(order) {
 
   return {
     order_id: order.id,
-    stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
+    stage: delivery_stage(order),
     rider_offer_status: order.rider_offer_status ?? null,
     // Only a rider who accepted is shown, so nobody sees a rider who may still pass on the order.
     rider: accepted ? await to_handover_rider(rider, { include_phone: order.fulfillment_status !== 'delivered' }) : null,
@@ -169,9 +169,9 @@ export async function list_store_deliveries(tenant_id) {
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     .map((order) => ({
       id: order.id,
-      stage: order.status === 'cancelled' ? 'cancelled' : order.fulfillment_status,
+      stage: delivery_stage(order),
       rider_offer_status: order.rider_offer_status ?? null,
-      rider_name: order.rider_offer_status === 'accepted' || ['dispatched', 'delivered'].includes(order.fulfillment_status) ? rider_names.get(order.rider_id) ?? null : null,
+      rider_name: has_confirmed_rider(order) ? rider_names.get(order.rider_id) ?? null : null,
       delivery_address: order.delivery_address,
       total: order.total,
       created_at: order.created_at,

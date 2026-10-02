@@ -6,17 +6,18 @@ import { PageBody } from '@/components/page-body';
 import { format_price } from '@/lib/format-price';
 import { EarningsChart } from '@/features/delivery/components/earnings-chart';
 import { SettlementList } from '@/features/delivery/components/settlement-list';
-import { useRiderEarnings } from '../hooks/use-rider-queries';
+import { useRiderEarnings, useRiderSettlements } from '../hooks/use-rider-queries';
 import { StatTile } from '../components/stat-tile';
 import { FormSection } from '../components/form-section';
-import { RiderStoreSettlements } from '../components/rider-store-settlements';
+import { SettlementsPanel } from '@/features/delivery/components/settlement/settlements-panel';
 
 export function RiderEarningsPage() {
   const { data, isLoading } = useRiderEarnings();
+  const { data: settlements, isLoading: settlementsLoading } = useRiderSettlements();
 
   return (
     <div className="flex h-full flex-1 flex-col overflow-hidden">
-      <PageHeader title="Earnings" description="You earn the delivery fee on every order. Cash you collect is handed in to EasyCart." />
+      <PageHeader title="Earnings" description="You earn the delivery fee on every order. Cash you collect goes to the store, minus your fee." />
       <PageBody>
         {isLoading || !data ? <Skeleton className="h-96 w-full rounded-2xl" /> : (
           <>
@@ -29,7 +30,7 @@ export function RiderEarningsPage() {
               <StatTile icon={Banknote} label="Paid out" value={format_price(data.summary.paid_out)} />
             </div>
             <EarningsChart daily={data.daily} />
-            <RiderStoreSettlements />
+            <SettlementsPanel side="rider" rows={settlements?.orders} isLoading={settlementsLoading} />
             <FormSection icon={HandCoins} title="Cash and payouts" description="Recorded settlements and ride payouts so far.">
               <SettlementList settlements={data.settlements} />
             </FormSection>
