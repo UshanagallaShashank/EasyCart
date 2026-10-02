@@ -98,11 +98,10 @@ export function RiderOrderPage() {
                   <div className="min-w-0 text-sm">
                     <p className="font-semibold text-slate-900">{order.customer.name}</p>
                     <p className="text-xs break-words text-slate-500">{order.delivery_address}</p>
-                    <p className={`mt-1 text-[11px] font-semibold ${order.delivery_point ? 'text-emerald-700' : 'text-amber-700'}`}>{order.delivery_point ? 'Exact map pin from the customer' : 'No map pin, navigating by address'}</p>
                   </div>
                   <div className="flex shrink-0 gap-2">
                     {order.customer.phone_number && order.stage !== 'delivered' && <a href={`tel:${order.customer.phone_number}`} aria-label="Call customer" className="flex size-9 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100"><Phone className="size-4" /></a>}
-                    {order.stage === 'to_customer' && <NavigateButton href={mapsLink(order.delivery_point, order.delivery_address)} label="Navigate" />}
+                    {order.stage === 'to_customer' && <NavigateButton href={mapsLink(null, order.delivery_address)} label="Navigate" />}
                   </div>
                 </div>
               </FormSection>
