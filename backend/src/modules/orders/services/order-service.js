@@ -102,6 +102,9 @@ export async function update_order_status(tenant_id, id, payload) {
   if (order.fulfillment_status === 'delivered' && parsed.data.status === 'cancelled') {
     throw new AppError('A delivered order cannot be cancelled', 400);
   }
+  if (parsed.data.status === 'fulfilled' && is_rider_flow(order) && order.fulfillment_status !== 'delivered') {
+    throw new AppError('The order is fulfilled when the delivery partner hands it over with the customer\'s code', 400);
+  }
   const updates = parsed.data.status === 'cancelled' && order.rider_id ? { ...parsed.data, ...RELEASE_RIDER } : parsed.data;
   return to_owner_order(await update_order(id, tenant_id, updates));
 }
