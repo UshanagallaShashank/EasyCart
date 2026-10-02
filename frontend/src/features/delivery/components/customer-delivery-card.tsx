@@ -2,7 +2,6 @@
 import { BACKUP_REFRESH_MS } from '@/lib/query-client';
 import { useQuery } from '@tanstack/react-query';
 import { AlertTriangle, MapPin, ShieldCheck } from 'lucide-react';
-import { mapsLink } from '../lib/delivery-labels';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCustomerOrderDelivery } from '../api/handover-api';
@@ -15,12 +14,9 @@ const LIVE = ['not_started', 'ready_for_delivery', 'rider_assigned', 'dispatched
 interface CustomerDeliveryCardProps {
   orderId: string;
   address: string | null;
-  latitude?: number | null;
-  longitude?: number | null;
 }
 
-export function CustomerDeliveryCard({ orderId, address, latitude, longitude }: CustomerDeliveryCardProps) {
-  const pinLink = mapsLink({ latitude: latitude ?? null, longitude: longitude ?? null });
+export function CustomerDeliveryCard({ orderId, address }: CustomerDeliveryCardProps) {
   const { data: delivery, isLoading } = useQuery({
     queryKey: ['my-orders', orderId, 'delivery'],
     queryFn: async () => (await getCustomerOrderDelivery(orderId)).delivery,
@@ -35,7 +31,7 @@ export function CustomerDeliveryCard({ orderId, address, latitude, longitude }: 
         <CardTitle>Where is my order?</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="customer" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta ?? delivery.dropoff_eta} />
+        <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="customer" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta} />
         {delivery.delivery_code && (
           <div className="rounded-xl bg-gradient-to-br from-sky-600 to-sky-700 p-4 text-center text-white shadow-md shadow-sky-500/20">
             <p className="flex items-center justify-center gap-1.5 text-xs font-semibold tracking-wider text-sky-100 uppercase"><ShieldCheck className="size-3.5" /> Your delivery code</p>
@@ -53,7 +49,6 @@ export function CustomerDeliveryCard({ orderId, address, latitude, longitude }: 
             <p className="min-w-0 break-words">
               <span className="block text-xs font-semibold text-slate-400">Delivering to</span>
               {address}
-              {pinLink && <a href={pinLink} target="_blank" rel="noreferrer" className="mt-0.5 block text-xs font-semibold text-sky-600 hover:underline">View pin on map</a>}
             </p>
           </div>
         )}

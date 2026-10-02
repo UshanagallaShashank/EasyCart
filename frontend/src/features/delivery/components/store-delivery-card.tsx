@@ -41,7 +41,7 @@ export function StoreDeliveryCard({ order }: { order: Order }) {
       <h2 className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-900"><Bike className="size-4 text-sky-500" /> Delivery</h2>
 
       <div className="flex flex-col gap-4">
-        <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="store" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta ?? delivery.dropoff_eta} />
+        <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="store" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta} />
 
         {!delivery.store_has_location && open && (
           <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-800"><MapPinOff className="mt-0.5 size-4 shrink-0" /><span>Your store has no pickup location, so any online rider may get this order. <Link to="/dashboard/store" className="font-semibold underline">Set location</Link></span></p>
