@@ -13,6 +13,9 @@ const store_schema = new mongoose.Schema(
     delivery_fee: { type: Number, default: 0 },
     promotion_banner_text: { type: String, default: null },
     is_published: { type: Boolean, default: false },
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
+    address_line: { type: String, default: null },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
   },
