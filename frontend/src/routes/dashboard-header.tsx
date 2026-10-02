@@ -1,11 +1,12 @@
-// Slim top bar: mobile menu button with slide-in drawer, live store link and notifications.
+// Slim top bar: mobile menu button with slide-in drawer, notifications, and user menu.
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ExternalLink, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { MobileNavDrawer } from '@/components/app-shell/mobile-nav-drawer';
 import { find_nav_title } from '@/components/app-shell/nav-matching';
 import { useOwnStore } from '@/features/stores/hooks/use-own-store';
 import { NotificationBell } from '@/features/notifications/components/notification-bell';
+import { DashboardUserMenu } from './dashboard-user-menu';
 import { DashboardNavContent } from './dashboard-nav';
 import { DASHBOARD_SECTIONS } from './dashboard-links';
 
@@ -28,22 +29,8 @@ export function DashboardHeader() {
           <span className="truncate text-sm font-semibold text-slate-900">{title ?? store?.name}</span>
         </div>
         <div className="flex items-center gap-3">
-          {store?.slug && (
-            <a
-              href={`/${store.slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="group inline-flex items-center gap-1.5 rounded-full bg-sky-50 px-3 py-1.5 text-xs font-semibold text-sky-700 transition-all hover:-translate-y-0.5 hover:bg-sky-100 hover:shadow-sm"
-            >
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-              </span>
-              <span className="hidden sm:inline">View live store</span><span className="sm:hidden">Live</span>
-              <ExternalLink className="size-3 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </a>
-          )}
           <NotificationBell />
+          <DashboardUserMenu />
         </div>
       </header>
 
