@@ -1,0 +1,8 @@
+{
+  "name": "easycart-sample-data",
+  "private": true,
+  "type": "module",
+  "description": "Creates the small EasyCart sample data set in Supabase. Safe to run more than once.",
+  "scripts": { "seed": "node seed-sample-data.mjs" },
+  "dependencies": { "@supabase/supabase-js": "^2.45.4", "bcryptjs": "^2.4.3" }
+}
