@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/empty-state';
 import type { Order } from '../types/order-types';
 import { useMyOrders } from '../hooks/use-my-orders';
 import { useMyStoreRequest } from '@/features/customer-store-request/hooks/use-customer-store-request';
+import { customerStoreRequestPath, getLastStoreSlug } from '@/features/storefront/lib/customer-paths';
 import { CustomerPageShell } from '../components/customer-page-shell';
 import { CustomerOrderCard } from '../components/customer-order-card';
 
@@ -24,8 +25,8 @@ export function CustomerOrdersPage() {
   const { data: storeRequest } = useMyStoreRequest();
   const { slug: routeSlug } = useParams<{ slug: string }>();
   // Link to the store request page inside the storefront (with its menus) whenever we know which store.
-  const requestSlug = routeSlug ?? sessionStorage.getItem('last_store_slug');
-  const storeRequestPath = requestSlug ? `/${requestSlug}/store-request` : '/customer/store-request';
+  const requestSlug = routeSlug ?? getLastStoreSlug();
+  const storeRequestPath = requestSlug ? customerStoreRequestPath(requestSlug) : '/';
   const [filter, setFilter] = useState<OrderFilter>('all');
 
   const visibleOrders = (orders ?? []).filter((order) => matchesFilter(order, filter));

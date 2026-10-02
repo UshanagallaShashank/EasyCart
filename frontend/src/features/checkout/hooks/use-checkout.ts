@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { checkout } from '../api/checkout-api';
 import { useCart } from '@/features/cart/cart-context';
 import type { CheckoutPayload } from '../types/checkout-types';
+import { customerOrderPath } from '@/features/storefront/lib/customer-paths';
 
 export function useCheckout(slug: string) {
   const { clear } = useCart();
@@ -14,7 +15,7 @@ export function useCheckout(slug: string) {
     onSuccess: (data) => {
       clear();
       queryClient.invalidateQueries({ queryKey: ['my-orders'] });
-      navigate(`/${slug}/orders/${data.order.id}`);
+      navigate(customerOrderPath(slug, data.order.id));
     }
   });
 }

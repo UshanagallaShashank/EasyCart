@@ -6,13 +6,22 @@ import { RequireAuth } from './require-auth';
 import { RequireAdmin } from './require-admin';
 import { RequireCustomerAuth } from './require-customer-auth';
 import { DashboardLayout, AdminLayout, StorefrontLayout } from './lazy-layouts';
-import { LoginPage, RegisterPage, AdminLoginPage, AdminRegisterPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-pages';
+import { LoginPage, CustomerLoginPage, CustomerRegisterPage } from './lazy-auth-pages';
 import { OverviewPage, StoreSettingsPage, CategoriesPage, ProductsPage, OrdersPage, OrderDetailPage, CustomersPage, CustomerDetailPage, CouponsPage } from './lazy-dashboard-pages';
 import { AdminOverviewPage, TenantsPage, TenantDetailPage, UsersPage, SalesInsightsPage, GrowthInsightsPage, AdminAccountPage } from './lazy-admin-pages';
+import { LegacyShopRedirect, BareCustomerRedirect } from './legacy-redirects';
+import { NoStorePage } from './no-store-page';
+import { useCustomerAuth } from '@/shared/customer-auth/customer-auth-context';
+import { getLastStoreSlug, customerOrdersPath } from '@/features/storefront/lib/customer-paths';
 import { StorefrontHomePage, StorefrontProductsPage, StorefrontProductDetailPage, StorefrontAddressPage, CartPage, CheckoutPage, CustomerOrdersPage, CustomerOrderDetailPage, CustomerStoreRequestPage } from './lazy-shop-pages';
 
 function HomeRedirect() {
   const { user } = useAuth();
+  const { user: customer } = useCustomerAuth();
+  const lastSlug = getLastStoreSlug();
+
+  if (!user && customer && lastSlug) return <Navigate to={customerOrdersPath(lastSlug)} replace />;
+  if (!user && customer) return <NoStorePage />;
   if (!user) return <Navigate to="/login" replace />;
   return <Navigate to={user.role === 'platform_admin' ? '/admin' : '/dashboard'} replace />;
 }
@@ -23,9 +32,9 @@ export function AppRoutes() {
     <Routes>
       <Route path="/" element={<HomeRedirect />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/admin/register" element={<AdminRegisterPage />} />
+      <Route path="/register" element={<CustomerRegisterPage />} />
+      <Route path="/admin/login" element={<Navigate to="/login" replace />} />
+      <Route path="/admin/register" element={<Navigate to="/register?admin=1" replace />} />
       <Route element={<RequireAuth />}>
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<Navigate to="overview" replace />} />
@@ -53,13 +62,16 @@ export function AppRoutes() {
         </Route>
       </Route>
 
-      <Route path="/customer/login" element={<CustomerLoginPage />} />
-      <Route path="/customer/register" element={<CustomerRegisterPage />} />
-      <Route element={<RequireCustomerAuth />}>
-        <Route path="/customer/orders" element={<CustomerOrdersPage />} />
-        <Route path="/customer/orders/:id" element={<CustomerOrderDetailPage />} />
-        <Route path="/customer/store-request" element={<CustomerStoreRequestPage />} />
-      </Route>
+      {/* Customer pages always sit under their shop's address: /<shop>/customer/... */}
+      <Route path="/:slug/customer/login" element={<CustomerLoginPage />} />
+      <Route path="/:slug/customer/register" element={<CustomerRegisterPage />} />
+      {/* Old addresses with no shop in them forward to the last shop visited. */}
+      {/* Each is spelled out, because "/customer/orders" would otherwise be read as a shop called "customer". */}
+      <Route path="/customer/login" element={<BareCustomerRedirect />} />
+      <Route path="/customer/register" element={<BareCustomerRedirect />} />
+      <Route path="/customer/orders" element={<BareCustomerRedirect />} />
+      <Route path="/customer/orders/:id" element={<BareCustomerRedirect />} />
+      <Route path="/customer/store-request" element={<BareCustomerRedirect />} />
 
       <Route path="/:slug" element={<StorefrontLayout />}>
         <Route index element={<StorefrontHomePage />} />
@@ -67,11 +79,14 @@ export function AppRoutes() {
         <Route path="products/:id" element={<StorefrontProductDetailPage />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="address" element={<StorefrontAddressPage />} />
+        <Route path="orders" element={<LegacyShopRedirect />} />
+        <Route path="orders/:id" element={<LegacyShopRedirect />} />
+        <Route path="store-request" element={<LegacyShopRedirect />} />
         <Route element={<RequireCustomerAuth />}>
           <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="orders" element={<CustomerOrdersPage />} />
-          <Route path="orders/:id" element={<CustomerOrderDetailPage />} />
-          <Route path="store-request" element={<CustomerStoreRequestPage />} />
+          <Route path="customer/orders" element={<CustomerOrdersPage />} />
+          <Route path="customer/orders/:id" element={<CustomerOrderDetailPage />} />
+          <Route path="customer/store-request" element={<CustomerStoreRequestPage />} />
         </Route>
       </Route>
     </Routes>

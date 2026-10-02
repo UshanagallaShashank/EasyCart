@@ -1,5 +1,6 @@
 // Customer login page with floating card on sky background
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { customerRegisterPath } from '@/features/storefront/lib/customer-paths';
 import { CustomerLoginForm } from '../components/customer-login-form';
 import { AuthCard } from '@/features/auth/components/auth-card';
 import { AuthSkyBackground } from '@/features/auth/components/auth-sky-background';
@@ -8,7 +9,8 @@ import { AuthCardHeader } from '@/features/auth/components/auth-card-header';
 export function CustomerLoginPage() {
   const [params] = useSearchParams();
   const redirect = params.get('redirect');
-  const regLink = redirect ? `/customer/register?redirect=${encodeURIComponent(redirect)}` : '/customer/register';
+  const { slug } = useParams<{ slug: string }>();
+  const regLink = slug ? customerRegisterPath(slug, redirect) : '/register';
 
   return (
     <div className="relative min-h-svh flex flex-col justify-between p-6 overflow-hidden">
