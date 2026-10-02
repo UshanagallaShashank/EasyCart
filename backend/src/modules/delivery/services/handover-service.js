@@ -146,7 +146,7 @@ export async function list_riders_near_store(tenant_id) {
   }
   const origin = store_point(store);
   return {
-    store_location: origin ? { ...origin, address_line: store.address_line ?? null } : null,
+    store_location: origin ? { ...origin, address: store.address ?? null } : null,
     riders: sort_riders_by_distance(riders, origin).map((rider) => ({
       id: rider.id,
       full_name: rider.full_name,

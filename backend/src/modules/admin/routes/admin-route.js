@@ -1,7 +1,12 @@
 import { Router } from 'express';
 import { authenticate } from '../../../platform/shared/authenticate.js';
 import { require_role } from '../../../platform/shared/require-role.js';
-import { handle_get_platform_stats, handle_list_platform_users } from '../controllers/admin-insights-controller.js';
+import {
+  handle_get_platform_stats,
+  handle_list_platform_users,
+  handle_get_platform_user,
+  handle_update_platform_user
+} from '../controllers/admin-insights-controller.js';
 import {
   handle_list_tenants,
   handle_suspend_tenant,
@@ -34,6 +39,8 @@ admin_router.delete('/admin/store-categories/:name', admin_only, handle_remove_s
 
 admin_router.get('/admin/stats', admin_only, handle_get_platform_stats);
 admin_router.get('/admin/users', admin_only, handle_list_platform_users);
+admin_router.get('/admin/users/:id', admin_only, handle_get_platform_user);
+admin_router.patch('/admin/users/:id', admin_only, handle_update_platform_user);
 admin_router.get('/admin/tenants', admin_only, handle_list_tenants);
 admin_router.get('/admin/store-requests', admin_only, handle_list_store_requests);
 admin_router.post('/admin/store-requests/:id/approve', admin_only, handle_approve_store_request);

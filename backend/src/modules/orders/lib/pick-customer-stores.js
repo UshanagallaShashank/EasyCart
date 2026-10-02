@@ -12,7 +12,8 @@ export function pick_customer_stores(orders, stores) {
     if (!can_show) continue;
 
     already_added.add(store.tenant_id);
-    picked.push({ slug: store.slug, name: store.name, logo_url: store.logo_url ?? null });
+    // Radius and pincode let the customer home page say whether the store delivers to them.
+    picked.push({ slug: store.slug, name: store.name, logo_url: store.logo_url ?? null, max_delivery_radius_km: store.max_delivery_radius_km ?? null, pincode: store.pincode ?? null });
   }
 
   return picked;

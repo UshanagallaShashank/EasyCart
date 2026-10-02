@@ -9,7 +9,6 @@ import { EmptyState } from '@/components/empty-state';
 import { FilterPills } from '@/components/filter-pills';
 import { format_price } from '@/lib/format-price';
 import { useRidersNearby, useStoreDeliveries } from '../hooks/use-store-delivery';
-import { StoreLocationCard } from '../components/store-location-card';
 import { StoreSettlementsPanel } from '../components/store-settlements-panel';
 import { ToneBadge } from '../components/tone-badge';
 import { VEHICLE_LABELS, deliveryStageLabel, formatDateTime, formatDistance } from '../lib/delivery-labels';
@@ -68,7 +67,7 @@ function NearbyRiders() {
   return (
     <section className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
       <div className="mb-3 flex items-start justify-between gap-3">
-        <div><h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Radar className="size-4 text-sky-500" /> Partners near you</h2><p className="text-xs text-slate-500">{data?.store_location ? 'Nearest first from your pickup location' : 'Set your pickup location to sort by distance'}</p></div>
+        <div><h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900"><Radar className="size-4 text-sky-500" /> Partners near you</h2><p className="text-xs text-slate-500">{data?.store_location ? 'Nearest first from your pickup location' : <>Pin your store in <Link to="/dashboard/store" className="font-semibold text-sky-600 hover:underline">Store settings</Link> to sort by distance</>}</p></div>
         <span className="shrink-0 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">{online} online</span>
       </div>
       {isLoading ? <Skeleton className="h-40 w-full rounded-xl" /> : riders.length === 0 ? <p className="py-6 text-center text-xs text-slate-500">No approved delivery partners yet.</p> : (
@@ -107,7 +106,7 @@ export function StoreDeliveryPage() {
             <DeliveriesList />
             <StoreSettlementsPanel />
           </div>
-          <div className="flex min-w-0 flex-col gap-5"><StoreLocationCard /><NearbyRiders /></div>
+          <div className="flex min-w-0 flex-col gap-5"><NearbyRiders /></div>
         </div>
       </PageBody>
     </div>

@@ -12,9 +12,14 @@ export function StorefrontBrand({ store }: { store: PublicStore }) {
           {store.name.charAt(0).toUpperCase()}
         </span>
       )}
-      <span className="truncate font-heading text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-sky-700 sm:text-lg">
-        {store.name}
-      </span>
+      <div className="flex items-center gap-2 min-w-0">
+        <span className="truncate font-heading text-base font-bold tracking-tight text-slate-900 transition-colors group-hover:text-sky-700 sm:text-lg">
+          {store.name}
+        </span>
+        <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
+          Store
+        </span>
+      </div>
     </Link>
   );
 }

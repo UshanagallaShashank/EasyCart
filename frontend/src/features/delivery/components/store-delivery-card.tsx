@@ -45,7 +45,7 @@ export function StoreDeliveryCard({ order }: { order: Order }) {
         <DeliveryJourney stage={delivery.stage} offerStatus={delivery.rider_offer_status} role="store" riderName={delivery.rider?.full_name ?? null} arrival={delivery.pickup_eta ?? delivery.dropoff_eta} />
 
         {!delivery.store_has_location && open && (
-          <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-800"><MapPinOff className="mt-0.5 size-4 shrink-0" /><span>Your store has no pickup location, so any online rider may get this order. <Link to="/dashboard/delivery" className="font-semibold underline">Set location</Link></span></p>
+          <p className="flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-800"><MapPinOff className="mt-0.5 size-4 shrink-0" /><span>Your store has no pickup location, so any online rider may get this order. <Link to="/dashboard/store" className="font-semibold underline">Set location</Link></span></p>
         )}
 
         {canSend && (
