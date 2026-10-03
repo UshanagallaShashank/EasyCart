@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { sign_token, verify_token } from '../../../src/platform/shared/jwt.js';
+import { sign_token, verify_token, LOGIN_LIFETIME_HOURS } from '../../../src/platform/shared/jwt.js';
 
 describe('jwt sign/verify', () => {
   it('round-trips a payload', () => {
@@ -12,5 +12,11 @@ describe('jwt sign/verify', () => {
   it('throws on a tampered token', () => {
     const token = sign_token({ sub: 'user-1' });
     expect(() => verify_token(token + 'tampered')).toThrow();
+  });
+
+  it('lasts a working day', () => {
+    const decoded = verify_token(sign_token({ sub: 'user-1' }));
+    expect(decoded.exp - decoded.iat).toBe(LOGIN_LIFETIME_HOURS * 3600);
+    expect(LOGIN_LIFETIME_HOURS).toBe(12);
   });
 });
