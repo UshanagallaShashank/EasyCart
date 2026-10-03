@@ -13,7 +13,6 @@ import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 import { useAuth } from '@/shared/auth/auth-context';
 import { useLiveUpdates } from '@/shared/live/use-live-updates';
 import { RiderAvatar } from '@/features/delivery/components/rider-avatar';
-import { RiderNotificationBell } from '@/features/notifications/components/rider-notification-bell';
 import { useMyRider, useRiderHome } from '@/features/rider/hooks/use-rider-queries';
 import { useOfferAlert } from '@/features/rider/hooks/use-offer-alert';
 import { ALL_RIDER_SECTIONS, riderBottomLinks, riderSections } from './rider-links';
@@ -52,7 +51,6 @@ export function RiderLayout() {
           <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="-ml-2 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 lg:hidden"><Menu className="size-5" /></button>
           <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900">{title ?? 'Delivery'}</span>
           {isApproved && <OnlinePill isOnline={Boolean(rider?.is_online)} />}
-          <RiderNotificationBell isApproved={isApproved} />
           <Link to="/rider/profile" aria-label="Your profile" className="flex items-center gap-2 rounded-full py-1 pr-1 pl-1 transition-colors hover:bg-slate-100 sm:pr-3">
             <RiderAvatar name={name} photoUrl={rider?.photo_url ?? null} className="size-8 text-xs" />
             <span className="hidden max-w-32 truncate text-xs font-semibold text-slate-900 sm:inline">{name}</span>
