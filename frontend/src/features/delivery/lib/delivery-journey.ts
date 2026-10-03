@@ -21,11 +21,9 @@ export function getJourneyIndex(stage: DeliveryStage, offerStatus: 'offered' | '
   return 4;
 }
 
-// Heading to the store the distance is to the store; on the last leg it is to the customer.
-function arrivalText(arrival: JourneyArrival | null, index: number, role: JourneyRole): string {
+function arrivalText(arrival: JourneyArrival | null): string {
   if (!arrival) return '';
-  if (index === 2) return ` (about ${arrival.minutes} min away, ${arrival.distance_km} km from the store)`;
-  return role === 'customer' ? ` (about ${arrival.minutes} min away)` : ` (about ${arrival.minutes} min from the customer)`;
+  return ` (about ${arrival.minutes} min away, ${arrival.distance_km} km from the store)`;
 }
 
 // One plain sentence: what is happening now, and what this person should do.
@@ -35,14 +33,14 @@ export function getJourneyHint(role: JourneyRole, index: number, riderName: stri
   if (role === 'store') {
     if (index === 0) return 'Pack the order, then tap "Packed, send for delivery". We find the nearest rider for you.';
     if (index === 1) return 'Looking for the nearest rider. If one does not answer within 2 minutes, we try the next one automatically.';
-    if (index === 2) return `${rider} is on the way to your store${arrivalText(arrival, index, role)}. Check their photo and number plate, then give them the pickup code.`;
-    if (index === 3) return `${rider} has the order and is taking it to the customer${arrivalText(arrival, index, role)}.`;
+    if (index === 2) return `${rider} is on the way to your store${arrivalText(arrival)}. Check their photo and number plate, then give them the pickup code.`;
+    if (index === 3) return `${rider} has the order and is taking it to the customer.`;
     return 'Delivered. The proof photo and the cash collected are shown below.';
   }
 
   if (index === 0) return 'The store is getting your order ready.';
   if (index === 1) return 'Your order is packed. We are finding a delivery partner.';
-  if (index === 2) return `${rider} is on the way to the store to pick up your order${arrivalText(arrival, index, role)}.`;
-  if (index === 3) return `${rider} is bringing your order${arrivalText(arrival, index, role)}. Give them your code only when you have the order in your hands.`;
+  if (index === 2) return `${rider} is on the way to the store to pick up your order${arrivalText(arrival)}.`;
+  if (index === 3) return `${rider} is bringing your order. Give them your code only when you have the order in your hands.`;
   return 'Delivered. Enjoy your order!';
 }

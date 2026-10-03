@@ -11,7 +11,6 @@ import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
 import { estimate_arrival } from '../lib/estimate-arrival.js';
 import { to_handover_rider } from '../lib/rider-views.js';
 import { dispatch_order, store_point } from './dispatch-service.js';
-import { order_point } from '../lib/order-point.js';
 import { delivery_file_url } from './delivery-file-service.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
 
@@ -35,10 +34,6 @@ async function base_delivery(order) {
   const store = heading_to_store ? await find_store_by_tenant_id(order.tenant_id) : null;
   const pickup_eta = heading_to_store ? estimate_arrival(rider, store_point(store)) : null;
 
-  // On the last leg, the same from the rider's position to the customer's pin (only if the customer dropped one).
-  const on_the_way = order.fulfillment_status === 'dispatched' && order.status !== 'cancelled';
-  const dropoff_eta = on_the_way ? estimate_arrival(rider, order_point(order)) : null;
-
   return {
     order_id: order.id,
     stage: delivery_stage(order),
@@ -47,7 +42,6 @@ async function base_delivery(order) {
     rider: accepted ? await to_handover_rider(rider, { include_phone: order.fulfillment_status !== 'delivered' }) : null,
     timeline: timeline(order),
     pickup_eta,
-    dropoff_eta,
     cash_collected: order.cash_collected ?? null,
     proof_photo_url: order.delivery_photo_path ? await delivery_file_url(order.delivery_photo_path) : null
   };
