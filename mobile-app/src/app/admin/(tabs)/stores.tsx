@@ -1,6 +1,7 @@
 // Stores on the platform, with suspend and reactivate.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/text';
 import { Badge, Button, Card, EmptyState, Loading, Pills, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { adminCalls, useAdminAction, useTenants } from '@/features/admin/admin-api';

@@ -18,7 +18,7 @@
     "android": {
       "package": "com.easycart.app",
       "adaptiveIcon": {
-        "backgroundColor": "#E0F2FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -33,10 +33,22 @@
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro",
-      "output": "single"
+      "output": "single",
+      "name": "EasyCart",
+      "themeColor": "#0284C7"
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 220,
+          "resizeMode": "contain",
+          "backgroundColor": "#FFFFFF"
+        }
+      ],
+      "expo-font",
       "expo-secure-store",
       [
         "expo-image-picker",
@@ -53,6 +65,7 @@
     ],
     "experiments": {
       "typedRoutes": false
-    }
+    },
+    "primaryColor": "#0284C7"
   }
 }

@@ -1,6 +1,7 @@
 // Delivery pieces shared by the customer, store and rider screens: progress steps, rider card, proof photo.
-import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
+import { Icon } from '@/components/icon';
 import { Avatar } from '@/components/ui';
 import { fileUrl } from '@/lib/api';
 import { dateTime, price } from '@/lib/format';
@@ -28,7 +29,7 @@ export function DeliverySteps({ stage, offer }: { stage: DeliveryStage; offer: '
         return (
           <View key={step} style={styles.step}>
             <View style={[styles.dot, done && styles.dotDone, active && styles.dotActive]}>
-              {done ? <Feather name="check" size={12} color={colors.white} /> : <Text style={[styles.dotText, active && { color: colors.primary }]}>{index + 1}</Text>}
+              {done ? <Icon name="check" size={12} color={colors.white} /> : <Text style={[styles.dotText, active && { color: colors.primary }]}>{index + 1}</Text>}
             </View>
             <Text style={[styles.stepText, (done || active) && { color: colors.text }]} numberOfLines={2}>{step}</Text>
           </View>
@@ -49,7 +50,7 @@ export function RiderCard({ rider, caption }: { rider: HandoverRider; caption: s
       </View>
       {rider.phone_number && (
         <Pressable onPress={() => Linking.openURL(`tel:${rider.phone_number}`)} style={styles.call} accessibilityLabel={`Call ${rider.full_name}`}>
-          <Feather name="phone" size={18} color={colors.success} />
+          <Icon name="phone" size={18} color={colors.success} />
         </Pressable>
       )}
     </View>

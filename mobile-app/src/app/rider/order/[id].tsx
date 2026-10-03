@@ -1,8 +1,9 @@
 // One delivery for the rider: where to go, the bill, and the step they are on (pickup code, then handover).
 import { useState } from 'react';
-import { Image, Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Badge, Button, Card, CodeInput, EmptyState, Field, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { riderCalls, useRiderAction, useRiderOrder } from '@/features/rider/rider-api';
@@ -53,7 +54,7 @@ function DeliverStep({ order }: { order: RiderOrder }) {
       {photo ? (
         <Pressable onPress={snap}><Image source={{ uri: photo }} style={styles.photo} /><Text style={[text.small, { textAlign: 'center', marginTop: 4 }]}>Tap to retake</Text></Pressable>
       ) : (
-        <Pressable onPress={snap} style={styles.camera}><Feather name="camera" size={26} color={colors.primary} /><Text style={{ fontWeight: '600', color: colors.primaryDark }}>Take photo</Text><Text style={text.small}>Show the package at the door</Text></Pressable>
+        <Pressable onPress={snap} style={styles.camera}><Icon name="camera" size={26} color={colors.primary} /><Text style={{ fontWeight: '600', color: colors.primaryDark }}>Take photo</Text><Text style={text.small}>Show the package at the door</Text></Pressable>
       )}
 
       <Text style={styles.stepLabel}>3. Cash collected</Text>
@@ -103,7 +104,7 @@ export default function RiderOrderScreen() {
               <Text style={text.small}>{order.delivery_address}</Text>
             </View>
             {order.customer.phone_number && order.stage !== 'delivered' && (
-              <Pressable onPress={() => Linking.openURL(`tel:${order.customer!.phone_number}`)} style={styles.call} accessibilityLabel="Call customer"><Feather name="phone" size={18} color={colors.success} /></Pressable>
+              <Pressable onPress={() => Linking.openURL(`tel:${order.customer!.phone_number}`)} style={styles.call} accessibilityLabel="Call customer"><Icon name="phone" size={18} color={colors.success} /></Pressable>
             )}
           </View>
         </Card>

@@ -1,8 +1,9 @@
 // The partner application on the phone: details, vehicle, base location and documents (camera or gallery), then send.
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Button, Card, Field, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { riderCalls, useMyRider, useRiderAction } from '@/features/rider/rider-api';
@@ -34,14 +35,14 @@ function DocumentSlot({ kind, rider, editable }: { kind: DocumentKind; rider: Ri
   return (
     <View style={styles.doc}>
       <View style={[styles.docPreview, current && { borderColor: '#a7f3d0' }]}>
-        {upload.isPending ? <ActivityIndicator color={colors.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Feather name={current ? 'file' : 'camera'} size={22} color={current ? colors.success : colors.primary} />}
-        {current && <View style={styles.tick}><Feather name="check" size={12} color={colors.white} /></View>}
+        {upload.isPending ? <ActivityIndicator color={colors.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Icon name={current ? 'file' : 'camera'} size={22} color={current ? colors.success : colors.primary} />}
+        {current && <View style={styles.tick}><Icon name="check" size={12} color={colors.white} /></View>}
       </View>
       <Text style={styles.docTitle} numberOfLines={2}>{info.title}{info.required ? ' *' : ''}</Text>
       {editable && (
         <View style={{ flexDirection: 'row', gap: 6 }}>
-          <Pressable onPress={() => choose('camera')} style={styles.docButton} accessibilityLabel={`Take photo of ${info.title}`}><Feather name="camera" size={14} color={colors.primary} /></Pressable>
-          <Pressable onPress={() => choose('library')} style={styles.docButton} accessibilityLabel={`Choose ${info.title} from gallery`}><Feather name="image" size={14} color={colors.primary} /></Pressable>
+          <Pressable onPress={() => choose('camera')} style={styles.docButton} accessibilityLabel={`Take photo of ${info.title}`}><Icon name="camera" size={14} color={colors.primary} /></Pressable>
+          <Pressable onPress={() => choose('library')} style={styles.docButton} accessibilityLabel={`Choose ${info.title} from gallery`}><Icon name="image" size={14} color={colors.primary} /></Pressable>
         </View>
       )}
     </View>
