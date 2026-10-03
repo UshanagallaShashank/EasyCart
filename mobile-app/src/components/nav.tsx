@@ -1,43 +1,65 @@
-// Shared navigation styling (white header, sky accents) and the guard that keeps each role in its own area.
+// Shared navigation styling (white header with the EasyCart logo, sky accents) and the guard that keeps each role in its own area.
 import { type ReactNode } from 'react';
-import { Pressable, type ColorValue } from 'react-native';
+import { Image, Pressable, View, type ColorValue } from 'react-native';
 import { Redirect } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors } from '@/theme/theme';
 import { homeForRole, useSession } from '@/lib/session';
 import { useLiveUpdates } from '@/lib/live';
 import type { Role } from '@/types/catalog';
-import { Loading, type IconName } from './ui';
+import { Icon, type IconName } from './icon';
+import { Text } from './text';
+import { Loading } from './ui';
 
 export const stackOptions = {
   headerStyle: { backgroundColor: colors.card },
   headerShadowVisible: false,
-  headerTintColor: colors.primary,
-  headerTitleStyle: { color: colors.text, fontWeight: '700' as const, fontSize: 17 },
+  headerTintColor: colors.text,
+  headerTitleStyle: { color: colors.text, fontFamily: 'Inter_700Bold', fontSize: 17 },
   contentStyle: { backgroundColor: colors.bg },
   headerBackButtonDisplayMode: 'minimal' as const
 };
 
-export const tabOptions = {
-  ...stackOptions,
-  tabBarActiveTintColor: colors.primary,
-  tabBarInactiveTintColor: colors.textMuted,
-  tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '600' as const, lineHeight: 15 },
-  // A little room under the labels for phones without a home-bar gap.
-  tabBarItemStyle: { paddingTop: 4, paddingBottom: 6 },
-  sceneStyle: { backgroundColor: colors.bg }
-};
+// Logo + page name, like the website's top bar.
+export function BrandTitle({ children }: { children: string }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <Image source={require('../../assets/logo-mark.png')} style={{ width: 34, height: 34 }} resizeMode="contain" />
+      <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.3 }} numberOfLines={1}>{children}</Text>
+    </View>
+  );
+}
+
+// Bottom tabs sized for the phone's home-bar area so labels are never cut off.
+export function useTabOptions() {
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 8);
+  return {
+    ...stackOptions,
+    headerTitleAlign: 'left' as const,
+    headerTitle: ({ children }: { children: string }) => <BrandTitle>{children}</BrandTitle>,
+    headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
+    tabBarActiveTintColor: colors.primary,
+    tabBarInactiveTintColor: colors.textFaint,
+    tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border, height: 64 + bottom, paddingTop: 6, paddingBottom: bottom },
+    tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_600SemiBold', lineHeight: 16, marginTop: 2 },
+    sceneStyle: { backgroundColor: colors.bg }
+  };
+}
 
 export function tabIcon(name: IconName) {
-  return ({ color, size }: { color: ColorValue; size: number }) => <Feather name={name} size={size - 2} color={color as string} />;
+  return ({ color, focused }: { color: ColorValue; focused: boolean; size: number }) => (
+    <View style={{ paddingHorizontal: 14, paddingVertical: 2, borderRadius: 999, backgroundColor: focused ? colors.primarySoft : 'transparent' }}>
+      <Icon name={name} size={21} color={color} strokeWidth={focused ? 2.3 : 2} />
+    </View>
+  );
 }
 
 export function SignOutButton() {
   const { signOut } = useSession();
   return (
-    <Pressable onPress={() => void signOut()} accessibilityLabel="Log out" hitSlop={10} style={{ paddingHorizontal: 16 }}>
-      <Feather name="log-out" size={20} color={colors.textMuted} />
+    <Pressable onPress={() => void signOut()} accessibilityLabel="Log out" hitSlop={10} style={{ marginRight: 16, width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="log-out" size={17} color={colors.textMuted} />
     </Pressable>
   );
 }

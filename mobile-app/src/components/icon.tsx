@@ -1,0 +1,84 @@
+// The website's icon set (Lucide) under short names, so every screen draws the same icons as the web app.
+import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
+import {
+  ArrowRight, Award, Ban, Bike, Box, Camera, Check, ChevronRight, CircleAlert, CircleArrowRight, CircleCheck, CircleX, Clipboard,
+  Clock, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
+  MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
+  ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, User, Users, WifiOff, X, Zap,
+  Headphones, LayoutGrid, Pencil, Sparkles, Wallet, type LucideIcon
+} from 'lucide-react-native';
+
+const ICONS = {
+  'alert-circle': CircleAlert,
+  'alert-triangle': TriangleAlert,
+  'arrow-right': ArrowRight,
+  'arrow-right-circle': CircleArrowRight,
+  award: Award,
+  bike: Bike,
+  box: Box,
+  camera: Camera,
+  check: Check,
+  'check-circle': CircleCheck,
+  'check-square': SquareCheck,
+  'chevron-right': ChevronRight,
+  clipboard: Clipboard,
+  clock: Clock,
+  'credit-card': CreditCard,
+  'dollar-sign': IndianRupee,
+  eye: Eye,
+  'eye-off': EyeOff,
+  lock: Lock,
+  mail: Mail,
+  file: File,
+  'file-text': FileText,
+  grid: LayoutGrid,
+  'edit-3': Pencil,
+  gift: Gift,
+  headphones: Headphones,
+  heart: Heart,
+  home: House,
+  image: Image,
+  info: Info,
+  key: Key,
+  list: List,
+  loader: LoaderCircle,
+  'log-out': LogOut,
+  map: Map,
+  'map-pin': MapPin,
+  'message-square': MessageSquare,
+  minus: Minus,
+  navigation: Navigation,
+  package: Package,
+  phone: Phone,
+  plus: Plus,
+  power: Power,
+  radio: Radio,
+  'refresh-cw': RefreshCw,
+  'rotate-ccw': RotateCcw,
+  save: Save,
+  search: Search,
+  send: Send,
+  shield: Shield,
+  'shield-check': ShieldCheck,
+  'shopping-bag': ShoppingBag,
+  'shopping-cart': ShoppingCart,
+  slash: Ban,
+  sparkles: Sparkles,
+  store: Store,
+  'trash-2': Trash2,
+  truck: Truck,
+  user: User,
+  users: Users,
+  wallet: Wallet,
+  'wifi-off': WifiOff,
+  x: X,
+  'x-circle': CircleX,
+  zap: Zap
+} satisfies Record<string, LucideIcon>;
+
+export type IconName = keyof typeof ICONS;
+
+export function Icon({ name, size = 18, color, strokeWidth = 2, style }: { name: IconName; size?: number; color?: ColorValue; strokeWidth?: number; style?: StyleProp<ViewStyle> }) {
+  const Glyph = ICONS[name];
+  return <Glyph size={size} color={color as string} strokeWidth={strokeWidth} style={style} />;
+}

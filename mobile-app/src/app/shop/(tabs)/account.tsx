@@ -1,8 +1,9 @@
 // Account: who is signed in, which shop is open, and switching shops.
 import { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Avatar, Button, Card, Field, Screen } from '@/components/ui';
 import { useShop } from '@/features/shop/shop-context';
 import { useMyStores } from '@/features/shop/shop-api';
@@ -37,7 +38,7 @@ export default function AccountScreen() {
         {(stores ?? []).filter((s) => s.slug !== slug).map((store) => (
           <Pressable key={store.slug} onPress={() => open(store.slug)} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 }}>
             <Text style={text.body}>{store.name}</Text>
-            <Feather name="chevron-right" size={18} color={colors.textFaint} />
+            <Icon name="chevron-right" size={18} color={colors.textFaint} />
           </Pressable>
         ))}
         <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'flex-end' }}>

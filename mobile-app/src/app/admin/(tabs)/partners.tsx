@@ -1,8 +1,9 @@
 // Delivery partners: review queue first.
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Avatar, Badge, EmptyState, Loading, Pills, Screen } from '@/components/ui';
 import { useRiders } from '@/features/admin/admin-api';
 import { price } from '@/lib/format';
@@ -32,7 +33,7 @@ export default function Partners() {
               <Text style={text.small} numberOfLines={1}>{rider.vehicle_type ? VEHICLE_LABELS[rider.vehicle_type] : 'No vehicle'} · {[rider.area, rider.city].filter(Boolean).join(', ') || 'Area not set'}</Text>
               <Text style={text.small}>{rider.deliveries} deliveries · cash {price(rider.cash_in_hand)}</Text>
             </View>
-            <Feather name="chevron-right" size={18} color={colors.textFaint} />
+            <Icon name="chevron-right" size={18} color={colors.textFaint} />
           </Pressable>
         );
       })}

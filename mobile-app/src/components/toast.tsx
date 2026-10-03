@@ -1,6 +1,7 @@
 // Short messages at the bottom of the screen ("Order placed", "Wrong code. 4 tries left.").
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from 'react';
-import { Animated, StyleSheet, Text } from 'react-native';
+import { Animated, StyleSheet } from 'react-native';
+import { Text } from './text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius } from '@/theme/theme';
 

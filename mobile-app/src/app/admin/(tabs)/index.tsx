@@ -1,5 +1,5 @@
 // Platform at a glance.
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { Card, InfoRow, Loading, Screen, StatStrip } from '@/components/ui';
 import { useStats } from '@/features/admin/admin-api';
 import { price } from '@/lib/format';

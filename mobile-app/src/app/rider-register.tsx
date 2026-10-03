@@ -1,6 +1,6 @@
 // Delivery partner sign-up. Details, location and documents are added next, inside the rider area.
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { Link, router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { AuthShell } from '@/components/auth-shell';
@@ -27,7 +27,7 @@ export default function RiderRegisterScreen() {
   });
 
   return (
-    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: colors.primary, fontWeight: '600' }}>Sign in</Link></Text>}>
+    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Sign in</Link></Text>}>
       <Notice icon="shield">After this you add your vehicle, licence, RC and ID. An admin checks them before you can go online.</Notice>
       <Field label="Full name (as on your licence)" value={form.full_name} onChangeText={set('full_name')} />
       <Field label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" />

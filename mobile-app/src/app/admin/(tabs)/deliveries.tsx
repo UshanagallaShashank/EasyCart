@@ -1,6 +1,7 @@
 // Every delivery on the platform.
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/text';
 import { Badge, Card, EmptyState, Loading, Pills, Screen } from '@/components/ui';
 import { useDeliveries } from '@/features/admin/admin-api';
 import { dateTime, price, shortId } from '@/lib/format';
