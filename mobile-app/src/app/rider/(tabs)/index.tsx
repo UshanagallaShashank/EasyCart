@@ -1,5 +1,5 @@
 // Rider home: application status until approved; then the online switch, new offers and current deliveries.
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';

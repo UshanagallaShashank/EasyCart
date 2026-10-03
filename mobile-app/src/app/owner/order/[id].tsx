@@ -1,5 +1,6 @@
 // One order for the store: the next step, the delivery (request a rider, pickup code, proof), items and bill.
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';

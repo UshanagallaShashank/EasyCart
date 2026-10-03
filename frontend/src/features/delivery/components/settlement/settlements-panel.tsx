@@ -70,7 +70,7 @@ export function SettlementsPanel({ side, rows = [], isLoading }: SettlementsPane
                 </div>
                 <div className="flex shrink-0 items-center justify-between gap-3 sm:justify-end">
                   <span className="text-sm font-bold text-slate-900 tabular-nums">{format_price(row.net_to_store)}</span>
-                  {!row.is_settled && <Button size="sm" onClick={() => setActive({ settlement: row, counterpart })}>{copy.action}</Button>}
+                  {!row.is_settled && side === 'store' && <Button size="sm" onClick={() => setActive({ settlement: row, counterpart })}>{copy.action}</Button>}
                 </div>
               </li>
             );

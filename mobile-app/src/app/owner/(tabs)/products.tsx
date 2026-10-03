@@ -1,6 +1,7 @@
 // Store products with stock, and quick stock changes.
-import { Image, StyleSheet, Text, View } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Image, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
+import { Icon } from '@/components/icon';
 import { Badge, Button, EmptyState, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { ownerCalls, useOwnerAction, useOwnerProducts } from '@/features/owner/owner-api';
@@ -23,7 +24,7 @@ export default function OwnerProducts() {
         const low = product.stock_quantity <= product.low_stock_threshold;
         return (
           <View key={product.id} style={styles.row}>
-            <View style={styles.thumb}>{image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> : <Feather name="image" size={18} color={colors.textFaint} />}</View>
+            <View style={styles.thumb}>{image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}</View>
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={text.heading} numberOfLines={1}>{product.name}</Text>
               <Text style={text.small}>{price(product.price)}{product.variants.length ? ` · ${product.variants.length} options` : ''}</Text>

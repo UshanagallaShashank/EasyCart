@@ -13,7 +13,10 @@ import { DASHBOARD_SECTIONS } from './dashboard-links';
 export function DashboardHeader() {
   const { data: store } = useOwnStore();
   const [menuOpen, setMenuOpen] = useState(false);
-  const title = find_nav_title(DASHBOARD_SECTIONS, useLocation());
+  const location = useLocation();
+  const title = find_nav_title(DASHBOARD_SECTIONS, location);
+  const isDeliveryPage = location.pathname.includes('/delivery');
+  const badgeText = isDeliveryPage ? 'Delivery' : 'Owner';
 
   return (
     <>
@@ -28,7 +31,7 @@ export function DashboardHeader() {
           </button>
           <span className="truncate text-sm font-semibold text-slate-900">{title ?? store?.name}</span>
           <span className="rounded-full bg-sky-50 px-1.5 py-0.5 text-[9px] font-extrabold text-sky-600 border border-sky-200/60 uppercase tracking-wider shrink-0 leading-none">
-            Owner
+            {badgeText}
           </span>
         </div>
         <div className="flex items-center gap-3">

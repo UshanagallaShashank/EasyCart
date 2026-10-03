@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
-import { SignOutButton, tabIcon, tabOptions } from '@/components/nav';
+import { SignOutButton, tabIcon, useTabOptions } from '@/components/nav';
 import { useOrders } from '@/features/owner/owner-api';
 
 export default function OwnerTabs() {
+  const tabOptions = useTabOptions();
   const { data: orders } = useOrders();
   const fresh = (orders ?? []).filter((order) => order.status === 'pending').length;
   return (

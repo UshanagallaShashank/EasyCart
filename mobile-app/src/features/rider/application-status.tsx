@@ -1,5 +1,5 @@
 // Where the rider's application stands, with the admin's note when it was rejected or suspended.
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { Notice } from '@/components/ui';
 import { dateTime } from '@/lib/format';
 import type { Rider } from '@/types/delivery';

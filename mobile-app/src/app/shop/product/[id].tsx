@@ -1,9 +1,10 @@
 // One product: photos, size/colour, stock, quantity and add to cart.
 import { useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
-import { Badge, Button, EmptyState, Loading, Screen } from '@/components/ui';
+import { Icon } from '@/components/icon';
+import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
 import { useProduct } from '@/features/shop/shop-api';
@@ -29,6 +30,12 @@ export default function ProductScreen() {
   const stock = variant ? variant.stock : product.variants.length > 0 ? 0 : product.stock_quantity;
   const images = product.images.map((img) => fileUrl(img)).filter(Boolean) as string[];
 
+  const stockLook = stock <= 0
+    ? { label: 'Out of stock', fg: colors.danger, bg: colors.dangerSoft, border: '#fecdd3', dot: colors.danger }
+    : stock <= product.low_stock_threshold
+      ? { label: `Only ${stock} left`, fg: colors.warning, bg: colors.warningSoft, border: '#fde68a', dot: '#f59e0b' }
+      : { label: 'In Stock', fg: colors.success, bg: colors.successSoft, border: '#a7f3d0', dot: '#10b981' };
+
   function addToCart() {
     add({ product_id: product!.id, variant_label: variant?.label, name: product!.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
     toast(`${product!.name} added to cart`, 'success');
@@ -36,10 +43,10 @@ export default function ProductScreen() {
   }
 
   return (
-    <Screen footer={<Button icon="shopping-cart" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : `Add ${quantity} · ${price(unitPrice * quantity)}`} onPress={addToCart} disabled={needsVariant || stock <= 0} />}>
+    <Screen footer={<Button variant="dark" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : `Add to cart · ${price(unitPrice * quantity)}`} onPress={addToCart} disabled={needsVariant || stock <= 0} />}>
       <Stack.Screen options={{ title: product.name }} />
       <View style={styles.photo}>
-        {images[photo] ? <Image source={{ uri: images[photo] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Feather name="image" size={40} color={colors.textFaint} />}
+        {images[photo] ? <Image source={{ uri: images[photo] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Icon name="image" size={40} color={colors.textFaint} />}
       </View>
       {images.length > 1 && (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.sm }}>
@@ -49,11 +56,18 @@ export default function ProductScreen() {
         </ScrollView>
       )}
 
-      <View style={{ gap: 6 }}>
+      <View style={{ gap: 8 }}>
+        {!needsVariant && (
+          <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
+            <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
+            <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
+          </View>
+        )}
         <Text style={text.title}>{product.name}</Text>
-        <Text style={{ fontSize: 22, fontWeight: '800', color: colors.primaryDark }}>{price(unitPrice)}</Text>
-        {!needsVariant && <Badge tone={stock <= 0 ? 'danger' : stock <= product.low_stock_threshold ? 'warning' : 'success'} label={stock <= 0 ? 'Out of stock' : stock <= product.low_stock_threshold ? `Only ${stock} left` : 'In stock'} />}
+        <Text style={styles.price}>{price(unitPrice)}</Text>
+        {product.description ? <Text style={[text.muted, { lineHeight: 20 }]}>{product.description}</Text> : null}
       </View>
+      <View style={styles.divider} />
 
       {product.variants.length > 0 && (
         <View style={{ gap: space.sm }}>
@@ -75,27 +89,38 @@ export default function ProductScreen() {
         <View style={styles.stepperRow}>
           <Text style={text.heading}>Quantity</Text>
           <View style={styles.stepper}>
-            <Pressable onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Feather name="minus" size={16} color={colors.text} /></Pressable>
+            <Pressable onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.text} /></Pressable>
             <Text style={styles.qty}>{quantity}</Text>
-            <Pressable onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Feather name="plus" size={16} color={colors.text} /></Pressable>
+            <Pressable onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.text} /></Pressable>
           </View>
         </View>
       )}
 
-      {product.description ? <Text style={[text.body, { color: '#334155', lineHeight: 21 }]}>{product.description}</Text> : null}
+      <View style={styles.trust}>
+        <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
+        <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  photo: { aspectRatio: 1, borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
+  photo: { aspectRatio: 1, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.card, borderWidth: 1, borderColor: '#e8edf3', alignItems: 'center', justifyContent: 'center' },
+  stock: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
+  stockDot: { width: 6, height: 6, borderRadius: 3 },
+  stockText: { fontSize: 12, fontWeight: '700' },
+  price: { fontSize: 24, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
+  divider: { height: 1, backgroundColor: colors.border },
+  trust: { gap: 10, padding: space.lg, borderRadius: radius.lg, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },
+  trustRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  trustText: { fontSize: 13, color: colors.textSoft, flex: 1 },
   thumb: { width: 60, height: 60, borderRadius: radius.md, overflow: 'hidden', borderWidth: 2, borderColor: 'transparent' },
   variants: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  variant: { minWidth: 56, height: 40, paddingHorizontal: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  variant: { minWidth: 64, height: 42, paddingHorizontal: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   variantActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   variantText: { fontSize: 14, fontWeight: '600', color: colors.text },
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, backgroundColor: colors.white },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, backgroundColor: colors.white },
   stepButton: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
   qty: { minWidth: 24, textAlign: 'center', fontSize: 16, fontWeight: '700', color: colors.text }
 });

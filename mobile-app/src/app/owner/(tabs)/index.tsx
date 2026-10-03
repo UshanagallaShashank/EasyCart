@@ -1,5 +1,5 @@
 // Store overview: today's numbers and orders that need the owner now.
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Button, EmptyState, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
 import { useOrders, useOwnStore } from '@/features/owner/owner-api';

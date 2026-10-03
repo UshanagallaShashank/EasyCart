@@ -88,8 +88,6 @@ export interface RiderOrder {
   store: { name: string; address: string | null; latitude: number | null; longitude: number | null; distance_km: number | null };
   customer: { name: string; phone_number: string | null } | null;
   delivery_address: string | null;
-  /** The pin the customer dropped for this address, or null (shown once the rider has accepted). */
-  delivery_point: { latitude: number; longitude: number } | null;
   items: { name: string; quantity: number; variant_label: string | null }[];
   item_count: number;
   subtotal: number;
@@ -141,8 +139,6 @@ export interface OrderDelivery {
   timeline: DeliveryTimeline;
   /** How far the rider is from the store and roughly how long they need, while they head there. */
   pickup_eta: { distance_km: number; minutes: number; updated_at: string } | null;
-  /** The same for the last leg, from the rider to the customer's pin (only when the customer dropped one). */
-  dropoff_eta: { distance_km: number; minutes: number; updated_at: string } | null;
   cash_collected: number | null;
   proof_photo_url: string | null;
   delivery_locked: boolean;

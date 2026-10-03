@@ -1,5 +1,6 @@
 // Store delivery: orders on the road, cash to collect from riders, and partners nearby.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/text';
 import { Badge, Card, EmptyState, InfoRow, Loading, Screen } from '@/components/ui';
 import { useRidersNearby, useStoreDeliveries, useStoreSettlements } from '@/features/owner/owner-api';
 import { distance, price, shortId } from '@/lib/format';
@@ -25,7 +26,7 @@ export default function OwnerDelivery() {
           const stage = deliveryStageLabel(row.stage, row.rider_offer_status);
           return (
             <Pressable key={row.id} onPress={() => router.push(`/owner/order/${row.id}`)} style={{ gap: 4, borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}>
-              <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'center' }}><Text style={{ fontFamily: 'monospace', fontWeight: '700' }}>{shortId(row.id)}</Text><Badge tone={stage.tone} label={stage.label} /></View>
+              <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'center' }}><Text style={{ fontWeight: '800', color: colors.text }}>{shortId(row.id)}</Text><Badge tone={stage.tone} label={stage.label} /></View>
               <Text style={text.small} numberOfLines={1}>{row.rider_name ? `${row.rider_name} · ` : ''}{row.delivery_address}</Text>
             </Pressable>
           );

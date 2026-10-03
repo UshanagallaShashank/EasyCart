@@ -1,6 +1,6 @@
 // One sign-in for customers, store owners, delivery partners and admins.
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { Link, router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { AuthShell } from '@/components/auth-shell';
@@ -32,13 +32,13 @@ export default function LoginScreen() {
       subtitle="Your effortless shopping companion."
       footer={
         <>
-          <Text style={{ fontSize: 13, color: colors.textMuted }}>New here? <Link href="/register" style={{ color: colors.primary, fontWeight: '600' }}>Create an account</Link></Text>
-          <Text style={{ fontSize: 12, color: colors.textFaint }}>Ride a bike? <Link href="/rider-register" style={{ color: colors.primary, fontWeight: '600' }}>Become a delivery partner</Link></Text>
+          <Text style={{ fontSize: 13, color: colors.textMuted }}>New here? <Link href="/register" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Create an account</Link></Text>
+          <Text style={{ fontSize: 12, color: colors.textFaint }}>Ride a bike? <Link href="/rider-register" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Become a delivery partner</Link></Text>
         </>
       }
     >
-      <Field label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="you@example.com" />
-      <Field label="Password" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" placeholder="Your password" onSubmitEditing={() => login.mutate()} />
+      <Field icon="mail" value={email} onChangeText={setEmail} autoCapitalize="none" keyboardType="email-address" autoComplete="email" placeholder="Email address" />
+      <Field icon="lock" value={password} onChangeText={setPassword} secureTextEntry autoComplete="password" placeholder="Password" onSubmitEditing={() => login.mutate()} />
       <Button label="Sign in" onPress={() => login.mutate()} loading={login.isPending} disabled={!email || !password} />
     </AuthShell>
   );

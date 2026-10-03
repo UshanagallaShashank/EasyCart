@@ -20,6 +20,7 @@ import { CustomerProfileModal } from './customer-profile-modal';
 import { LogoutConfirmDialog } from '@/components/logout-confirm-dialog';
 
 import { CustomerLocationBadge } from './customer-location-badge';
+import { CustomerNotificationBell } from '@/features/notifications/components/customer-notification-bell';
 import { checkStoreDeliveryEligibility } from '../lib/delivery-radius';
 
 export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: string }) {
@@ -99,6 +100,8 @@ export function StorefrontHeader({ store, slug }: { store: PublicStore; slug: st
           {/* Top bar right area: Location + Cart + User / Account */}
           <nav className="flex shrink-0 items-center gap-2">
             <CustomerLocationBadge store={store} />
+
+            <CustomerNotificationBell slug={slug} />
 
             <Link
               to={`/${slug}/cart`}
