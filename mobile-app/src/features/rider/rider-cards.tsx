@@ -1,8 +1,9 @@
 // Rider home cards: the online switch, a new offer with its countdown, and an order in progress.
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Badge, Button } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { currentPosition } from '@/lib/device';
@@ -46,7 +47,7 @@ export function OnlineCard({ rider }: { rider: Rider }) {
       </View>
       <Pressable onPress={flip} disabled={toggle.isPending} accessibilityRole="switch" accessibilityState={{ checked: online }} accessibilityLabel={online ? 'Go offline' : 'Go online'}
         style={[styles.power, { backgroundColor: online ? colors.white : colors.primary }, toggle.isPending && { opacity: 0.6 }]}>
-        <Feather name="power" size={26} color={online ? colors.success : colors.white} />
+        <Icon name="power" size={26} color={online ? colors.success : colors.white} />
       </Pressable>
     </View>
   );
@@ -97,13 +98,13 @@ export function ActiveOrderRow({ order }: { order: RiderOrder }) {
   const toStore = order.stage === 'to_pickup';
   return (
     <Pressable onPress={() => router.push(`/rider/order/${order.id}`)} style={styles.row}>
-      <View style={styles.rowIcon}><Feather name={toStore ? 'shopping-bag' : 'map-pin'} size={20} color={colors.primary} /></View>
+      <View style={styles.rowIcon}><Icon name={toStore ? 'shopping-bag' : 'map-pin'} size={20} color={colors.primary} /></View>
       <View style={{ flex: 1, gap: 3 }}>
         <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'center' }}><Badge tone={stage.tone} label={stage.label} /><Text style={text.small}>{shortId(order.id)}</Text></View>
         <Text style={text.heading} numberOfLines={1}>{toStore ? order.store.name : order.delivery_address}</Text>
         <Text style={text.small}>{toStore ? 'Next: get the pickup code from the store' : "Next: ask for the customer's code"} · earn {price(order.earning)}</Text>
       </View>
-      <Feather name="chevron-right" size={18} color={colors.textFaint} />
+      <Icon name="chevron-right" size={18} color={colors.textFaint} />
     </Pressable>
   );
 }

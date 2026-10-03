@@ -1,7 +1,8 @@
 // The cart for the current shop.
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { Button, Card, EmptyState, InfoRow, Screen } from '@/components/ui';
 import { useShop } from '@/features/shop/shop-context';
 import { price } from '@/lib/format';
@@ -19,14 +20,14 @@ export default function CartScreen() {
       <Card title={`${count} ${count === 1 ? 'item' : 'items'}`}>
         {lines.map((line) => (
           <View key={`${line.product_id}-${line.variant_label ?? ''}`} style={styles.line}>
-            <View style={styles.thumb}>{line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Feather name="image" size={18} color={colors.textFaint} />}</View>
+            <View style={styles.thumb}>{line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}</View>
             <View style={{ flex: 1, gap: 2 }}>
               <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
               <Text style={text.small}>{line.variant_label ? `${line.variant_label} · ` : ''}{price(line.price)}</Text>
               <View style={styles.stepper}>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less"><Feather name={line.quantity === 1 ? 'trash-2' : 'minus'} size={15} color={line.quantity === 1 ? colors.danger : colors.text} /></Pressable>
+                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less"><Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={15} color={line.quantity === 1 ? colors.danger : colors.text} /></Pressable>
                 <Text style={styles.qty}>{line.quantity}</Text>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={line.quantity >= line.max} style={[styles.stepButton, line.quantity >= line.max && { opacity: 0.3 }]} accessibilityLabel="More"><Feather name="plus" size={15} color={colors.text} /></Pressable>
+                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={line.quantity >= line.max} style={[styles.stepButton, line.quantity >= line.max && { opacity: 0.3 }]} accessibilityLabel="More"><Icon name="plus" size={15} color={colors.text} /></Pressable>
               </View>
             </View>
             <Text style={[text.heading, { fontVariant: ['tabular-nums'] }]}>{price(line.price * line.quantity)}</Text>

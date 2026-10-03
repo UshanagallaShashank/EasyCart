@@ -1,5 +1,6 @@
 // Rider profile: status, contact, vehicle, base location and documents.
-import { Image, Text, View } from 'react-native';
+import { Image, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Avatar, Badge, Button, Card, InfoRow, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';

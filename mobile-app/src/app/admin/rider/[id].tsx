@@ -1,6 +1,7 @@
 // One delivery partner: documents to check, then approve, reject, suspend or reactivate.
 import { useState } from 'react';
-import { Image, Linking, Pressable, Text, View } from 'react-native';
+import { Image, Linking, Pressable, View } from 'react-native';
+import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Avatar, Badge, Button, Card, EmptyState, Field, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';

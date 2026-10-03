@@ -1,7 +1,8 @@
-// One product in the grid: photo, name, price and a quick add button.
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+// One product in the grid, drawn like the website's card: photo with a stock badge, name, price and a round add button.
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
+import { Text } from '@/components/text';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, shadow, space } from '@/theme/theme';
@@ -19,6 +20,8 @@ export function ProductCard({ product, width }: { product: Product; width: numbe
   const image = fileUrl(product.images[0]);
   const stock = productStock(product);
   const needsChoice = product.variants.length > 0;
+  const fewLeft = stock > 0 && stock <= (product.low_stock_threshold ?? 5);
+  const from = needsChoice ? Math.min(...product.variants.map((v) => v.price)) : product.price;
 
   function quickAdd() {
     if (needsChoice) return router.push(`/shop/product/${product.id}`);
@@ -27,18 +30,25 @@ export function ProductCard({ product, width }: { product: Product; width: numbe
   }
 
   return (
-    <Pressable onPress={() => router.push(`/shop/product/${product.id}`)} style={[styles.card, { width }]} accessibilityRole="button" accessibilityLabel={product.name}>
+    <Pressable onPress={() => router.push(`/shop/product/${product.id}`)} style={({ pressed }) => [styles.card, { width }, pressed && { opacity: 0.92 }]} accessibilityRole="button" accessibilityLabel={product.name}>
       <View style={styles.imageWrap}>
-        {image ? <Image source={{ uri: image }} style={styles.image} /> : <Feather name="image" size={28} color={colors.textFaint} />}
-        {stock <= 0 && <Text style={styles.soldOut}>Out of stock</Text>}
+        {image ? <Image source={{ uri: image }} style={styles.image} /> : <Icon name="image" size={28} color={colors.textFaint} />}
+        {stock <= 0 ? (
+          <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><View style={[styles.dot, { backgroundColor: '#cbd5e1' }]} /><Text style={[styles.badgeText, { color: colors.white }]}>Sold out</Text></View>
+        ) : fewLeft ? (
+          <View style={[styles.badge, { backgroundColor: '#fffbeb', borderColor: '#fde68a', borderWidth: 1 }]}><View style={[styles.dot, { backgroundColor: '#f59e0b' }]} /><Text style={[styles.badgeText, { color: colors.warning }]}>Only {stock} left</Text></View>
+        ) : null}
       </View>
-      <View style={{ padding: space.md, gap: 4, flex: 1 }}>
+      <View style={styles.body}>
         <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
         <View style={styles.bottom}>
-          <Text style={styles.price}>{price(product.price)}</Text>
+          <View style={{ flexShrink: 1 }}>
+            {needsChoice && <Text style={styles.from}>From</Text>}
+            <Text style={styles.price} numberOfLines={1}>{price(from)}</Text>
+          </View>
           {stock > 0 && (
-            <Pressable onPress={quickAdd} hitSlop={8} style={styles.add} accessibilityLabel={`Add ${product.name}`}>
-              <Feather name={needsChoice ? 'chevron-right' : 'plus'} size={18} color={colors.white} />
+            <Pressable onPress={quickAdd} hitSlop={8} style={({ pressed }) => [styles.add, pressed && { transform: [{ scale: 0.92 }] }]} accessibilityLabel={`Add ${product.name}`}>
+              <Icon name={needsChoice ? 'chevron-right' : 'plus'} size={18} color={colors.white} strokeWidth={2.5} />
             </Pressable>
           )}
         </View>
@@ -48,12 +58,16 @@ export function ProductCard({ product, width }: { product: Product; width: numbe
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, overflow: 'hidden', ...shadow },
+  card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', overflow: 'hidden', ...shadow },
   imageWrap: { aspectRatio: 1, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
-  soldOut: { position: 'absolute', bottom: 8, left: 8, backgroundColor: 'rgba(15,23,42,0.75)', color: colors.white, fontSize: 11, fontWeight: '600', paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill, overflow: 'hidden' },
-  name: { fontSize: 14, fontWeight: '600', color: colors.text, minHeight: 36 },
-  bottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' },
-  price: { fontSize: 15, fontWeight: '700', color: colors.text },
-  add: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' }
+  badge: { position: 'absolute', top: 10, left: 10, flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
+  dot: { width: 6, height: 6, borderRadius: 3 },
+  badgeText: { fontSize: 11, fontWeight: '700' },
+  body: { padding: space.md, paddingTop: space.md, gap: 6, flex: 1 },
+  name: { fontSize: 14, fontWeight: '600', color: colors.text, minHeight: 38, lineHeight: 19 },
+  bottom: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: 6, marginTop: 'auto' },
+  from: { fontSize: 11, color: colors.textMuted },
+  price: { fontSize: 15, fontWeight: '800', color: colors.text },
+  add: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.text, alignItems: 'center', justifyContent: 'center' }
 });

@@ -1,5 +1,6 @@
 // Earnings, cash still to hand to stores, and settling each delivered cash order.
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
+import { Text } from '@/components/text';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Screen, StatStrip } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { riderCalls, useRiderAction, useRiderEarnings, useRiderSettlements } from '@/features/rider/rider-api';

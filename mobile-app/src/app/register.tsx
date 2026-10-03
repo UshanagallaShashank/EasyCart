@@ -1,6 +1,6 @@
 // Customer sign-up.
 import { useState } from 'react';
-import { Text } from 'react-native';
+import { Text } from '@/components/text';
 import { Link, router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
 import { AuthShell } from '@/components/auth-shell';
@@ -29,7 +29,7 @@ export default function RegisterScreen() {
   });
 
   return (
-    <AuthShell title="Create your account" subtitle="Shop from independent stores near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already have an account? <Link href="/login" style={{ color: colors.primary, fontWeight: '600' }}>Log in</Link></Text>}>
+    <AuthShell title="Create your account" subtitle="Shop from independent stores near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already have an account? <Link href="/login" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Log in</Link></Text>}>
       <Field label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" placeholder="Letters, numbers, _" />
       <Field label="Mobile number" value={form.phone_number} onChangeText={set('phone_number')} keyboardType="phone-pad" placeholder="10 digits" />
       <Field label="Email" value={form.email} onChangeText={set('email')} autoCapitalize="none" keyboardType="email-address" placeholder="you@example.com" />

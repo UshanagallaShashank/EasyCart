@@ -1,5 +1,6 @@
 // One order for the customer. For a delivery: where it is, the secret code to give the rider, and who is coming.
-import { Alert, Platform, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';

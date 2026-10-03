@@ -1,9 +1,10 @@
 // Checkout: pickup or delivery, address with an optional GPS pin, coupon, and the final bill.
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import * as Location from 'expo-location';
-import { Feather } from '@expo/vector-icons';
+import { Icon } from '@/components/icon';
 import { useMutation } from '@tanstack/react-query';
 import { Button, Card, EmptyState, Field, InfoRow, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
@@ -86,7 +87,7 @@ export default function CheckoutScreen() {
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
             <Pressable key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && styles.methodActive]} accessibilityState={{ selected: method === option }}>
-              <Feather name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={18} color={method === option ? colors.primary : colors.textMuted} />
+              <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={18} color={method === option ? colors.primary : colors.textMuted} />
               <Text style={[styles.methodText, method === option && { color: colors.primaryDark }]}>{option === 'delivery' ? 'Delivery' : 'Pick up'}</Text>
               <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : 'Free') : 'Free'}</Text>
             </Pressable>
