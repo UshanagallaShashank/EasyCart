@@ -5,7 +5,7 @@ import {
   Clock, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
   MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
   ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, User, Users, WifiOff, X, Zap,
-  Headphones, LayoutGrid, Pencil, Sparkles, Wallet, type LucideIcon
+  Headphones, LayoutGrid, Pencil, Settings, Sparkles, Tags, Ticket, Wallet, type LucideIcon
 } from 'lucide-react-native';
 
 const ICONS = {
@@ -62,9 +62,12 @@ const ICONS = {
   'shield-check': ShieldCheck,
   'shopping-bag': ShoppingBag,
   'shopping-cart': ShoppingCart,
+  settings: Settings,
   slash: Ban,
   sparkles: Sparkles,
   store: Store,
+  tags: Tags,
+  ticket: Ticket,
   'trash-2': Trash2,
   truck: Truck,
   user: User,

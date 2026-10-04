@@ -5,7 +5,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon, type IconName } from '@/components/icon';
-import { Button, EmptyState, Loading, PageHeader, Pills, Screen } from '@/components/ui';
+import { Button, EmptyState, Loading, Notice, PageHeader, Pills, Screen } from '@/components/ui';
+import { useAddresses } from '@/features/shop/addresses';
+import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useShop } from '@/features/shop/shop-context';
 import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
 import { ProductCard } from '@/features/shop/product-card';
@@ -21,6 +23,7 @@ export default function ShopHome() {
   const categories = useCategories(slug);
   const products = useProducts(slug, search.trim(), category);
   const { width } = useWindowDimensions();
+  const { active: activeAddress } = useAddresses();
 
   // 2 columns on phones, more on tablets; the page column is at most 720 wide.
   const contentWidth = Math.min(width, 720) - space.lg * 2;
@@ -43,8 +46,10 @@ export default function ShopHome() {
   }
 
   const count = products.data?.length ?? 0;
+  const range = activeAddress ? checkDeliveryRange(store.data, activeAddress.zip) : null;
   return (
     <Screen onRefresh={() => { void store.refetch(); void products.refetch(); }} refreshing={products.isRefetching}>
+      {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
       <LinearGradient colors={['#6366f1', '#7c3aed', '#312e81']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
         <View style={styles.welcome}>
           <Icon name="sparkles" size={13} color="#fde68a" />

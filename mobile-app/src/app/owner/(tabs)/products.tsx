@@ -1,8 +1,9 @@
 // Store products with stock, and quick stock changes.
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
-import { Badge, Button, EmptyState, Loading, Notice, Screen } from '@/components/ui';
+import { Badge, Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { ownerCalls, useOwnerAction, useOwnerProducts } from '@/features/owner/owner-api';
 import { errorMessage, fileUrl } from '@/lib/api';
@@ -18,12 +19,13 @@ export default function OwnerProducts() {
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
-      <Notice icon="info">Add or edit products on the website. Here you can check stock and change it quickly.</Notice>
+      <Button icon="plus" label="Add product" onPress={() => router.push('/owner/product/new')} />
       {(data?.length ?? 0) === 0 ? <EmptyState icon="box" message="No products yet." /> : data!.map((product) => {
         const image = fileUrl(product.images[0]);
         const low = product.stock_quantity <= product.low_stock_threshold;
         return (
           <View key={product.id} style={styles.row}>
+            <Pressable accessibilityRole="button" onPress={() => router.push(`/owner/product/${product.id}`)} style={styles.open}>
             <View style={styles.thumb}>{image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}</View>
             <View style={{ flex: 1, gap: 4 }}>
               <Text style={text.heading} numberOfLines={1}>{product.name}</Text>
@@ -33,6 +35,7 @@ export default function OwnerProducts() {
                 {!product.is_active && <Badge label="Hidden" />}
               </View>
             </View>
+            </Pressable>
             <View style={{ gap: 6 }}>
               <Button small variant="outline" icon="plus" label="1" onPress={() => change(product.id, 1)} />
               <Button small variant="outline" icon="minus" label="1" disabled={product.stock_quantity <= 0} onPress={() => change(product.id, -1)} />
@@ -45,6 +48,7 @@ export default function OwnerProducts() {
 }
 
 const styles = StyleSheet.create({
+  open: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: space.md, ...shadow },
   thumb: { width: 56, height: 56, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' }
 });

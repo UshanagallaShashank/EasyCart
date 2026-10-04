@@ -33,6 +33,15 @@ export default function AccountScreen() {
         </View>
       </Card>
 
+      <Pressable onPress={() => router.push('/shop/addresses')} style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: 20, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg }}>
+        <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' }}><Icon name="map-pin" size={18} color={colors.primary} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={text.heading}>Delivery addresses</Text>
+          <Text style={text.small}>Home, work and other places you order to</Text>
+        </View>
+        <Icon name="chevron-right" size={18} color={colors.textFaint} />
+      </Pressable>
+
       <Card title="Shops" icon="shopping-bag">
         <Text style={text.small}>Open now: <Text style={{ fontWeight: '700', color: colors.text }}>{slug}</Text></Text>
         {(stores ?? []).filter((s) => s.slug !== slug).map((store) => (
