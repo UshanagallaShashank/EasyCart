@@ -106,7 +106,6 @@ export default function OwnerOrderScreen() {
       {order.fulfillment_method === 'delivery' && (
         <Card title="Deliver to" icon="map-pin">
           <Text style={text.body}>{order.delivery_address}</Text>
-          {order.delivery_latitude != null && <Button small variant="ghost" icon="map" label="View pin on map" onPress={() => openMap({ latitude: order.delivery_latitude ?? null, longitude: order.delivery_longitude ?? null })} />}
         </Card>
       )}
       <Card title="Items">

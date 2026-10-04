@@ -97,7 +97,7 @@ export default function RiderOrderScreen() {
       </Card>
 
       {order.customer && (
-        <Card title="Deliver to" icon="map-pin" right={order.stage === 'to_customer' ? <Button small icon="navigation" label="Navigate" onPress={() => openMap(order.delivery_point ?? null, order.delivery_address)} /> : undefined}>
+        <Card title="Deliver to" icon="map-pin" right={order.stage === 'to_customer' ? <Button small icon="navigation" label="Navigate" onPress={() => openMap(null, order.delivery_address)} /> : undefined}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
             <View style={{ flex: 1 }}>
               <Text style={text.heading}>{order.customer.name}</Text>

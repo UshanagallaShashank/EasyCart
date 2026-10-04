@@ -12,6 +12,7 @@ export default function OwnerTabs() {
       <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: tabIcon('clipboard'), tabBarBadge: fresh > 0 ? fresh : undefined }} />
       <Tabs.Screen name="delivery" options={{ title: 'Delivery', tabBarIcon: tabIcon('truck') }} />
       <Tabs.Screen name="products" options={{ title: 'Products', tabBarIcon: tabIcon('box') }} />
+      <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: tabIcon('list') }} />
     </Tabs>
   );
 }

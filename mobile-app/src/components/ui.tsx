@@ -160,6 +160,20 @@ export function StatStrip({ items }: { items: { label: string; value: string }[]
   );
 }
 
+// One headline number with a soft coloured icon, like the website's dashboard stat cards.
+export function StatCard({ label, value, icon, fg, bg, hint }: { label: string; value: string; icon: IconName; fg: string; bg: string; hint?: string }) {
+  return (
+    <View style={[styles.card, styles.statCard]}>
+      <View style={styles.rowBetween}>
+        <Text style={[text.muted, { flex: 1 }]} numberOfLines={1}>{label}</Text>
+        <View style={[styles.statIcon, { backgroundColor: bg }]}><Icon name={icon} size={18} color={fg} /></View>
+      </View>
+      <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
+      {hint ? <Text style={[text.small, { color: colors.textFaint }]} numberOfLines={1}>{hint}</Text> : null}
+    </View>
+  );
+}
+
 // Big digit box for one-time codes.
 export function CodeInput({ length, value, onChange, label }: { length: number; value: string; onChange(v: string): void; label: string }) {
   return (
@@ -235,6 +249,9 @@ export const styles = StyleSheet.create({
   pillText: { fontSize: 13, fontWeight: '600', color: colors.textSoft },
   strip: { flexDirection: 'row', paddingHorizontal: 0, paddingVertical: space.md, gap: 0 },
   stripCell: { flex: 1, alignItems: 'center', gap: 2, paddingHorizontal: space.sm },
+  statCard: { flexGrow: 1, flexBasis: '46%', gap: 6, padding: space.lg },
+  statIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  statValue: { fontSize: 24, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'], letterSpacing: -0.5 },
   stripValue: { fontSize: 20, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
   code: { height: 60, borderRadius: radius.md, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.white, textAlign: 'center', fontSize: 28, fontWeight: '700', letterSpacing: 12, color: colors.text, fontFamily: 'monospace' }
 });

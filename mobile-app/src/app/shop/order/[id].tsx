@@ -61,7 +61,6 @@ export default function CustomerOrderScreen() {
           <View style={styles.address}>
             <Text style={text.label}>Delivering to</Text>
             <Text style={text.body}>{order.delivery_address}</Text>
-            {order.delivery_latitude != null && <Button small variant="ghost" icon="map" label="View pin on map" onPress={() => openMap({ latitude: order.delivery_latitude ?? null, longitude: order.delivery_longitude ?? null })} />}
           </View>
         </Card>
       )}
