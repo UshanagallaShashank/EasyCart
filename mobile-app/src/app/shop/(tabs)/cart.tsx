@@ -17,20 +17,48 @@ export default function CartScreen() {
 
   return (
     <Screen footer={<Button icon="arrow-right" label={`Checkout · ${price(subtotal)}`} onPress={() => router.push('/shop/checkout')} />}>
-      <Card title={`${count} ${count === 1 ? 'item' : 'items'}`}>
+      <Card title={`${count} ${count === 1 ? 'product' : 'products'} in cart`}>
         {lines.map((line) => (
           <View key={`${line.product_id}-${line.variant_label ?? ''}`} style={styles.line}>
-            <View style={styles.thumb}>{line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}</View>
-            <View style={{ flex: 1, gap: 2 }}>
-              <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
-              <Text style={text.small}>{line.variant_label ? `${line.variant_label} · ` : ''}{price(line.price)}</Text>
+            <Pressable
+              style={styles.productPressable}
+              onPress={() => router.push({ pathname: '/shop/product/[id]', params: { id: line.product_id, variant: line.variant_label ?? '' } })}
+            >
+              <View style={styles.thumb}>
+                {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}
+              </View>
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
+                {line.variant_label ? (
+                  <View style={styles.variantBadge}>
+                    <Text style={styles.variantBadgeText}>Option: {line.variant_label}</Text>
+                  </View>
+                ) : null}
+                <Text style={text.small}>{price(line.price)} each</Text>
+              </View>
+            </Pressable>
+
+            <View style={styles.rightCol}>
+              <View style={styles.topRight}>
+                <Text style={[text.heading, { fontVariant: ['tabular-nums'] }]}>{price(line.price * line.quantity)}</Text>
+                <Pressable
+                  onPress={() => setQuantity(line.product_id, line.variant_label, 0)}
+                  style={styles.deleteButton}
+                  accessibilityLabel="Remove item"
+                >
+                  <Icon name="trash-2" size={16} color={colors.danger} />
+                </Pressable>
+              </View>
               <View style={styles.stepper}>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less"><Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={15} color={line.quantity === 1 ? colors.danger : colors.text} /></Pressable>
+                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less">
+                  <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={14} color={line.quantity === 1 ? colors.danger : colors.text} />
+                </Pressable>
                 <Text style={styles.qty}>{line.quantity}</Text>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={line.quantity >= line.max} style={[styles.stepButton, line.quantity >= line.max && { opacity: 0.3 }]} accessibilityLabel="More"><Icon name="plus" size={15} color={colors.text} /></Pressable>
+                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={line.quantity >= line.max} style={[styles.stepButton, line.quantity >= line.max && { opacity: 0.3 }]} accessibilityLabel="More">
+                  <Icon name="plus" size={14} color={colors.text} />
+                </Pressable>
               </View>
             </View>
-            <Text style={[text.heading, { fontVariant: ['tabular-nums'] }]}>{price(line.price * line.quantity)}</Text>
           </View>
         ))}
         <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.md }}>
@@ -43,9 +71,15 @@ export default function CartScreen() {
 }
 
 const styles = StyleSheet.create({
-  line: { flexDirection: 'row', gap: space.md, alignItems: 'flex-start' },
-  thumb: { width: 60, height: 60, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
-  stepper: { flexDirection: 'row', alignItems: 'center', alignSelf: 'flex-start', marginTop: 4, borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: colors.white },
-  stepButton: { width: 34, height: 32, alignItems: 'center', justifyContent: 'center' },
-  qty: { minWidth: 22, textAlign: 'center', fontWeight: '700', color: colors.text }
+  line: { flexDirection: 'row', gap: space.sm, alignItems: 'center', justifyContent: 'space-between' },
+  productPressable: { flex: 1, flexDirection: 'row', gap: space.md, alignItems: 'center' },
+  thumb: { width: 56, height: 56, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
+  variantBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.sm, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },
+  variantBadgeText: { fontSize: 11, fontWeight: '700', color: colors.primaryDark },
+  rightCol: { alignItems: 'flex-end', gap: 6 },
+  topRight: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  deleteButton: { padding: 4, borderRadius: radius.sm, backgroundColor: colors.dangerSoft },
+  stepper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: colors.white },
+  stepButton: { width: 30, height: 28, alignItems: 'center', justifyContent: 'center' },
+  qty: { minWidth: 20, textAlign: 'center', fontWeight: '700', fontSize: 13, color: colors.text }
 });

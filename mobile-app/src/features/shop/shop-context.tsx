@@ -57,7 +57,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
       void setItem(SLUG_KEY, clean);
     },
     lines,
-    count: lines.reduce((sum, line) => sum + line.quantity, 0),
+    count: lines.length,
     subtotal: lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
     add: (line) => {
       const existing = lines.find((l) => same(l, line.product_id, line.variant_label));

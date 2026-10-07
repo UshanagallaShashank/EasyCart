@@ -6,7 +6,7 @@ import type { Product } from '@/features/products/types/product-types';
 
 export function useProductPurchase(product: Product) {
   const { addItem } = useCart();
-  const [variantLabel, setVariantLabel] = useState(() => product.variants.find((v) => v.stock > 0)?.label);
+  const [variantLabel, setVariantLabel] = useState(() => (product.variants.find((v) => v.stock > 0) ?? product.variants[0])?.label);
   const [quantity, setQuantity] = useState(1);
   const variant = product.variants.find((v) => v.label === variantLabel);
   const available = variant ? variant.stock : product.stock_quantity;
