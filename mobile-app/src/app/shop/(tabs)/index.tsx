@@ -15,6 +15,7 @@ import { useShop } from '@/features/shop/shop-context';
 import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
 import { ProductCard } from '@/features/shop/product-card';
 import { ApiError, errorMessage } from '@/lib/api';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { colors, radius, space } from '@/theme/theme';
 
 export default function ShopHome() {
@@ -26,6 +27,7 @@ export default function ShopHome() {
   const products = useProducts(slug, search.trim(), category);
   const { width } = useWindowDimensions();
   const { active: activeAddress } = useAddresses();
+  const insets = useSafeAreaInsets();
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -65,7 +67,7 @@ export default function ShopHome() {
   const range = activeAddress ? checkDeliveryRange(store.data, activeAddress.zip) : null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <Screen
         onRefresh={() => { void store.refetch(); void products.refetch(); }}
         refreshing={products.isRefetching}
