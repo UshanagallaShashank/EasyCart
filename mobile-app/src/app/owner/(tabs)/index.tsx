@@ -26,7 +26,7 @@ export default function OwnerOverview() {
 
   return (
     <Screen onRefresh={() => { void orders.refetch(); void products.refetch(); void customers.refetch(); }} refreshing={orders.isRefetching}>
-      <LinearGradient colors={['#38bdf8', '#0ea5e9', '#0284c7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
+      <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
         <Text style={styles.bannerHello}>{getGreeting()}, {user?.username}</Text>
         <Text style={styles.bannerTitle} numberOfLines={2}>{store.data?.name ?? 'Your store'} at a glance</Text>
         <View style={styles.chips}>
@@ -76,12 +76,12 @@ function Chip({ icon, label, onPress }: { icon: 'package' | 'shopping-bag' | 'tr
 }
 
 const styles = StyleSheet.create({
-  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.sm, overflow: 'hidden' },
-  bannerHello: { color: '#e0f2fe', fontSize: 13 },
-  bannerTitle: { color: colors.white, fontSize: 24, lineHeight: 29, fontWeight: '900', letterSpacing: -0.6 },
+  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.sm, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
+  bannerHello: { color: '#0284c7', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bannerTitle: { color: '#0f172a', fontSize: 24, lineHeight: 29, fontWeight: '900', letterSpacing: -0.6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.sm },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.2)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
-  chipText: { color: colors.white, fontSize: 12, fontWeight: '700' },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#bae6fd', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
+  chipText: { color: '#0284c7', fontSize: 12, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   allGood: { alignItems: 'center', gap: 6, paddingVertical: space.md },
   lowRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.warningSoft, borderRadius: radius.sm, paddingHorizontal: space.md, paddingVertical: 10 },

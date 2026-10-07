@@ -1,6 +1,6 @@
 // The shop: store banner, search, categories and products in a grid that adapts to the screen width.
 import { useState } from 'react';
-import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
@@ -50,17 +50,13 @@ export default function ShopHome() {
   return (
     <Screen onRefresh={() => { void store.refetch(); void products.refetch(); }} refreshing={products.isRefetching}>
       {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
-      <LinearGradient colors={['#6366f1', '#7c3aed', '#312e81']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-        <View style={styles.welcome}>
-          <Icon name="sparkles" size={13} color="#fde68a" />
-          <Text style={styles.welcomeText} numberOfLines={1}>Welcome to {store.data.name}</Text>
-        </View>
-        <Text style={styles.heroTitle}>Curated quality,{'\n'}delivered to you.</Text>
-        <Text style={styles.heroBody}>{store.data.promotion_banner_text || 'Fresh picks from your neighbourhood store, at your door.'}</Text>
-        <View style={styles.heroMeta}>
-          <Icon name="truck" size={14} color="#e0e7ff" />
-          <Text style={styles.heroMetaText}>Delivery {store.data.delivery_fee > 0 ? price(store.data.delivery_fee) : 'free'} · Cash on delivery</Text>
-        </View>
+      <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+        <Text style={styles.heroTitle}>Fresh picks,{'\n'}delivered to your door.</Text>
+        <Text style={styles.heroBody}>Fresh products from your neighbourhood store.</Text>
+        <Pressable style={styles.shopNowBtn}>
+          <Text style={styles.shopNowText}>Shop now</Text>
+          <Icon name="arrow-right" size={14} color="#ffffff" />
+        </Pressable>
       </LinearGradient>
 
       <View style={styles.features}>
@@ -104,13 +100,11 @@ const FEATURES: { icon: IconName; title: string; text: string; fg: string; bg: s
 ];
 
 const styles = StyleSheet.create({
-  hero: { borderRadius: radius.xl, padding: space.xl, gap: space.md, overflow: 'hidden' },
-  welcome: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', maxWidth: '100%', backgroundColor: 'rgba(255,255,255,0.16)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.25)', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 5 },
-  welcomeText: { color: colors.white, fontSize: 12, fontWeight: '600', flexShrink: 1 },
-  heroTitle: { color: colors.white, fontSize: 28, lineHeight: 33, fontWeight: '900', letterSpacing: -0.8 },
-  heroBody: { color: '#e0e7ff', fontSize: 14, lineHeight: 20 },
-  heroMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(15,23,42,0.25)', borderRadius: radius.pill, paddingHorizontal: 12, paddingVertical: 6 },
-  heroMetaText: { color: '#e0e7ff', fontSize: 12, fontWeight: '600' },
+  hero: { borderRadius: radius.lg, padding: space.md, gap: 8, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
+  heroTitle: { color: '#0f172a', fontSize: 20, lineHeight: 24, fontWeight: '800', letterSpacing: -0.5 },
+  heroBody: { color: '#334155', fontSize: 13, lineHeight: 17 },
+  shopNowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#0284c7', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 7, marginTop: 2 },
+  shopNowText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
   features: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
   feature: { flexGrow: 1, flexBasis: '45%', flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: '#e8edf3', padding: space.md },
   featureIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
