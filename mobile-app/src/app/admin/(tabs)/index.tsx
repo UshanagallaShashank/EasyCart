@@ -28,7 +28,7 @@ export default function AdminOverview() {
 
   return (
     <Screen onRefresh={() => { void stats.refetch(); void tenants.refetch(); void riders.refetch(); }} refreshing={stats.isRefetching}>
-      <LinearGradient colors={['#38bdf8', '#0ea5e9', '#0284c7']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
+      <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
         <Text style={styles.hello}>{greeting()}, {user?.username}</Text>
         <Text style={styles.bannerTitle}>Platform at a glance</Text>
       </LinearGradient>
@@ -65,9 +65,9 @@ function Action({ icon, one, many, idle, count, done, href }: { icon: IconName; 
 }
 
 const styles = StyleSheet.create({
-  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.xs, overflow: 'hidden' },
-  hello: { color: '#e0f2fe', fontSize: 13 },
-  bannerTitle: { color: colors.white, fontSize: 24, fontWeight: '900', letterSpacing: -0.6 },
+  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.xs, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
+  hello: { color: '#0284c7', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bannerTitle: { color: '#0f172a', fontSize: 24, fontWeight: '900', letterSpacing: -0.6 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   action: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
   actionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }
