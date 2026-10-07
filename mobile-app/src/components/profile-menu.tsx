@@ -8,9 +8,11 @@ import { Avatar } from '@/components/ui';
 import { useSession } from '@/lib/session';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
+import { CustomerSupportModal } from '@/components/customer-support-modal';
 
 export function ProfileMenu() {
   const [open, setOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   const { user, signOut } = useSession();
   const { count } = useShop();
   const insets = useSafeAreaInsets();
@@ -70,21 +72,16 @@ export function ProfileMenu() {
               <Text style={styles.itemLabel}>My orders</Text>
             </Pressable>
 
-            {/* My cart */}
+            {/* Customer support */}
             <Pressable
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                router.navigate('/shop/cart');
+                setSupportOpen(true);
               }}
             >
-              <Icon name="shopping-cart" size={17} color="#64748b" />
-              <Text style={styles.itemLabel}>My cart</Text>
-              {count > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{count}</Text>
-                </View>
-              )}
+              <Icon name="headphones" size={17} color="#0284c7" />
+              <Text style={styles.itemLabel}>Customer support</Text>
             </Pressable>
 
             {/* Request to create a store */}
@@ -115,13 +112,14 @@ export function ProfileMenu() {
           </View>
         </Pressable>
       </Modal>
+
+      <CustomerSupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
     </>
   );
 }
 
 const styles = StyleSheet.create({
   trigger: {
-    marginRight: 16,
     borderRadius: 999,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',

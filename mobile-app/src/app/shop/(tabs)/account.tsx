@@ -9,12 +9,14 @@ import { useShop } from '@/features/shop/shop-context';
 import { useMyStores } from '@/features/shop/shop-api';
 import { useSession } from '@/lib/session';
 import { colors, space, text } from '@/theme/theme';
+import { CustomerSupportModal } from '@/components/customer-support-modal';
 
 export default function AccountScreen() {
   const { user, signOut } = useSession();
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
   const [code, setCode] = useState('');
+  const [supportOpen, setSupportOpen] = useState(false);
 
   function open(next: string) {
     setSlug(next);
@@ -42,6 +44,15 @@ export default function AccountScreen() {
         <Icon name="chevron-right" size={18} color={colors.textFaint} />
       </Pressable>
 
+      <Pressable onPress={() => setSupportOpen(true)} style={{ flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: 20, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg }}>
+        <View style={{ width: 40, height: 40, borderRadius: 13, backgroundColor: '#e0f2fe', alignItems: 'center', justifyContent: 'center' }}><Icon name="headphones" size={18} color="#0284c7" /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={text.heading}>Customer support</Text>
+          <Text style={text.small}>Helpline, live assistance & FAQs</Text>
+        </View>
+        <Icon name="chevron-right" size={18} color={colors.textFaint} />
+      </Pressable>
+
       <Card title="Shops" icon="shopping-bag">
         <Text style={text.small}>Open now: <Text style={{ fontWeight: '700', color: colors.text }}>{slug}</Text></Text>
         {(stores ?? []).filter((s) => s.slug !== slug).map((store) => (
@@ -57,6 +68,8 @@ export default function AccountScreen() {
       </Card>
 
       <Button variant="danger" icon="log-out" label="Log out" onPress={() => void signOut()} />
+
+      <CustomerSupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
     </Screen>
   );
 }

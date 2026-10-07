@@ -211,12 +211,13 @@ export function CodeInput({ length, value, onChange, label }: { length: number; 
 
 export function Avatar({ name, photoUrl, size = 48 }: { name: string; photoUrl?: string | null; size?: number }) {
   const src = fileUrl(photoUrl);
-  const initials = name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]?.toUpperCase()).join('') || '?';
   if (src) return <Image source={{ uri: src }} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.primaryTint }} />;
   return (
-    <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ color: colors.primaryDark, fontWeight: '700', fontSize: size / 3 }}>{initials}</Text>
-    </View>
+    <Image
+      source={require('../../assets/default-avatar.png')}
+      style={{ width: size, height: size, borderRadius: size / 2 }}
+      resizeMode="cover"
+    />
   );
 }
 

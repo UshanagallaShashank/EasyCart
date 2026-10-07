@@ -4,16 +4,17 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon, type IconName } from '@/components/icon';
-import { Button, EmptyState, Loading, Notice, PageHeader, Pills, Screen } from '@/components/ui';
+import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { BrandTitle } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
+import { NotificationButton } from '@/components/notification-button';
+import { FloatingCartBar } from '@/components/floating-cart-bar';
 import { useAddresses } from '@/features/shop/addresses';
 import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useShop } from '@/features/shop/shop-context';
 import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
 import { ProductCard } from '@/features/shop/product-card';
 import { ApiError, errorMessage } from '@/lib/api';
-import { price } from '@/lib/format';
 import { colors, radius, space } from '@/theme/theme';
 
 export default function ShopHome() {
@@ -62,98 +63,106 @@ export default function ShopHome() {
 
   const count = products.data?.length ?? 0;
   const range = activeAddress ? checkDeliveryRange(store.data, activeAddress.zip) : null;
+
   return (
-    <Screen
-      onRefresh={() => { void store.refetch(); void products.refetch(); }}
-      refreshing={products.isRefetching}
-      onScroll={Animated.event(
-        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-        { useNativeDriver: false }
-      )}
-      scrollEventThrottle={16}
-      stickyHeaderIndices={[1]}
-    >
-      {/* Index 0: Top Header Logo + Hero Banner + Features (fades out smoothly on scroll down) */}
-      <Animated.View style={{ opacity: heroOpacity, transform: [{ translateY: heroTranslateY }], gap: space.md }}>
-        <View style={styles.topHeader}>
-          <BrandTitle>{store.data?.name ?? 'Shop'}</BrandTitle>
-          <ProfileMenu />
-        </View>
-
-        {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
-        <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
-          <Text style={styles.heroTitle}>Fresh picks,{'\n'}delivered to your door.</Text>
-          <Text style={styles.heroBody}>Fresh products from your neighbourhood store.</Text>
-          <Pressable style={styles.shopNowBtn}>
-            <Text style={styles.shopNowText}>Shop now</Text>
-            <Icon name="arrow-right" size={14} color="#ffffff" />
-          </Pressable>
-        </LinearGradient>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuresScroll}>
-          {FEATURES.map((f) => (
-            <View key={f.title} style={styles.feature}>
-              <View style={[styles.featureIcon, { backgroundColor: f.bg }]}><Icon name={f.icon} size={15} color={f.fg} /></View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.featureTitle} numberOfLines={1}>{f.title}</Text>
-                <Text style={styles.featureText} numberOfLines={1}>{f.text}</Text>
-              </View>
-            </View>
-          ))}
-        </ScrollView>
-      </Animated.View>
-
-      {/* Index 1: Sticky Header with Search Bar + Categories */}
-      <View style={styles.stickyCategoriesContainer}>
-        <View style={styles.search}>
-          <Icon name="search" size={17} color={colors.textFaint} />
-          <TextInput value={search} onChangeText={setSearch} placeholder="Search products" placeholderTextColor={colors.textFaint} style={styles.searchInput} returnKeyType="search" />
-        </View>
-
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Categories</Text>
-          <Pressable onPress={() => setCategory('')}>
-            <Text style={styles.seeAllText}>See all →</Text>
-          </Pressable>
-        </View>
-
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
-          <Pressable
-            onPress={() => setCategory('')}
-            style={[styles.categoryPill, category === '' && styles.categoryPillActive]}
-          >
-            <Text style={[styles.categoryName, category === '' && styles.categoryNameActive]}>
-              All
-            </Text>
-          </Pressable>
-          {(categories.data ?? []).map((cat) => {
-            const isActive = category === cat.id;
-            return (
-              <Pressable
-                key={cat.id}
-                onPress={() => setCategory(isActive ? '' : cat.id)}
-                style={[styles.categoryPill, isActive && styles.categoryPillActive]}
-              >
-                <Text style={[styles.categoryName, isActive && styles.categoryNameActive]}>
-                  {cat.name}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* Index 2: Products Grid */}
-      <View style={{ marginTop: space.xs }}>
-        {products.isLoading ? <Loading /> : count === 0 ? (
-          <EmptyState icon="search" message={search ? `No products match "${search}".` : 'This shop has no products yet.'} />
-        ) : (
-          <View style={styles.grid}>
-            {products.data!.map((product) => <ProductCard key={product.id} product={product} width={cardWidth} />)}
-          </View>
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <Screen
+        onRefresh={() => { void store.refetch(); void products.refetch(); }}
+        refreshing={products.isRefetching}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
         )}
-      </View>
-    </Screen>
+        scrollEventThrottle={16}
+        stickyHeaderIndices={[1]}
+      >
+        {/* Index 0: Top Header Logo + Hero Banner + Features (fades out smoothly on scroll down) */}
+        <Animated.View style={{ opacity: heroOpacity, transform: [{ translateY: heroTranslateY }], gap: space.md }}>
+          <View style={styles.topHeader}>
+            <BrandTitle>{store.data?.name ?? 'Shop'}</BrandTitle>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+              <NotificationButton />
+              <ProfileMenu />
+            </View>
+          </View>
+
+          {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
+          <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+            <Text style={styles.heroTitle}>Fresh picks,{'\n'}delivered to your door.</Text>
+            <Text style={styles.heroBody}>Fresh products from your neighbourhood store.</Text>
+            <Pressable style={styles.shopNowBtn}>
+              <Text style={styles.shopNowText}>Shop now</Text>
+              <Icon name="arrow-right" size={14} color="#ffffff" />
+            </Pressable>
+          </LinearGradient>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuresScroll}>
+            {FEATURES.map((f) => (
+              <View key={f.title} style={styles.feature}>
+                <View style={[styles.featureIcon, { backgroundColor: f.bg }]}><Icon name={f.icon} size={15} color={f.fg} /></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.featureTitle} numberOfLines={1}>{f.title}</Text>
+                  <Text style={styles.featureText} numberOfLines={1}>{f.text}</Text>
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        </Animated.View>
+
+        {/* Index 1: Sticky Header with Search Bar + Categories */}
+        <View style={styles.stickyCategoriesContainer}>
+          <View style={styles.search}>
+            <Icon name="search" size={17} color={colors.textFaint} />
+            <TextInput value={search} onChangeText={setSearch} placeholder="Search products" placeholderTextColor={colors.textFaint} style={styles.searchInput} returnKeyType="search" />
+          </View>
+
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Categories</Text>
+            <Pressable onPress={() => setCategory('')}>
+              <Text style={styles.seeAllText}>See all →</Text>
+            </Pressable>
+          </View>
+
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
+            <Pressable
+              onPress={() => setCategory('')}
+              style={[styles.categoryPill, category === '' && styles.categoryPillActive]}
+            >
+              <Text style={[styles.categoryName, category === '' && styles.categoryNameActive]}>
+                All
+              </Text>
+            </Pressable>
+            {(categories.data ?? []).map((cat) => {
+              const isActive = category === cat.id;
+              return (
+                <Pressable
+                  key={cat.id}
+                  onPress={() => setCategory(isActive ? '' : cat.id)}
+                  style={[styles.categoryPill, isActive && styles.categoryPillActive]}
+                >
+                  <Text style={[styles.categoryName, isActive && styles.categoryNameActive]}>
+                    {cat.name}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Index 2: Products Grid */}
+        <View style={{ marginTop: space.xs }}>
+          {products.isLoading ? <Loading /> : count === 0 ? (
+            <EmptyState icon="search" message={search ? `No products match "${search}".` : 'This shop has no products yet.'} />
+          ) : (
+            <View style={styles.grid}>
+              {products.data!.map((product) => <ProductCard key={product.id} product={product} width={cardWidth} />)}
+            </View>
+          )}
+        </View>
+      </Screen>
+
+      <FloatingCartBar />
+    </View>
   );
 }
 
