@@ -13,6 +13,7 @@ export default function ShopLayout() {
           <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
           <Stack.Screen name="addresses" options={{ title: 'Delivery addresses' }} />
           <Stack.Screen name="order/[id]" options={{ title: 'Order' }} />
+          <Stack.Screen name="store-request" options={{ title: 'Request a store' }} />
         </Stack>
       </ShopProvider>
     </RoleGate>
