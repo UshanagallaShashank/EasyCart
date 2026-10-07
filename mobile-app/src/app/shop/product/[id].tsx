@@ -1,5 +1,5 @@
 // One product: photos, size/colour, stock, quantity and add to cart.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
@@ -13,13 +13,33 @@ import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 
 export default function ProductScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const { slug, add } = useShop();
+  const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
+  const { slug, add, lines, setQuantity: updateCartQuantity } = useShop();
   const toast = useToast();
   const { data: product, isLoading } = useProduct(slug, id);
-  const [variantLabel, setVariantLabel] = useState<string | undefined>();
+  const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
   const [quantity, setQuantity] = useState(1);
   const [photo, setPhoto] = useState(0);
+
+  useEffect(() => {
+    if (product && product.variants.length > 0 && !variantLabel) {
+      const selected = queryVariant ? product.variants.find((v) => v.label === queryVariant) : undefined;
+      const defaultVariant = selected ?? product.variants.find((v) => v.stock > 0) ?? product.variants[0];
+      if (defaultVariant) {
+        setVariantLabel(defaultVariant.label);
+      }
+    }
+  }, [product, variantLabel, queryVariant]);
+
+  const existingCartLine = lines.find(
+    (l) => l.product_id === product?.id && (l.variant_label ?? '') === (variantLabel ?? '')
+  );
+
+  useEffect(() => {
+    if (existingCartLine) {
+      setQuantity(existingCartLine.quantity);
+    }
+  }, [existingCartLine?.quantity, variantLabel]);
 
   if (isLoading) return <Loading />;
   if (!product) return <Screen><EmptyState message="This product is no longer available." /></Screen>;
@@ -36,14 +56,19 @@ export default function ProductScreen() {
       ? { label: `Only ${stock} left`, fg: colors.warning, bg: colors.warningSoft, border: '#fde68a', dot: '#f59e0b' }
       : { label: 'In Stock', fg: colors.success, bg: colors.successSoft, border: '#a7f3d0', dot: '#10b981' };
 
-  function addToCart() {
-    add({ product_id: product!.id, variant_label: variant?.label, name: product!.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
-    toast(`${product!.name} added to cart`, 'success');
-    router.back();
+  function handleCartAction() {
+    if (!product) return;
+    if (existingCartLine) {
+      updateCartQuantity(product.id, variant?.label, quantity);
+      toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} cart updated`, 'success');
+    } else {
+      add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
+      toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} added to cart`, 'success');
+    }
   }
 
   return (
-    <Screen footer={<Button variant="dark" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : `Add to cart · ${price(unitPrice * quantity)}`} onPress={addToCart} disabled={needsVariant || stock <= 0} />}>
+    <Screen footer={<Button variant="dark" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : existingCartLine ? `Update cart · ${price(unitPrice * quantity)}` : `Add to cart · ${price(unitPrice * quantity)}`} onPress={handleCartAction} disabled={needsVariant || stock <= 0} />}>
       <Stack.Screen options={{ title: product.name }} />
       <View style={styles.photo}>
         {images[photo] ? <Image source={{ uri: images[photo] }} style={{ width: '100%', height: '100%' }} resizeMode="cover" /> : <Icon name="image" size={40} color={colors.textFaint} />}
