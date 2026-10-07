@@ -10,15 +10,34 @@ export type { IconName } from './icon';
 import type { IconName } from './icon';
 
 // Scrollable page with pull-to-refresh and comfortable phone margins (wider screens get a centred column).
-export function Screen({ children, onRefresh, refreshing = false, footer }: { children: ReactNode; onRefresh?(): void; refreshing?: boolean; footer?: ReactNode }) {
+export function Screen({
+  children,
+  onRefresh,
+  refreshing = false,
+  footer,
+  onScroll,
+  scrollEventThrottle,
+  stickyHeaderIndices
+}: {
+  children: ReactNode;
+  onRefresh?(): void;
+  refreshing?: boolean;
+  footer?: ReactNode;
+  onScroll?: any;
+  scrollEventThrottle?: number;
+  stickyHeaderIndices?: number[];
+}) {
   return (
     <View style={styles.screen}>
       <ScrollView
         contentContainerStyle={styles.screenContent}
         keyboardShouldPersistTaps="handled"
+        onScroll={onScroll}
+        scrollEventThrottle={scrollEventThrottle}
+        stickyHeaderIndices={stickyHeaderIndices}
         refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} /> : undefined}
       >
-        <View style={styles.column}>{children}</View>
+        {stickyHeaderIndices ? children : <View style={styles.column}>{children}</View>}
       </ScrollView>
       {footer && <View style={styles.footer}><View style={styles.column}>{footer}</View></View>}
     </View>

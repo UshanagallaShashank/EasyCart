@@ -37,7 +37,7 @@ export default function ShopTabs() {
         name="index"
         options={{
           title: 'Shop',
-          headerTitle: () => <BrandTitle>{store.data?.name ?? 'Shop'}</BrandTitle>
+          headerShown: false
         }}
       />
       <Tabs.Screen
