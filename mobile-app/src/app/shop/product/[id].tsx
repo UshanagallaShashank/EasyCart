@@ -11,6 +11,7 @@ import { useProduct } from '@/features/shop/shop-api';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
+import { FloatingCartBar } from '@/components/floating-cart-bar';
 
 export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();

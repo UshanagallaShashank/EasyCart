@@ -1,7 +1,7 @@
 // The website's icon set (Lucide) under short names, so every screen draws the same icons as the web app.
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import {
-  ArrowLeft, ArrowRight, Award, Ban, Bike, Box, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleArrowRight, CircleCheck, CircleX, Clipboard,
+  ArrowLeft, ArrowRight, Award, Ban, Bell, Bike, Box, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleArrowRight, CircleCheck, CircleX, Clipboard,
   Clock, CloudUpload, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
   MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
   ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, Upload, User, Users, WifiOff, X, Zap,
@@ -15,6 +15,7 @@ const ICONS = {
   'arrow-right': ArrowRight,
   'arrow-right-circle': CircleArrowRight,
   award: Award,
+  bell: Bell,
   bike: Bike,
   box: Box,
   camera: Camera,

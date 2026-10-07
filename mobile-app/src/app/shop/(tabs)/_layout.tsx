@@ -1,7 +1,8 @@
-import { Pressable } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { BrandTitle, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
+import { NotificationButton } from '@/components/notification-button';
 import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
 import { useStore } from '@/features/shop/shop-api';
@@ -20,6 +21,15 @@ function HeaderBack() {
   );
 }
 
+function HeaderRightActions() {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: 16 }}>
+      <NotificationButton />
+      <ProfileMenu />
+    </View>
+  );
+}
+
 export default function ShopTabs() {
   const tabOptions = useTabOptions();
   const { slug } = useShop();
@@ -30,7 +40,7 @@ export default function ShopTabs() {
       screenOptions={{
         ...tabOptions,
         tabBarStyle: { display: 'none' },
-        headerRight: () => <ProfileMenu />
+        headerRight: () => <HeaderRightActions />
       }}
     >
       <Tabs.Screen

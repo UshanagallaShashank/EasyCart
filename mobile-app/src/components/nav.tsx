@@ -20,12 +20,12 @@ export const stackOptions = {
   headerBackButtonDisplayMode: 'minimal' as const
 };
 
-// Logo + page name, like the website's top bar.
+// Logo + page name, matching specs: Logo 30px, Brand text 20px, slim header height 48px.
 export function BrandTitle({ children }: { children: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-      <Image source={require('../../assets/logo-mark.png')} style={{ width: 34, height: 34 }} resizeMode="contain" />
-      <Text style={{ fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.3 }} numberOfLines={1}>{children}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 48 }}>
+      <Image source={require('../../assets/logo-mark.png')} style={{ width: 30, height: 30 }} resizeMode="contain" />
+      <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.4 }} numberOfLines={1}>{children}</Text>
     </View>
   );
 }
@@ -38,7 +38,7 @@ export function useTabOptions() {
     ...stackOptions,
     headerTitleAlign: 'left' as const,
     headerTitle: ({ children }: { children: string }) => <BrandTitle>{children}</BrandTitle>,
-    headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
+    headerStyle: { backgroundColor: colors.card, height: 48, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
     tabBarActiveTintColor: colors.primary,
     tabBarInactiveTintColor: colors.textFaint,
     tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border, height: 64 + bottom, paddingTop: 6, paddingBottom: bottom },
