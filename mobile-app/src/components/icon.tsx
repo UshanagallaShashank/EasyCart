@@ -1,10 +1,10 @@
 // The website's icon set (Lucide) under short names, so every screen draws the same icons as the web app.
 import type { ColorValue, StyleProp, ViewStyle } from 'react-native';
 import {
-  ArrowLeft, ArrowRight, Award, Ban, Bike, Box, Camera, Check, ChevronLeft, ChevronRight, CircleAlert, CircleArrowRight, CircleCheck, CircleX, Clipboard,
-  Clock, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
+  ArrowLeft, ArrowRight, Award, Ban, Bike, Box, Camera, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, CircleArrowRight, CircleCheck, CircleX, Clipboard,
+  Clock, CloudUpload, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
   MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
-  ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, User, Users, WifiOff, X, Zap,
+  ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, Upload, User, Users, WifiOff, X, Zap,
   Headphones, LayoutGrid, Pencil, Settings, Sparkles, Tags, Ticket, Wallet, type LucideIcon
 } from 'lucide-react-native';
 
@@ -21,6 +21,7 @@ const ICONS = {
   check: Check,
   'check-circle': CircleCheck,
   'check-square': SquareCheck,
+  'chevron-down': ChevronDown,
   'chevron-left': ChevronLeft,
   'chevron-right': ChevronRight,
   clipboard: Clipboard,
@@ -72,6 +73,8 @@ const ICONS = {
   ticket: Ticket,
   'trash-2': Trash2,
   truck: Truck,
+  upload: Upload,
+  'upload-cloud': CloudUpload,
   user: User,
   users: Users,
   wallet: Wallet,
