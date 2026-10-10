@@ -4,6 +4,8 @@ import { AppError } from '../../../platform/shared/app-error.js';
 import { validate_store_settings_input } from '../store-schemas.js';
 import { find_store_by_tenant_id, find_store_by_slug, find_published_stores, save_store, update_store } from '../repositories/store-repository.js';
 import { distance_km } from '../../../platform/shared/distance.js';
+import { find_all_store_stars } from '../../ratings/rating-repository.js';
+import { summarize_store_ratings } from '../../ratings/rating-math.js';
 import { find_tenant_by_id, find_all_tenants } from '../../tenants/repositories/tenant-repository.js';
 import { upload_store_asset_to_supabase } from './store-storage-service.js';
 import { read_request_details } from './store-request-document-service.js';
@@ -70,7 +72,8 @@ export async function set_store_published(tenant_id, is_published) {
 
 // Live shops around a point on the map, nearest first. Shops that have not pinned their location are left out.
 export async function list_nearby_stores(lat, lng, limit = 30) {
-  const [stores, tenants] = await Promise.all([find_published_stores(), find_all_tenants()]);
+  const [stores, tenants, star_rows] = await Promise.all([find_published_stores(), find_all_tenants(), find_all_store_stars()]);
+  const ratings = summarize_store_ratings(star_rows);
   const suspended = new Set(tenants.filter((tenant) => tenant.status === 'suspended').map((tenant) => tenant.id));
 
   return stores
@@ -90,7 +93,9 @@ export async function list_nearby_stores(lat, lng, limit = 30) {
         latitude: Number(store.latitude),
         longitude: Number(store.longitude),
         distance_km: Math.round(distance * 10) / 10,
-        delivers_to_you: distance <= radius
+        delivers_to_you: distance <= radius,
+        rating_average: ratings.get(store.tenant_id)?.average ?? null,
+        rating_count: ratings.get(store.tenant_id)?.count ?? 0
       };
     })
     .sort((a, b) => a.distance_km - b.distance_km)

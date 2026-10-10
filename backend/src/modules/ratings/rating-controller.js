@@ -1,4 +1,4 @@
-import { get_order_rating, rate_order, get_ratings_summary } from './rating-service.js';
+import { get_order_rating, rate_order, get_ratings_summary, get_store_reviews, get_product_ratings } from './rating-service.js';
 
 export async function handle_get_my_order_rating(req, res, next) {
   try {
@@ -22,6 +22,22 @@ export async function handle_ratings_summary(req, res, next) {
   try {
     const summary = await get_ratings_summary(req.tenant_id);
     res.status(200).json({ summary });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_store_reviews(req, res, next) {
+  try {
+    res.status(200).json({ reviews: await get_store_reviews(req.tenant_id) });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function handle_product_ratings(req, res, next) {
+  try {
+    res.status(200).json({ ratings: await get_product_ratings(req.tenant_id) });
   } catch (err) {
     next(err);
   }
