@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EasyCart Animation Suggestions</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    @keyframes floatLevitate {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+    @keyframes auraBreathe {
+      0%, 100% { opacity: 0.35; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(1.08); }
+    }
+    @keyframes entranceBloom {
+      0% { opacity: 0; transform: translateY(20px) scale(0.96); filter: blur(6px); }
+      100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0px); }
+    }
+    @keyframes subtleOrbit {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .anim-float { animation: floatLevitate 5s ease-in-out infinite; }
+    .anim-aura { animation: auraBreathe 4s ease-in-out infinite; }
+    .anim-entrance { animation: entranceBloom 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .anim-orbit { animation: subtleOrbit 120s linear infinite; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 p-4 md:p-8 font-sans min-h-screen">
+  <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Header & Animation Controls -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded bg-sky-500 text-white font-bold text-xs uppercase">Motion Design</span>
+          <h1 class="text-xl font-bold text-white">Best Animation Concepts for EasyCart</h1>
+        </div>
+        <p class="text-xs text-slate-400 mt-1">Click the modes below to preview how the card and icon animate live.</p>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex flex-wrap gap-1.5 bg-slate-800 p-1.5 rounded-xl border border-slate-700 text-xs">
+        <button onclick="setAnim('float')" id="btn-float" class="px-3 py-1.5 rounded-lg bg-sky-600 text-white font-semibold transition-all">
+          1. Cloud Levitation
+        </button>
+        <button onclick="setAnim('entrance')" id="btn-entrance" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">
+          2. Entrance Bloom
+        </button>
+        <button onclick="setAnim('aura')" id="btn-aura" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">
+          3. Aura Breathe
+        </button>
+        <button onclick="setAnim('all')" id="btn-all" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all">
+          4. Full Symphony ✨
+        </button>
+      </div>
+    </div>
+
+    <!-- Live Preview Stage with Sky Background -->
+    <div class="relative overflow-hidden rounded-3xl min-h-[480px] flex items-center justify-center p-6 bg-gradient-to-b from-[#BEE3FD] via-[#D8ECFE] to-[#EFF7FE] border border-sky-200 shadow-2xl">
+      <!-- Ambient Orbit Arcs -->
+      <div id="orbit-ring" class="absolute w-[600px] h-[600px] rounded-full border border-white/60 pointer-events-none anim-orbit"></div>
+      <div class="absolute w-[850px] h-[850px] rounded-full border border-white/40 pointer-events-none"></div>
+
+      <!-- Aura Glow Layer -->
+      <div id="aura-glow" class="hidden absolute w-80 h-80 rounded-full bg-gradient-to-tr from-sky-400/40 via-blue-400/30 to-orange-300/30 blur-3xl pointer-events-none anim-aura"></div>
+
+      <!-- The Floating Card -->
+      <div id="preview-card" class="relative w-full max-w-[370px] bg-white/85 backdrop-blur-xl border border-white/90 shadow-[0_20px_60px_-15px_rgba(2,132,199,0.18)] rounded-3xl p-6 sm:p-7 flex flex-col gap-3.5 anim-float transition-all">
+        
+        <!-- Header & Logo Badge -->
+        <div class="flex flex-col items-center text-center space-y-2 mb-1">
+          <div id="logo-badge" class="w-28 h-22 rounded-2xl bg-white/95 border border-sky-100/90 shadow-md shadow-sky-500/10 flex items-center justify-center p-2 mb-0.5 overflow-hidden transition-transform duration-300 hover:scale-105">
+            <img src="/easy-cart-icon.png" alt="Easy Cart" class="w-full h-full object-contain">
+          </div>
+          <h2 class="text-lg font-bold tracking-tight text-slate-900">Sign in to Easy Cart</h2>
+          <p class="text-xs text-slate-500">Your effortless shopping companion.</p>
+        </div>
+
+        <!-- Inputs Preview -->
+        <div class="space-y-2.5">
+          <input type="email" placeholder="Email address" value="owner@boutique.com" class="w-full text-xs h-10 px-3.5 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all">
+          <input type="password" value="••••••••••••" class="w-full text-xs h-10 px-3.5 rounded-xl bg-slate-100/80 border border-transparent focus:border-sky-500 focus:bg-white focus:outline-none transition-all">
+        </div>
+
+        <!-- Button with micro-interaction hover -->
+        <button class="w-full h-10 rounded-xl bg-[#0077C8] hover:bg-[#0064AA] active:scale-[0.98] text-white text-xs font-semibold shadow-md shadow-sky-500/25 transition-all flex items-center justify-center gap-1.5 hover:shadow-lg hover:shadow-sky-500/35">
+          Sign In
+        </button>
+
+        <p class="text-center text-xs text-slate-500 pt-1">
+          Don't have a store? <span class="text-sky-600 font-semibold cursor-pointer">Create one</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Animation Concept Breakdown Cards -->
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+      <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+        <span class="font-bold text-sky-400 block text-sm">1. Cloud Levitation</span>
+        <p class="text-slate-300">Smooth 5s perpetual vertical wave (-8px float). Gives weightless buoyancy to match the sky background.</p>
+      </div>
+      <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+        <span class="font-bold text-emerald-400 block text-sm">2. Entrance Bloom</span>
+        <p class="text-slate-300">Fast 700ms spring release on load. Starts slightly scaled down (0.96) with soft blur and blooms into sharp focus.</p>
+      </div>
+      <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+        <span class="font-bold text-amber-400 block text-sm">3. Aura Breathing</span>
+        <p class="text-slate-300">Slow 4s luminous radial glow pulsating behind the card, blending brand cyan and warm orange undertones.</p>
+      </div>
+      <div class="bg-slate-800/80 p-3.5 rounded-xl border border-slate-700 space-y-1.5">
+        <span class="font-bold text-purple-400 block text-sm">4. The Full Symphony</span>
+        <p class="text-slate-300">Combines the Entrance Bloom on mount + Cloud Levitation + Aura Breathing + Hover button micro-lifts.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function setAnim(mode) {
+      const card = document.getElementById('preview-card');
+      const glow = document.getElementById('aura-glow');
+
+      // Reset button styles
+      ['float', 'entrance', 'aura', 'all'].forEach(m => {
+        document.getElementById('btn-' + m).className = 'px-3 py-1.5 rounded-lg text-slate-300 hover:text-white transition-all';
+      });
+      document.getElementById('btn-' + mode).className = 'px-3 py-1.5 rounded-lg bg-sky-600 text-white font-semibold transition-all';
+
+      // Reset classes
+      card.classList.remove('anim-float', 'anim-entrance');
+      glow.classList.add('hidden');
+
+      if (mode === 'float') {
+        card.classList.add('anim-float');
+      } else if (mode === 'entrance') {
+        // Trigger re-render of entrance
+        void card.offsetWidth;
+        card.classList.add('anim-entrance');
+      } else if (mode === 'aura') {
+        glow.classList.remove('hidden');
+      } else if (mode === 'all') {
+        glow.classList.remove('hidden');
+        void card.offsetWidth;
+        card.classList.add('anim-entrance');
+        setTimeout(() => {
+          card.classList.add('anim-float');
+        }, 700);
+      }
+    }
+  </script>
+</body>
+</html>
