@@ -14,8 +14,7 @@ import type { Product } from '@/types/catalog';
 import { useShop, type CartLine } from './shop-context';
 import { useProductRatings, type StarSummary } from './shop-api';
 import { useToast } from '@/components/toast';
-import { useT } from '@/lib/i18n';
-import { useContent } from '@/lib/content-translation';
+import { useT, useContent } from '@/lib/i18n';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;

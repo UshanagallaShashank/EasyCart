@@ -11,7 +11,6 @@ import { SessionProvider } from '@/lib/session';
 import { ToastProvider } from '@/components/toast';
 import { ConfirmProvider } from '@/components/confirm';
 import { LanguageProvider } from '@/lib/i18n';
-import { ContentTranslationProvider } from '@/lib/content-translation';
 import { stackOptions } from '@/components/nav';
 
 void SplashScreen.preventAutoHideAsync();
@@ -27,7 +26,6 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <LanguageProvider>
-      <ContentTranslationProvider>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <ToastProvider>
@@ -38,7 +36,6 @@ export default function RootLayout() {
           </ToastProvider>
         </SessionProvider>
       </QueryClientProvider>
-      </ContentTranslationProvider>
       </LanguageProvider>
     </SafeAreaProvider>
   );

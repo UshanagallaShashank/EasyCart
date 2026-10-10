@@ -23,6 +23,11 @@ export function setApiToken(next: string | null) {
   token = next;
 }
 
+// True once someone is signed in (used to pick which translation route to call).
+export function hasApiToken() {
+  return token !== null;
+}
+
 export function setUnauthorizedHandler(handler: () => void) {
   onUnauthorized = handler;
 }
