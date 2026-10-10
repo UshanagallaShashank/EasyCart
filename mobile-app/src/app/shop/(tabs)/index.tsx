@@ -7,6 +7,7 @@ import { Icon, type IconName } from '@/components/icon';
 import { PressScale, Skeleton } from '@/components/motion';
 import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { ShopSwitcher } from '@/features/shop/shop-switcher';
+import { useT } from '@/lib/i18n';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
@@ -56,6 +57,7 @@ export default function ShopHome() {
   const { slug, favourites, recent, location } = useShop();
   const { data: pastOrders } = useMyOrders();
   const cardActions = useCardActions();
+  const t = useT();
   const [search, setSearch] = useState('');
   const [view, setView] = useState<View_>('all');
   const [category, setCategory] = useState('');
@@ -93,7 +95,7 @@ export default function ShopHome() {
       <Screen>
         <EmptyState
           icon={offline ? 'wifi-off' : 'shopping-bag'}
-          message={offline ? errorMessage(store.error) : `We could not open the shop "${slug}". It may be offline, or the shop code is wrong.`}
+          message={offline ? errorMessage(store.error) : t('We could not open the shop "{slug}". It may be offline, or the shop code is wrong.', { slug })}
           action={offline ? <Button label="Try again" variant="outline" onPress={() => void store.refetch()} /> : <Button label="Choose another shop" variant="outline" onPress={() => router.push('/shop/account')} />}
         />
       </Screen>
@@ -144,8 +146,8 @@ export default function ShopHome() {
           <PressScale style={styles.addressRow} onPress={() => router.push('/shop/addresses')} accessibilityRole="button" accessibilityLabel="Change delivery address">
             <View style={styles.addressIcon}><Icon name="map-pin" size={16} color={accents.green.fg} /></View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.addressLabel}>Deliver to</Text>
-              <Text style={styles.addressText} numberOfLines={1}>{activeAddress ? `${activeAddress.label} · ${activeAddress.zip}` : 'Add a delivery address'}</Text>
+              <Text style={styles.addressLabel}>{t('Deliver to')}</Text>
+              <Text style={styles.addressText} numberOfLines={1}>{activeAddress ? `${activeAddress.label} · ${activeAddress.zip}` : t('Add a delivery address')}</Text>
             </View>
             <Icon name="chevron-right" size={18} color={colors.textFaint} />
           </PressScale>
@@ -154,18 +156,18 @@ export default function ShopHome() {
           <View style={styles.hero}>
             {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : null}
             <LinearGradient
-              colors={banner ? ['rgba(3,105,161,0.92)', 'rgba(2,132,199,0.78)'] : ['#0369a1', '#0284c7', '#0ea5e9']}
+              colors={banner ? ['rgba(3,105,161,0.95)', 'rgba(2,132,199,0.88)'] : ['#0369a1', '#0284c7', '#0ea5e9']}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
             />
             <View style={styles.heroCircleBig} />
             <View style={styles.heroCircleSmall} />
-            <Text style={styles.heroTag}>{activeAddress ? `Delivering to ${activeAddress.zip}` : 'Local store, delivered'}</Text>
-            <Text style={styles.heroTitle} numberOfLines={2}>Welcome to{'\n'}{store.data.name}</Text>
-            <Text style={styles.heroBody} numberOfLines={2}>{store.data.address ? `${store.data.address}. Delivered to your door.` : 'Fresh products from your neighbourhood store.'}</Text>
+            <Text style={styles.heroTag}>{activeAddress ? t('Delivering to {zip}', { zip: activeAddress.zip }) : t('Local store, delivered')}</Text>
+            <Text style={styles.heroTitle} numberOfLines={2}>{t('Welcome to')}{'\n'}{store.data.name}</Text>
+            <Text style={styles.heroBody} numberOfLines={2}>{store.data.address ? t('{address}. Delivered to your door.', { address: store.data.address }) : t('Fresh products from your neighbourhood store.')}</Text>
             <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">
-              <Text style={styles.shopNowText}>Shop now</Text>
+              <Text style={styles.shopNowText}>{t('Shop now')}</Text>
               <Icon name="arrow-right" size={14} color={colors.primaryDark} />
             </PressScale>
           </View>
@@ -183,18 +185,18 @@ export default function ShopHome() {
         <View style={styles.stickyCategoriesContainer}>
           <View style={styles.search}>
             <Icon name="search" size={16} color={colors.textFaint} />
-            <TextInput value={search} onChangeText={setSearch} placeholder="Search products" placeholderTextColor={colors.textFaint} style={styles.searchInput} returnKeyType="search" />
+            <TextInput value={search} onChangeText={setSearch} placeholder={t('Search products')} placeholderTextColor={colors.textFaint} style={styles.searchInput} returnKeyType="search" />
           </View>
 
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Categories</Text>
+            <Text style={styles.sectionTitle}>{t('Categories')}</Text>
             <Pressable onPress={() => setCategory('')}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><Text style={styles.seeAllText}>See all</Text><Icon name="chevron-right" size={16} color={colors.primary} /></View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><Text style={styles.seeAllText}>{t('See all')}</Text><Icon name="chevron-right" size={16} color={colors.primary} /></View>
             </Pressable>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
-            <CategoryTile label="All" icon="grid" accent={accents.sky} active={category === ''} onPress={() => setCategory('')} />
+            <CategoryTile label={t('All')} icon="grid" accent={accents.sky} active={category === ''} onPress={() => setCategory('')} />
             {(categories.data ?? []).map((cat, index) => (
               <CategoryTile
                 key={cat.id}
@@ -212,25 +214,25 @@ export default function ShopHome() {
         <View style={{ marginTop: space.xs, gap: space.md }}>
           {showRails && (
             <>
-              <ProductRail actions={cardActions} title="Order again" subtitle="From your past orders" icon="refresh-cw" accent={accents.sky} products={orderAgain} />
-              <ProductRail actions={cardActions} title="Your favourites" icon="heart" accent={accents.rose} products={favouriteProducts} />
-              <ProductRail actions={cardActions} title="Almost gone" subtitle="Grab them before they sell out" icon="zap" accent={accents.orange} products={almostGone} />
-              <ProductRail actions={cardActions} title="Recently viewed" icon="clock" accent={accents.violet} products={recentlyViewed} />
+              <ProductRail actions={cardActions} title={t('Order again')} subtitle={t('From your past orders')} icon="refresh-cw" accent={accents.sky} products={orderAgain} />
+              <ProductRail actions={cardActions} title={t('Your favourites')} icon="heart" accent={accents.rose} products={favouriteProducts} />
+              <ProductRail actions={cardActions} title={t('Almost gone')} subtitle={t('Grab them before they sell out')} icon="zap" accent={accents.orange} products={almostGone} />
+              <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} />
             </>
           )}
-          {showRails && <Text style={styles.sectionTitle}>All products</Text>}
+          {showRails && <Text style={styles.sectionTitle}>{t('All products')}</Text>}
           <Pills<View_>
             value={view}
             onChange={setView}
             options={[
-              { value: 'all', label: 'All' },
-              { value: 'favourites', label: 'Favourites', count: favourites.length },
-              { value: 'low', label: 'Price: low to high' },
-              { value: 'high', label: 'Price: high to low' }
+              { value: 'all', label: t('All') },
+              { value: 'favourites', label: t('Favourites'), count: favourites.length },
+              { value: 'low', label: t('Price: low to high') },
+              { value: 'high', label: t('Price: high to low') }
             ]}
           />
           {products.isLoading ? <ProductGridSkeleton width={cardWidth} /> : count === 0 ? (
-            <EmptyState icon={view === 'favourites' ? 'heart' : 'search'} message={view === 'favourites' ? 'Tap the heart on a product to save it here.' : search ? `No products match "${search}".` : 'This shop has no products yet.'} />
+            <EmptyState icon={view === 'favourites' ? 'heart' : 'search'} message={view === 'favourites' ? t('Tap the heart on a product to save it here.') : search ? t('No products match "{search}".', { search }) : t('This shop has no products yet.')} />
           ) : (
             <View style={styles.grid}>
               {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} line={cardActions.lineFor(product.id)} onAdd={cardActions.onAdd} onSetQuantity={cardActions.onSetQuantity} />)}

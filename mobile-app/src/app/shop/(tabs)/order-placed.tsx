@@ -11,11 +11,13 @@ import { Button, Card, InfoRow } from '@/components/ui';
 import { useMyOrder } from '@/features/shop/shop-api';
 import { price, shortId } from '@/lib/format';
 import { colors, space, text } from '@/theme/theme';
+import { useT } from '@/lib/i18n';
 
 function OrderPlaced() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: order } = useMyOrder(id);
   const pop = useSharedValue(0);
+  const t = useT();
 
   useEffect(() => {
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
@@ -35,7 +37,7 @@ function OrderPlaced() {
         </Animated.View>
 
         <Animated.View entering={FadeInUp.delay(350).duration(300)} style={styles.texts}>
-          <Text style={styles.title}>Order placed!</Text>
+          <Text style={styles.title}>{t('Order placed!')}</Text>
           <Text style={styles.subtitle}>{delivery ? 'The store will confirm it, then a rider brings it to you.' : 'The store will confirm it and tell you when it is ready to collect.'}</Text>
         </Animated.View>
 
@@ -43,15 +45,15 @@ function OrderPlaced() {
           <Animated.View entering={FadeInUp.delay(500).duration(300)} style={{ width: '100%' }}>
             <Card>
               <InfoRow label="Order" value={shortId(order.id)} />
-              <InfoRow label={itemCount === 1 ? '1 item' : `${itemCount} items`} value={price(order.total)} strong />
-              <Text style={text.small}>Pay in cash {delivery ? 'when it arrives' : 'when you collect it'}.</Text>
+              <InfoRow label={itemCount === 1 ? t('1 item') : t('{n} items', { n: itemCount })} value={price(order.total)} strong />
+              <Text style={text.small}>{delivery ? t('Pay in cash when it arrives.') : t('Pay in cash when you collect it.')}</Text>
             </Card>
           </Animated.View>
         )}
 
         <Animated.View entering={FadeInUp.delay(650).duration(300)} style={styles.buttons}>
-          <Button icon="navigation" label="Track my order" onPress={() => router.replace(`/shop/order/${id}`)} />
-          <Button variant="outline" label="Keep shopping" onPress={() => router.navigate('/shop')} />
+          <Button icon="navigation" label={t('Track my order')} onPress={() => router.replace(`/shop/order/${id}`)} />
+          <Button variant="outline" label={t('Keep shopping')} onPress={() => router.navigate('/shop')} />
         </Animated.View>
       </View>
     </View>

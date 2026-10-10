@@ -15,6 +15,7 @@ import { useStore } from '@/features/shop/shop-api';
 import { api, errorMessage } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
+import { useT } from '@/lib/i18n';
 import type { Order } from '@/types/order';
 
 type Method = 'delivery' | 'pickup';
@@ -23,6 +24,7 @@ export default function CheckoutScreen() {
   const { slug, lines, subtotal, clear, location } = useShop();
   const { data: store } = useStore(slug);
   const toast = useToast();
+  const t = useT();
   const [method, setMethod] = useState<Method>('delivery');
   const { active: address } = useAddresses();
   const [coupon, setCoupon] = useState('');
@@ -67,16 +69,16 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <Screen footer={<Button icon="check" label={`Place order · ${price(total)}`} onPress={() => placeOrder.mutate()} loading={placeOrder.isPending} disabled={!ready} />}>
-      <Card title="How do you want it?">
+    <Screen footer={<Button icon="check" label={`${t('Place order')} · ${price(total)}`} onPress={() => placeOrder.mutate()} loading={placeOrder.isPending} disabled={!ready} />}>
+      <Card title={t('How do you want it?')}>
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
             <PressScale key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && styles.methodActive]} accessibilityState={{ selected: method === option }}>
               <View style={[styles.methodIcon, method === option && { backgroundColor: colors.primaryTint }]}>
                 <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? colors.primary : colors.textMuted} />
               </View>
-              <Text style={[styles.methodText, method === option && { color: colors.primaryDark }]}>{option === 'delivery' ? 'Delivery' : 'Pick up'}</Text>
-              <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : 'Free') : 'Free'}</Text>
+              <Text style={[styles.methodText, method === option && { color: colors.primaryDark }]}>{option === 'delivery' ? t('Delivery') : t('Pick up')}</Text>
+              <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : t('Free')) : t('Free')}</Text>
             </PressScale>
           ))}
         </View>
@@ -90,12 +92,12 @@ export default function CheckoutScreen() {
                   <Text style={text.muted}>{addressLocation(address)}</Text>
                   <Text style={text.small}>Ph: {address.phone}</Text>
                 </View>
-                <Button small variant="outline" label="Change" onPress={() => router.push('/shop/addresses')} />
+                <Button small variant="outline" label={t('Change')} onPress={() => router.push('/shop/addresses')} />
               </View>
             ) : (
               <>
                 <Notice icon="map-pin">Add a delivery address to continue.</Notice>
-                <Button icon="plus" label="Add delivery address" onPress={() => router.push('/shop/addresses')} />
+                <Button icon="plus" label={t('Add delivery address')} onPress={() => router.push('/shop/addresses')} />
               </>
             )}
             {range && <Notice tone={range.isEligible ? 'success' : 'warning'} icon={range.isEligible ? 'truck' : 'alert-triangle'}>{range.message}</Notice>}
@@ -105,26 +107,26 @@ export default function CheckoutScreen() {
         )}
       </Card>
 
-      <Card title="Coupon">
+      <Card title={t('Coupon')}>
         <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'flex-end' }}>
           <View style={{ flex: 1 }}><Field label="Code" value={coupon} onChangeText={setCoupon} autoCapitalize="characters" placeholder="e.g. WELCOME10" /></View>
-          <Button small variant="outline" label="Apply" onPress={() => applyCoupon.mutate()} loading={applyCoupon.isPending} disabled={!coupon.trim()} />
+          <Button small variant="outline" label={t('Apply')} onPress={() => applyCoupon.mutate()} loading={applyCoupon.isPending} disabled={!coupon.trim()} />
         </View>
         {discount && (
           <View style={styles.applied}>
             <Icon name="check-circle" size={18} color={colors.success} />
-            <Text style={[text.muted, { flex: 1, color: colors.success, fontWeight: '700' }]}>You save {price(discount.amount)} with {discount.code}</Text>
-            <Button small variant="ghost" label="Remove" onPress={() => { setDiscount(null); setCoupon(''); }} />
+            <Text style={[text.muted, { flex: 1, color: colors.success, fontWeight: '700' }]}>{t('You save {amount} with {code}', { amount: price(discount.amount), code: discount.code })}</Text>
+            <Button small variant="ghost" label={t('Remove')} onPress={() => { setDiscount(null); setCoupon(''); }} />
           </View>
         )}
       </Card>
 
-      <Card title="Bill">
-        <InfoRow label="Items" value={price(subtotal)} />
-        {discount && <InfoRow label={`Coupon ${discount.code}`} value={`-${price(discount.amount)}`} tone="success" />}
-        {method === 'delivery' && <InfoRow label="Delivery fee" value={price(fee)} />}
-        <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}><InfoRow label="Total" value={price(total)} strong /></View>
-        <Text style={text.small}>Pay in cash when you receive your order.</Text>
+      <Card title={t('Bill')}>
+        <InfoRow label={t('Items')} value={price(subtotal)} />
+        {discount && <InfoRow label={t('Coupon {code}', { code: discount.code })} value={`-${price(discount.amount)}`} tone="success" />}
+        {method === 'delivery' && <InfoRow label={t('Delivery fee')} value={price(fee)} />}
+        <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}><InfoRow label={t('Total')} value={price(total)} strong /></View>
+        <Text style={text.small}>{t('Pay in cash when you receive your order.')}</Text>
       </Card>
     </Screen>
   );

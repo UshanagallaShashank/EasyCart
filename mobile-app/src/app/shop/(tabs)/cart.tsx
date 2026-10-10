@@ -10,10 +10,12 @@ import { Button, Card, EmptyState, InfoRow, Screen } from '@/components/ui';
 import { useShop, type CartLine } from '@/features/shop/shop-context';
 import { price } from '@/lib/format';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { useT } from '@/lib/i18n';
 
 function CartRow({ line }: { line: CartLine }) {
   const { setQuantity } = useShop();
   const atMax = line.quantity >= line.max;
+  const t = useT();
   // A row added while this tab is hidden would play its entry animation unseen and can stay invisible, so only animate when the tab is showing.
   const showing = useIsFocused();
 
@@ -53,7 +55,7 @@ function CartRow({ line }: { line: CartLine }) {
             <Icon name="plus" size={16} color={colors.primaryDark} />
           </PressScale>
         </View>
-        {atMax ? <Text style={styles.maxHint}>Max available</Text> : null}
+        {atMax ? <Text style={styles.maxHint}>{t('Max available')}</Text> : null}
       </View>
     </Animated.View>
   );
@@ -62,16 +64,17 @@ function CartRow({ line }: { line: CartLine }) {
 export default function CartScreen() {
   const { lines, subtotal, count, clear } = useShop();
   const askConfirm = useConfirm();
+  const t = useT();
 
   if (lines.length === 0) {
-    return <Screen><EmptyState icon="shopping-cart" message="Your cart is empty. Add something you like and it will show up here." action={<Button label="Browse products" variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
+    return <Screen><EmptyState icon="shopping-cart" message={t('Your cart is empty. Add something you like and it will show up here.')} action={<Button label={t('Browse products')} variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
   }
 
   return (
-    <Screen footer={<Button icon="arrow-right" label={`Checkout · ${price(subtotal)}`} onPress={() => router.push('/shop/checkout')} />}>
+    <Screen footer={<Button icon="arrow-right" label={`${t('Checkout')} · ${price(subtotal)}`} onPress={() => router.push('/shop/checkout')} />}>
       <View style={styles.headerRow}>
-        <Text style={text.heading}>{count} {count === 1 ? 'product' : 'products'} in your cart</Text>
-        <Pressable onPress={async () => { if (await askConfirm({ title: 'Clear your cart?', message: `All ${count} ${count === 1 ? 'product' : 'products'} will be removed.`, confirmLabel: 'Clear cart', cancelLabel: 'Keep items', icon: 'trash-2' })) clear(); }} hitSlop={10} accessibilityRole="button"><Text style={styles.clear}>Clear cart</Text></Pressable>
+        <Text style={text.heading}>{t(count === 1 ? '{count} product in your cart' : '{count} products in your cart', { count })}</Text>
+        <Pressable onPress={async () => { if (await askConfirm({ title: t('Clear your cart?'), message: t(count === 1 ? 'All {count} product will be removed.' : 'All {count} products will be removed.', { count }), confirmLabel: t('Clear cart'), cancelLabel: t('Keep items'), icon: 'trash-2' })) clear(); }} hitSlop={10} accessibilityRole="button"><Text style={styles.clear}>{t('Clear cart')}</Text></Pressable>
       </View>
 
       <View style={{ gap: space.md }}>
@@ -79,8 +82,8 @@ export default function CartScreen() {
       </View>
 
       <Card>
-        <InfoRow label="Subtotal" value={price(subtotal)} strong />
-        <Text style={text.small}>Delivery fee and coupon are added at checkout.</Text>
+        <InfoRow label={t('Subtotal')} value={price(subtotal)} strong />
+        <Text style={text.small}>{t('Delivery fee and coupon are added at checkout.')}</Text>
       </Card>
     </Screen>
   );

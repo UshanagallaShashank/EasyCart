@@ -6,11 +6,13 @@ import type { Order } from '@/types/order';
 import { useShop } from './shop-context';
 import { useProducts } from './shop-api';
 import { productStock } from './product-card';
+import { useT } from '@/lib/i18n';
 
 export function useReorder() {
   const { slug, add } = useShop();
   const products = useProducts(slug, '', '');
   const toast = useToast();
+  const t = useT();
 
   return function reorder(order: Order) {
     const catalog = products.data ?? [];
@@ -47,7 +49,7 @@ export function useReorder() {
       toast('Those items are not available in this shop right now', 'error');
       return;
     }
-    toast(skipped > 0 ? `${added} added, ${skipped} not available` : 'Items added to your cart', 'success');
+    toast(skipped > 0 ? t('{added} added, {skipped} not available', { added, skipped }) : t('Items added to your cart'), 'success');
     router.push('/shop/cart');
   };
 }

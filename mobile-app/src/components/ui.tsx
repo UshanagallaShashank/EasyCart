@@ -8,6 +8,7 @@ import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/th
 import { fileUrl } from '@/lib/api';
 import { useScreen } from '@/lib/responsive';
 import { useKeyboardTop } from '@/lib/keyboard';
+import { useT } from '@/lib/i18n';
 import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
@@ -199,13 +200,14 @@ export function Loading() {
 
 // Row of choices that filter a list, like the website's filter pills.
 export function Pills<T extends string>({ options, value, onChange }: { options: { value: T; label: string; count?: number }[]; value: T; onChange(v: T): void }) {
+  const t = useT();
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
       {options.map((option) => {
         const active = option.value === value;
         return (
           <Pressable key={option.value} onPress={() => onChange(option.value)} style={[styles.pill, active && styles.pillActive]} accessibilityRole="tab" accessibilityState={{ selected: active }}>
-            <Text style={[styles.pillText, active && { color: colors.white }]}>{option.label}{option.count !== undefined ? `  ${option.count}` : ''}</Text>
+            <Text style={[styles.pillText, active && { color: colors.white }]}>{t(option.label)}{option.count !== undefined ? `  ${option.count}` : ''}</Text>
           </Pressable>
         );
       })}

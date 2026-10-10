@@ -7,6 +7,7 @@ import { Icon } from '@/components/icon';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
+import { useT } from '@/lib/i18n';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { RateOrderCard } from '@/features/shop/rate-order-card';
@@ -32,6 +33,7 @@ export default function CustomerOrderScreen() {
   const toast = useToast();
   const reorder = useReorder();
   const askConfirm = useConfirm();
+  const t = useT();
 
   const cancel = useMutation({
     mutationFn: () => api(`/my-orders/${id}/cancel`, { method: 'PATCH' }),
@@ -47,14 +49,14 @@ export default function CustomerOrderScreen() {
 
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
-      <Stack.Screen options={{ title: `Order ${shortId(order.id)}` }} />
+      <Stack.Screen options={{ title: t('Order {id}', { id: shortId(order.id) }) }} />
       <View style={styles.hero}>
         <View style={styles.heroIcon}>
           <Icon name={order.status === 'cancelled' ? 'x-circle' : order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={26} color={colors.primary} />
         </View>
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={styles.heroId}>{shortId(order.id)}</Text>
-          <Text style={text.small}>Placed {date(order.created_at)}</Text>
+          <Text style={text.small}>{t('Placed {date}', { date: date(order.created_at) })}</Text>
           <Badge tone={status.tone} label={status.label} />
         </View>
         <Text style={styles.heroTotal}>{price(order.total)}</Text>
@@ -107,16 +109,16 @@ export default function CustomerOrderScreen() {
 
       <Card title="Summary">
         <InfoRow label="Items" value={price(subtotal)} />
-        {order.discount_amount > 0 && <InfoRow label={`Coupon ${order.coupon_code}`} value={`-${price(order.discount_amount)}`} tone="success" />}
+        {order.discount_amount > 0 && <InfoRow label={t('Coupon {code}', { code: order.coupon_code ?? '' })} value={`-${price(order.discount_amount)}`} tone="success" />}
         {order.delivery_fee > 0 && <InfoRow label="Delivery fee" value={price(order.delivery_fee)} />}
         <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}><InfoRow label="Total" value={price(order.total)} strong /></View>
-        <Text style={text.small}>Cash on delivery · {order.payment_status === 'paid' ? 'Paid' : order.status === 'cancelled' ? 'Nothing to pay' : 'Pay when you receive it'}</Text>
+        <Text style={text.small}>{t(order.payment_status === 'paid' ? 'Cash on delivery · Paid' : order.status === 'cancelled' ? 'Cash on delivery · Nothing to pay' : 'Cash on delivery · Pay when you receive it')}</Text>
       </Card>
 
       {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} />}
 
       {order.status !== 'cancelled' && <Button variant="outline" icon="refresh-cw" label="Order again" onPress={() => reorder(order)} />}
-      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: 'The store has not started on it yet, so you can still cancel.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep my order', icon: 'x-circle' })) cancel.mutate(); }} />}
+      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={async () => { if (await askConfirm({ title: t('Cancel this order?'), message: 'The store has not started on it yet, so you can still cancel.', confirmLabel: t('Yes, cancel order'), cancelLabel: t('Keep my order'), icon: 'x-circle' })) cancel.mutate(); }} />}
     </Screen>
   );
 }

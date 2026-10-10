@@ -8,6 +8,7 @@ import { PressScale } from '@/components/motion';
 import { Text } from '@/components/text';
 import { fileUrl } from '@/lib/api';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { useT } from '@/lib/i18n';
 import { useMyStores } from './shop-api';
 import { useShop } from './shop-context';
 
@@ -15,6 +16,7 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
   const [open, setOpen] = useState(false);
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
+  const t = useT();
 
   function choose(next: string) {
     setOpen(false);
@@ -64,12 +66,12 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
 
             <PressScale onPress={findNearby} style={styles.nearbyRow} accessibilityRole="button">
               <Icon name="map-pin" size={18} color={colors.white} />
-              <Text style={styles.nearbyText}>Find shops near me</Text>
+              <Text style={styles.nearbyText}>{t('Find shops near me')}</Text>
             </PressScale>
 
             <PressScale onPress={enterCode} style={styles.addRow} accessibilityRole="button">
               <Icon name="plus" size={18} color={colors.primary} />
-              <Text style={styles.addText}>Open another shop by its code</Text>
+              <Text style={styles.addText}>{t('Open a shop by its code')}</Text>
             </PressScale>
           </Animated.View>
         </Animated.View>

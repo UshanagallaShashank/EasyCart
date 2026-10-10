@@ -4,6 +4,7 @@ import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { useShop } from '@/features/shop/shop-context';
+import { useT } from '@/lib/i18n';
 
 function HeaderRightActions() {
   return (
@@ -28,21 +29,22 @@ const ACTIVE_FOR = {
 export default function ShopTabs() {
   const tabOptions = useTabOptions(ACTIVE_FOR);
   const { lines } = useShop();
+  const t = useT();
   const units = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
     <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
-      <Tabs.Screen name="index" options={{ title: 'Shop', headerShown: false, tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="cart" options={{ title: 'Cart', tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
-      <Tabs.Screen name="orders" options={{ title: 'My orders', tabBarLabel: 'Orders', tabBarIcon: tabIcon('clipboard') }} />
-      <Tabs.Screen name="account" options={{ title: 'Account', tabBarIcon: tabIcon('user') }} />
-      <Tabs.Screen name="product/[id]" options={hiddenPage('Product')} />
-      <Tabs.Screen name="checkout" options={hiddenPage('Checkout')} />
-      <Tabs.Screen name="nearby" options={hiddenPage('Shops near you')} />
-      <Tabs.Screen name="order/[id]" options={hiddenPage('Order')} />
-      <Tabs.Screen name="order-placed" options={{ title: 'Order placed', href: null, headerShown: false }} />
-      <Tabs.Screen name="addresses" options={hiddenPage('Delivery addresses')} />
-      <Tabs.Screen name="store-request" options={hiddenPage('Request a store')} />
+      <Tabs.Screen name="index" options={{ title: t('Shop'), headerShown: false, tabBarIcon: tabIcon('home') }} />
+      <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
+      <Tabs.Screen name="orders" options={{ title: t('My orders'), tabBarLabel: t('Orders'), tabBarIcon: tabIcon('clipboard') }} />
+      <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user') }} />
+      <Tabs.Screen name="product/[id]" options={hiddenPage(t('Product'))} />
+      <Tabs.Screen name="checkout" options={hiddenPage(t('Checkout'))} />
+      <Tabs.Screen name="nearby" options={hiddenPage(t('Shops near you'))} />
+      <Tabs.Screen name="order/[id]" options={hiddenPage(t('Order'))} />
+      <Tabs.Screen name="order-placed" options={{ title: t('Order placed'), href: null, headerShown: false }} />
+      <Tabs.Screen name="addresses" options={hiddenPage(t('Delivery addresses'))} />
+      <Tabs.Screen name="store-request" options={hiddenPage(t('Request a store'))} />
     </Tabs>
   );
 }

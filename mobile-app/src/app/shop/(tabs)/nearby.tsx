@@ -13,9 +13,11 @@ import { errorMessage, fileUrl } from '@/lib/api';
 import { readCurrentPosition, type Coords } from '@/lib/location';
 import { price } from '@/lib/format';
 import { accents, colors, radius, space, text } from '@/theme/theme';
+import { useT } from '@/lib/i18n';
 
 export default function NearbyShops() {
   const { slug, setSlug, location, setLocation } = useShop();
+  const t = useT();
   const [locating, setLocating] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   // Where the map starts. It only moves when we find the phone again, never while a pin is being dragged.
@@ -50,11 +52,11 @@ export default function NearbyShops() {
 
   return (
     <Screen onRefresh={() => void shops.refetch()} refreshing={shops.isRefetching}>
-      <Card title="Where are you?" icon="map-pin">
+      <Card title={t('Where are you?')} icon="map-pin">
         <Text style={text.muted}>
           {location ? (location.source === 'gps' ? 'Using your current location.' : 'Using the spot you picked on the map.') : 'Share your location to see shops close to you.'}
         </Text>
-        <Button small variant="outline" icon="navigation" label={locating ? 'Finding you…' : 'Use my current location'} onPress={() => void findMe()} loading={locating} />
+        <Button small variant="outline" icon="navigation" label={locating ? 'Finding you…' : t('Use my current location')} onPress={() => void findMe()} loading={locating} />
         {problem ? <Notice tone="warning" icon="alert-triangle">{problem}</Notice> : null}
       </Card>
 
@@ -67,7 +69,7 @@ export default function NearbyShops() {
 
       {location ? (
         <>
-          <Text style={styles.heading}>Shops near you</Text>
+          <Text style={styles.heading}>{t('Shops near you')}</Text>
           {shops.isLoading ? <Loading /> : list.length === 0 ? (
             <EmptyState icon="store" message="No shops near this spot yet. Try moving the pin, or ask your local shop to join." />
           ) : list.map((shop) => {
@@ -84,9 +86,9 @@ export default function NearbyShops() {
                   <View style={styles.chips}>
                     <View style={[styles.chip, { backgroundColor: accents.sky.bg }]}><Text style={[styles.chipText, { color: accents.sky.fg }]}>{shop.distance_km} km</Text></View>
                     <View style={[styles.chip, { backgroundColor: shop.delivers_to_you ? accents.green.bg : accents.amber.bg }]}>
-                      <Text style={[styles.chipText, { color: shop.delivers_to_you ? accents.green.fg : accents.amber.fg }]}>{shop.delivers_to_you ? 'Delivers to you' : 'Pickup only'}</Text>
+                      <Text style={[styles.chipText, { color: shop.delivers_to_you ? accents.green.fg : accents.amber.fg }]}>{shop.delivers_to_you ? t('Delivers to you') : t('Pickup only')}</Text>
                     </View>
-                    {shop.delivers_to_you ? <Text style={text.small}>{shop.delivery_fee > 0 ? `Delivery ${price(shop.delivery_fee)}` : 'Free delivery'}</Text> : null}
+                    {shop.delivers_to_you ? <Text style={text.small}>{shop.delivery_fee > 0 ? t('Delivery {fee}', { fee: price(shop.delivery_fee) }) : t('Free delivery')}</Text> : null}
                   </View>
                 </View>
                 <Icon name="chevron-right" size={18} color={colors.textFaint} />

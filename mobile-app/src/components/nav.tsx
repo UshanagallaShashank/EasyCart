@@ -25,9 +25,9 @@ export const stackOptions = {
 // Logo + page name, matching specs: Logo 30px, Brand text 20px, slim header height 48px.
 export function BrandTitle({ children }: { children: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 48 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, flexShrink: 1 }}>
       <Image source={require('../../assets/logo-mark.png')} style={{ width: 30, height: 30 }} resizeMode="contain" />
-      <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.4 }} numberOfLines={1}>{children}</Text>
+      <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.4, flexShrink: 1 }} numberOfLines={1}>{children}</Text>
     </View>
   );
 }
@@ -37,6 +37,8 @@ export function useTabOptions(activeFor?: ActiveFor) {
   return {
     ...stackOptions,
     headerTitleAlign: 'left' as const,
+    // The title may take about half the bar; a longer name is cut with "…" so the bell and profile buttons stay clear.
+    headerTitleContainerStyle: { maxWidth: '50%' as const },
     headerTitle: ({ children }: { children: string }) => <BrandTitle>{children}</BrandTitle>,
     // No fixed height here: the header grows by itself to clear the status bar and notch.
     headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },

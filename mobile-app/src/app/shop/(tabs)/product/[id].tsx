@@ -4,6 +4,7 @@ import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
+import { useT } from '@/lib/i18n';
 import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
@@ -20,6 +21,7 @@ export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
   const { slug, add, lines, subtotal, setQuantity: updateCartQuantity, markViewed } = useShop();
   const toast = useToast();
+  const t = useT();
   const { data: product, isLoading } = useProduct(slug, id);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
   const [quantity, setQuantity] = useState(1);
@@ -71,16 +73,16 @@ export default function ProductScreen() {
   const images = product.images.map((img) => fileUrl(img)).filter(Boolean) as string[];
 
   const stockLook = stock <= 0
-    ? { label: 'Out of stock', fg: colors.danger, bg: colors.dangerSoft, border: '#fecdd3', dot: colors.danger }
+    ? { label: t('Out of stock'), fg: colors.danger, bg: colors.dangerSoft, border: '#fecdd3', dot: colors.danger }
     : stock <= product.low_stock_threshold
-      ? { label: `Only ${stock} left`, fg: colors.warning, bg: colors.warningSoft, border: '#fde68a', dot: '#f59e0b' }
-      : { label: 'In Stock', fg: colors.success, bg: colors.successSoft, border: '#a7f3d0', dot: '#10b981' };
+      ? { label: t('Only {n} left', { n: stock }), fg: colors.warning, bg: colors.warningSoft, border: '#fde68a', dot: '#f59e0b' }
+      : { label: t('In Stock'), fg: colors.success, bg: colors.successSoft, border: '#a7f3d0', dot: '#10b981' };
 
   function handleAddToCart() {
     if (!product) return;
     if (__DEV__) console.log(`[cart] tapped add: ${product.name}, option=${variant?.label ?? 'none'}, stock=${stock}, quantity=${quantity}`);
     add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
-    toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} added to cart`, 'success');
+    toast(t('{name} added to cart', { name: `${product.name}${variant?.label ? ` (${variant.label})` : ''}` }), 'success');
   }
 
   // Once the item is in the cart, the stepper changes the cart straight away.
@@ -106,11 +108,11 @@ export default function ProductScreen() {
         </PressScale>
       </View>
       <View style={{ flex: 1 }}>
-        <Button icon="shopping-cart" label={`View cart · ${price(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
+        <Button icon="shopping-cart" label={`${t('View cart')} · ${price(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
       </View>
     </View>
   ) : (
-    <Button variant="primary" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : `Add to cart · ${price(unitPrice * quantity)}`} onPress={handleAddToCart} disabled={needsVariant || stock <= 0} />
+    <Button variant="primary" icon="shopping-bag" label={needsVariant ? t('Choose an option') : stock <= 0 ? t('Out of stock') : `${t('Add to cart')} · ${price(unitPrice * quantity)}`} onPress={handleAddToCart} disabled={needsVariant || stock <= 0} />
   );
 
   return (
@@ -248,7 +250,7 @@ export default function ProductScreen() {
 
       {product.variants.length > 0 && (
         <View style={{ gap: space.xs }}>
-          <Text style={text.heading}>Choose an option</Text>
+          <Text style={text.heading}>{t('Choose an option')}</Text>
           <View style={styles.variants}>
             {product.variants.map((v) => {
               const active = v.label === variantLabel;
@@ -264,7 +266,7 @@ export default function ProductScreen() {
 
       {!needsVariant && stock > 0 && !existingCartLine && (
         <View style={styles.stepperRow}>
-          <Text style={text.heading}>Quantity</Text>
+          <Text style={text.heading}>{t('Quantity')}</Text>
           <View style={styles.stepper}>
             <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
             <Text style={styles.qty}>{quantity}</Text>

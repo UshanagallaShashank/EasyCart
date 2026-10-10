@@ -13,10 +13,13 @@ import { useMyOrders, useMyStores } from '@/features/shop/shop-api';
 import { useSession } from '@/lib/session';
 import { useConfirmedSignOut } from '@/components/confirm';
 import { accents, colors, radius, space, text } from '@/theme/theme';
+import { LanguagePicker } from '@/components/language-picker';
+import { useT } from '@/lib/i18n';
 
 export default function AccountScreen() {
   const { user } = useSession();
   const logout = useConfirmedSignOut();
+  const t = useT();
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
   const { data: orders } = useMyOrders();
@@ -44,14 +47,18 @@ export default function AccountScreen() {
         </LinearGradient>
       </FadeIn>
 
-      <MenuRow icon="clipboard" fg={accents.sky.fg} bg={accents.sky.bg} title="My orders" subtitle="Track, reorder and see what you saved" onPress={() => router.navigate('/shop/orders')} />
-      <MenuRow icon="map-pin" fg={accents.green.fg} bg={accents.green.bg} title="Delivery addresses" subtitle="Home, work and other places you order to" onPress={() => router.push('/shop/addresses')} />
-      <MenuRow icon="headphones" fg={accents.violet.fg} bg={accents.violet.bg} title="Customer support" subtitle="Helpline, live assistance & FAQs" onPress={() => setSupportOpen(true)} />
+      <MenuRow icon="clipboard" fg={accents.sky.fg} bg={accents.sky.bg} title={t('My orders')} subtitle="Track, reorder and see what you saved" onPress={() => router.navigate('/shop/orders')} />
+      <MenuRow icon="map-pin" fg={accents.green.fg} bg={accents.green.bg} title={t('Delivery addresses')} subtitle="Home, work and other places you order to" onPress={() => router.push('/shop/addresses')} />
+      <MenuRow icon="headphones" fg={accents.violet.fg} bg={accents.violet.bg} title={t('Customer support')} subtitle="Helpline, live assistance & FAQs" onPress={() => setSupportOpen(true)} />
 
-      <Card title="Shops" icon="shopping-bag">
+      <Card title={t('Language')} icon="sparkles">
+        <LanguagePicker />
+      </Card>
+
+      <Card title={t('Shops')} icon="shopping-bag">
         <View style={styles.openNow}>
           <Icon name="check-circle" size={16} color={colors.primary} />
-          <Text style={text.small}>Open now: <Text style={{ fontWeight: '700', color: colors.text }}>{slug}</Text></Text>
+          <Text style={text.small}>{t('Open now')}: <Text style={{ fontWeight: '700', color: colors.text }}>{slug}</Text></Text>
         </View>
         {(stores ?? []).filter((s) => s.slug !== slug).map((store) => (
           <Pressable key={store.slug} onPress={() => open(store.slug)} style={styles.shopRow}>
@@ -60,12 +67,12 @@ export default function AccountScreen() {
           </Pressable>
         ))}
         <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'flex-end' }}>
-          <View style={{ flex: 1 }}><Field label="Open a shop by its code" value={code} onChangeText={setCode} autoCapitalize="none" placeholder="e.g. green-leaf-market" /></View>
+          <View style={{ flex: 1 }}><Field label={t('Open a shop by its code')} value={code} onChangeText={setCode} autoCapitalize="none" placeholder="e.g. green-leaf-market" /></View>
           <Button small label="Open" onPress={() => open(code)} disabled={!code.trim()} />
         </View>
       </Card>
 
-      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
+      <Button variant="danger" icon="log-out" label={t('Log out')} onPress={() => void logout()} />
 
       <CustomerSupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
     </Screen>

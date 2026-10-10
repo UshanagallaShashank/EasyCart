@@ -12,6 +12,7 @@ import { colors, radius, shadow, space } from '@/theme/theme';
 import type { Product } from '@/types/catalog';
 import { useShop, type CartLine } from './shop-context';
 import { useToast } from '@/components/toast';
+import { useT } from '@/lib/i18n';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;
@@ -28,14 +29,15 @@ export interface CardActions {
 export function useCardActions(): CardActions {
   const { lines, add, setQuantity } = useShop();
   const toast = useToast();
+  const t = useT();
   // Only plain products (no options) can be added from the card, so only their lines matter here.
   const plainLines = useMemo(() => new Map(lines.filter((line) => !line.variant_label).map((line) => [line.product_id, line])), [lines]);
   const lineFor = useCallback((productId: string) => plainLines.get(productId), [plainLines]);
 
   const onAdd = useCallback((product: Product) => {
     add({ product_id: product.id, name: product.name, price: product.price, quantity: 1, image: fileUrl(product.images[0]), max: product.stock_quantity });
-    toast(`${product.name} added to cart`, 'success');
-  }, [add, toast]);
+    toast(t('{name} added to cart', { name: product.name }), 'success');
+  }, [add, toast, t]);
 
   const onSetQuantity = useCallback((productId: string, quantity: number) => setQuantity(productId, undefined, quantity), [setQuantity]);
 
@@ -43,6 +45,7 @@ export function useCardActions(): CardActions {
 }
 
 function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
+  const t = useT();
   const image = fileUrl(product.images[0]);
   const stock = productStock(product);
   const needsChoice = product.variants.length > 0;
@@ -63,19 +66,19 @@ function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity
           {image ? <Image source={{ uri: image }} style={styles.image} resizeMode="cover" /> : <Icon name="image" size={28} color={colors.textFaint} />}
           <View style={styles.heart}><FavouriteButton productId={product.id} size={30} /></View>
           {stock <= 0 ? (
-            <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><Text style={[styles.badgeText, { color: colors.white }]}>Sold out</Text></View>
+            <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><Text style={[styles.badgeText, { color: colors.white }]}>{t('Sold out')}</Text></View>
           ) : fewLeft ? (
-            <View style={[styles.badge, { backgroundColor: colors.warningSoft }]}><Text style={[styles.badgeText, { color: colors.warning }]}>Only {stock} left</Text></View>
+            <View style={[styles.badge, { backgroundColor: colors.warningSoft }]}><Text style={[styles.badgeText, { color: colors.warning }]}>{t('Only {n} left', { n: stock })}</Text></View>
           ) : null}
         </View>
 
         <View style={styles.body}>
           <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
-          <Text style={styles.meta} numberOfLines={1}>{needsChoice ? `${product.variants.length} ${product.variants.length === 1 ? 'option' : 'options'}` : ' '}</Text>
-          <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>From </Text> : null}{price(from)}</Text>
+          <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
+          <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
 
           {stock <= 0 ? (
-            <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>Sold out</Text></View>
+            <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
           ) : inCart ? (
             <View style={[styles.action, styles.stepper]}>
               <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity - 1)} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
@@ -88,7 +91,7 @@ function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity
             </View>
           ) : (
             <PressScale onPress={quickAdd} style={[styles.action, styles.add]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
-              <Text style={styles.addText}>ADD</Text>
+              <Text style={styles.addText}>{t('ADD')}</Text>
               <Icon name="plus" size={14} color={colors.primary} strokeWidth={3} />
             </PressScale>
           )}

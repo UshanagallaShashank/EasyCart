@@ -8,11 +8,13 @@ import { FadeIn, PressScale } from '@/components/motion';
 import { ORDER_STATUS, useMyOrders } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { date, price, shortId } from '@/lib/format';
+import { useT } from '@/lib/i18n';
 import { colors, radius, shadow, space, text, toneColors } from '@/theme/theme';
 
 export default function OrdersScreen() {
   const { data, isLoading, refetch, isRefetching } = useMyOrders();
   const reorder = useReorder();
+  const t = useT();
   const orders = [...(data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
 
   // Totals for the summary card. Cancelled orders don't count.
@@ -23,13 +25,13 @@ export default function OrdersScreen() {
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
       {isLoading ? <Loading /> : orders.length === 0 ? (
-        <EmptyState icon="package" message="You have not ordered anything yet." action={<Button label="Start shopping" variant="outline" onPress={() => router.navigate('/shop')} />} />
+        <EmptyState icon="package" message={t('You have not ordered anything yet.')} action={<Button label={t('Start shopping')} variant="outline" onPress={() => router.navigate('/shop')} />} />
       ) : (
         <>
           <StatStrip items={[
-            { label: 'Orders', value: String(counted.length) },
-            { label: 'Spent', value: price(totalSpent) },
-            { label: 'Saved', value: price(totalSaved) }
+            { label: t('Orders'), value: String(counted.length) },
+            { label: t('Spent'), value: price(totalSpent) },
+            { label: t('Saved'), value: price(totalSaved) }
           ]} />
           {orders.map((order, index) => {
             const status = ORDER_STATUS[order.status];
@@ -49,7 +51,7 @@ export default function OrdersScreen() {
                   <Text style={styles.total}>{price(order.total)}</Text>
                   <Icon name="chevron-right" size={18} color={colors.textFaint} />
                 </PressScale>
-                {order.status !== 'cancelled' && <Button label="Order again" icon="refresh-cw" variant="outline" small onPress={() => reorder(order)} />}
+                {order.status !== 'cancelled' && <Button label={t('Order again')} icon="refresh-cw" variant="outline" small onPress={() => reorder(order)} />}
               </FadeIn>
             );
           })}

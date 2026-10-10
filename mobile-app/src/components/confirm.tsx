@@ -7,6 +7,7 @@ import { Text } from './text';
 import { Icon, type IconName } from './icon';
 import { PressScale } from './motion';
 import { useSession } from '@/lib/session';
+import { useT } from '@/lib/i18n';
 import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
 
 export interface ConfirmOptions {
@@ -29,6 +30,7 @@ const DEFAULT_ICON: Record<NonNullable<ConfirmOptions['tone']>, IconName> = {
 };
 
 export function ConfirmProvider({ children }: { children: ReactNode }) {
+  const t = useT();
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const answer = useRef<((yes: boolean) => void) | null>(null);
 
@@ -64,7 +66,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               {options.message ? <Text style={styles.message}>{options.message}</Text> : null}
               <View style={styles.buttons}>
                 <PressScale onPress={() => close(false)} style={[styles.button, styles.cancel]} accessibilityRole="button">
-                  <Text style={styles.cancelText}>{options.cancelLabel ?? 'Not now'}</Text>
+                  <Text style={styles.cancelText}>{options.cancelLabel ?? t('Not now')}</Text>
                 </PressScale>
                 <PressScale onPress={() => close(true)} style={[styles.button, { backgroundColor: confirmBackground }]} accessibilityRole="button">
                   <Text style={styles.confirmText}>{options.confirmLabel ?? 'Yes'}</Text>
@@ -86,8 +88,9 @@ export function useConfirm() {
 export function useConfirmedSignOut() {
   const { signOut } = useSession();
   const confirm = useConfirm();
+  const t = useT();
   return async () => {
-    const yes = await confirm({ title: 'Log out?', message: 'You will need to sign in again to use the app.', confirmLabel: 'Log out', cancelLabel: 'Stay signed in', icon: 'log-out' });
+    const yes = await confirm({ title: t('Log out?'), message: t('You will need to sign in again to use the app.'), confirmLabel: t('Log out'), cancelLabel: t('Stay signed in'), icon: 'log-out' });
     if (yes) await signOut();
   };
 }
