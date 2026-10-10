@@ -10,7 +10,7 @@ const cart_item_schema = z.object({
 export const checkout_schema = z
   .object({
     items: z.array(cart_item_schema).min(1, 'Your cart is empty').max(50, 'A single order can have up to 50 different items'),
-    payment_method: z.enum(['cash_on_delivery']),
+    payment_method: z.enum(['cash_on_delivery', 'online']),
     fulfillment_method: z.enum(['pickup', 'delivery']).default('pickup'),
     delivery_address: z.string().trim().min(5, 'Please enter the full delivery address').max(300, 'Delivery address is too long').optional(),
     coupon_code: z.string().trim().min(1).optional()

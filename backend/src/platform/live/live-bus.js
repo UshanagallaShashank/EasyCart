@@ -33,11 +33,14 @@ function deliver_local(channels, message) {
 }
 
 // topic: what kind of thing changed ("order", "rider", "settlement"); id: which one.
-export function publish(channels, topic, id) {
+// patch (optional): a few harmless facts about the change, so screens can update at once without asking the server again.
+export function publish(channels, topic, id, patch = null) {
   const targets = [...new Set(channels.filter(Boolean))];
   if (targets.length === 0) return;
   try {
-    deliver_local(targets, { topic, id: id ?? null, at: Date.now() });
+    const message = { topic, id: id ?? null, at: Date.now() };
+    if (patch) message.patch = patch;
+    deliver_local(targets, message);
   } catch (err) {
     // A live message is a convenience; never let it break the request that caused it.
     console.warn('Live update failed:', err?.message || err);
@@ -51,10 +54,21 @@ export const channel = {
   admins: 'admins'
 };
 
+// The few order facts that every person who can see an order may also see. Never the delivery code, the address or the items.
+const PATCH_FIELDS = ['status', 'fulfillment_status', 'payment_status', 'rider_offer_status'];
+
+export function order_patch(order) {
+  const patch = {};
+  for (const field of PATCH_FIELDS) {
+    if (order[field] !== undefined) patch[field] = order[field];
+  }
+  return patch;
+}
+
 // Everyone who can see an order: its store, its customer, its rider (and the rider it just left), and admins.
 export function publish_order_change(order, previous_rider_id = null) {
   if (!order) return;
-  publish([channel.tenant(order.tenant_id), channel.customer(order.customer_id), channel.rider(order.rider_id), channel.rider(previous_rider_id), channel.admins], 'order', order.id);
+  publish([channel.tenant(order.tenant_id), channel.customer(order.customer_id), channel.rider(order.rider_id), channel.rider(previous_rider_id), channel.admins], 'order', order.id, order_patch(order));
 }
 
 export function publish_rider_change(rider) {

@@ -126,6 +126,8 @@ export async function update_order_payment_status(tenant_id, id, payload) {
   }
   const order = await find_tenant_order(tenant_id, id);
   if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
+  // Only the payment provider can say an online payment happened.
+  if (order.payment_method === 'online') throw new AppError('Online payments are marked paid by the payment provider, not by hand', 400);
   if (is_rider_flow(order)) {
     throw new AppError('The rider marks this order paid when they collect the cash', 400);
   }
@@ -162,6 +164,10 @@ export async function cancel_order_for_customer(customer_id, id) {
   const order = await find_customer_order(customer_id, id);
   if (order.status !== 'pending' || order.fulfillment_status !== 'not_started') {
     throw new AppError('Only pending orders that are not yet being prepared can be cancelled', 400);
+  }
+  // Money has already been taken, so a person has to arrange the refund; cancelling here would lose track of it.
+  if (order.payment_method === 'online' && order.payment_status === 'paid') {
+    throw new AppError('This order was paid online. Please contact the store to cancel it and arrange your refund.', 400);
   }
   const cancelled = await update_order(id, order.tenant_id, { status: 'cancelled' });
   await change_order_stock(order.tenant_id, order.items, 1);
