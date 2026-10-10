@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import { findInCachedLists } from '@/lib/instant';
 import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { Order } from '@/types/order';
+import type { Refund } from '@/types/refund';
 import type { Product } from '@/types/catalog';
 import type { StoreDeliveryRow, StoreOrderDelivery, StoreSettlementSummary, NearbyRider } from '@/types/delivery';
 
@@ -43,6 +44,17 @@ export interface OwnerEarnings {
   by_day: EarningsDay[];
 }
 export const useEarnings = () => useQuery({ queryKey: ['earnings'], queryFn: async () => (await api<{ earnings: OwnerEarnings }>('/earnings')).earnings });
+
+export interface StoreRefund extends Refund {
+  order: { total: number; payment_method: string; created_at: string; item_count: number } | null;
+}
+// retry is off so a server without the refunds table just shows none.
+export const useStoreRefunds = () => useQuery({ queryKey: ['refunds'], queryFn: async () => (await api<{ refunds: StoreRefund[] }>('/refunds')).refunds, retry: false });
+
+export const refundCalls = {
+  decide: ({ id, approve, note, manual }: { id: string; approve: boolean; note?: string; manual?: boolean }) => api(`/refunds/${id}/decision`, { method: 'POST', body: { approve, note, manual } }),
+  refundCancelled: ({ orderId, manual }: { orderId: string; manual?: boolean }) => api(`/orders/${orderId}/refund`, { method: 'POST', body: { manual } })
+};
 
 export interface RatingsSummary {
   count: number;

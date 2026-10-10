@@ -1,6 +1,7 @@
 // Platform admin data and actions.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import type { Refund } from '@/types/refund';
 import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { AdminDeliveryRow, AdminRiderDetail, AdminRiderList } from '@/types/delivery';
 
@@ -18,6 +19,9 @@ export interface PlatformEarnings {
   per_store: (EarningsTotals & { tenant_id: string; name: string; slug: string })[];
 }
 export const usePlatformEarnings = () => useQuery({ queryKey: ['admin', 'earnings'], queryFn: async () => (await api<{ earnings: PlatformEarnings }>('/admin/earnings')).earnings });
+
+// Every refund on the platform (newest first). retry is off so a server without refunds just shows none.
+export const useAllRefunds = () => useQuery({ queryKey: ['admin', 'refunds'], queryFn: async () => (await api<{ refunds: Refund[] }>('/admin/refunds')).refunds, retry: false });
 
 export const useTenants = () => useQuery({ queryKey: ['admin', 'tenants'], queryFn: async () => (await api<{ tenants: AdminTenant[] }>('/admin/tenants')).tenants });
 export const useRiders = () => useQuery({ queryKey: ['admin', 'riders'], queryFn: () => api<AdminRiderList>('/admin/riders') });

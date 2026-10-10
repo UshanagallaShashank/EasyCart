@@ -5,6 +5,7 @@ import { Stack, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
+import { OrderRefundCard } from '@/features/owner/order-refund-card';
 import { ownerCalls, orderStage, useOrder, useOrderDelivery, useOwnerAction } from '@/features/owner/owner-api';
 import { DeliverySteps, ProofPhoto, RiderCard, TimelineList, openMap } from '@/features/delivery/delivery-parts';
 import { errorMessage } from '@/lib/api';
@@ -107,6 +108,7 @@ export default function OwnerOrderScreen() {
         <Badge tone={stage.tone} label={stage.label} />
       </View>
       <NextStep order={order} />
+      <OrderRefundCard order={order} />
       {order.fulfillment_method === 'delivery' && <DeliveryCard order={order} />}
       {order.fulfillment_method === 'delivery' && (
         <Card title="Deliver to" icon="map-pin">

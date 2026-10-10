@@ -8,8 +8,9 @@ import { useSession } from '@/lib/session';
 import { useConfirmedSignOut } from '@/components/confirm';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 
-const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/admin/earnings' | '/admin/users' | '/admin/sales' | '/admin/growth'; fg: string; bg: string }[] = [
+const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/admin/earnings' | '/admin/refunds' | '/admin/users' | '/admin/sales' | '/admin/growth'; fg: string; bg: string }[] = [
   { icon: 'wallet', title: 'Earnings', subtitle: 'Commission, rider pay and what each shop owes', href: '/admin/earnings', fg: '#059669', bg: '#d1fae5' },
+  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests across all shops', href: '/admin/refunds', fg: '#e11d48', bg: '#ffe4e6' },
   { icon: 'users', title: 'Users', subtitle: 'Store owners, customers, delivery partners, admins', href: '/admin/users', fg: '#7c3aed', bg: '#ede9fe' },
   { icon: 'dollar-sign', title: 'Sales', subtitle: 'Orders and revenue, day by day', href: '/admin/sales', fg: '#059669', bg: '#d1fae5' },
   { icon: 'sparkles', title: 'Growth', subtitle: 'New stores and people joining', href: '/admin/growth', fg: '#d97706', bg: '#fef3c7' }

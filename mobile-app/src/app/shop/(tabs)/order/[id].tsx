@@ -12,6 +12,7 @@ import { ContentText } from '@/components/content-text';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { RateOrderCard } from '@/features/shop/rate-order-card';
+import { RefundCard } from '@/features/shop/refund-card';
 import { DeliverySteps, PICKUP_STEPS, ProgressTimeline, ProofPhoto, RiderCard, openMap } from '@/features/delivery/delivery-parts';
 import { api, errorMessage } from '@/lib/api';
 import { date, price, shortId } from '@/lib/format';
@@ -119,6 +120,8 @@ export default function CustomerOrderScreen() {
       {order.payment_method === 'online' && order.payment_status === 'unpaid' && order.status !== 'cancelled' && (
         <Button icon="credit-card" label={`${t('Pay now')} · ${price(order.total)}`} onPress={() => router.push(`/shop/pay?id=${order.id}`)} />
       )}
+
+      <RefundCard order={order} />
 
       {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} items={order.items} />}
 

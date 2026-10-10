@@ -5,6 +5,7 @@ import { findInCachedLists } from '@/lib/instant';
 import type { Category, Product, PublicStore } from '@/types/catalog';
 import type { Order } from '@/types/order';
 import type { CustomerOrderDelivery } from '@/types/delivery';
+import type { Refund, RefundReason } from '@/types/refund';
 
 export function useStore(slug: string) {
   return useQuery({ queryKey: ['storefront', slug], queryFn: async () => (await api<{ store: PublicStore }>(`/stores/${slug}`)).store, retry: false });
@@ -133,6 +134,19 @@ export function useStoreReviews(slug: string) {
 // { "product id": { average, count } } for the shop's rated products.
 export function useProductRatings(slug: string) {
   return useQuery({ queryKey: ['storefront', slug, 'product-ratings'], queryFn: async () => (await api<{ ratings: Record<string, StarSummary> }>(`/stores/${slug}/product-ratings`)).ratings, staleTime: 5 * 60_000 });
+}
+
+// Refunds for one order. Empty when refunds are not set up on the server yet.
+export function useOrderRefunds(orderId: string, enabled: boolean) {
+  return useQuery({ queryKey: ['my-orders', orderId, 'refunds'], queryFn: async () => (await api<{ refunds: Refund[] }>(`/my-orders/${orderId}/refunds`)).refunds, enabled, retry: false });
+}
+
+export function useRequestRefund(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: { amount: number; reason: RefundReason; details?: string; photo_urls?: string[] }) => api<{ refund: Refund }>(`/my-orders/${orderId}/refunds`, { method: 'POST', body: request }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-orders', orderId, 'refunds'] })
+  });
 }
 
 export function useMyStores() {

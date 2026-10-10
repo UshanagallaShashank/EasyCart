@@ -8,6 +8,7 @@ const ACTIVE_FOR = {
   'order/[id]': 'orders',
   'product/[id]': 'products',
   earnings: 'more',
+  refunds: 'more',
   customers: 'more',
   coupons: 'more',
   categories: 'more',
@@ -29,6 +30,7 @@ export default function OwnerTabs() {
       <Tabs.Screen name="order/[id]" options={hiddenPage('Order')} />
       <Tabs.Screen name="product/[id]" options={hiddenPage('Product')} />
       <Tabs.Screen name="earnings" options={hiddenPage('Earnings')} />
+      <Tabs.Screen name="refunds" options={hiddenPage('Refunds')} />
       <Tabs.Screen name="customers" options={hiddenPage('Customers')} />
       <Tabs.Screen name="coupons" options={hiddenPage('Coupons')} />
       <Tabs.Screen name="categories" options={hiddenPage('Categories')} />

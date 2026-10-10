@@ -6,7 +6,7 @@ import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatCard, StatStrip } from '@/components/ui';
-import { useCustomerCount, useOrders, useOwnStore, useOwnerProducts, useRatingsSummary } from '@/features/owner/owner-api';
+import { useCustomerCount, useOrders, useOwnStore, useOwnerProducts, useRatingsSummary, useStoreRefunds } from '@/features/owner/owner-api';
 import { StarRating } from '@/components/star-rating';
 import { OrderRow } from '@/features/owner/order-row';
 import { SetupChecklist, ShareShopCard } from '@/features/owner/setup-checklist';
@@ -22,6 +22,8 @@ export default function OwnerOverview() {
   const products = useOwnerProducts();
   const customers = useCustomerCount();
   const ratings = useRatingsSummary();
+  const refunds = useStoreRefunds();
+  const waitingRefunds = (refunds.data ?? []).filter((refund) => refund.status === 'requested').length;
   if (orders.isLoading) return <Loading />;
 
   const list = [...(orders.data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
@@ -44,6 +46,13 @@ export default function OwnerOverview() {
         </View>
       </LinearGradient>
 
+
+      {waitingRefunds > 0 ? (
+        <Card title={`${waitingRefunds} refund ${waitingRefunds === 1 ? 'request' : 'requests'} waiting`} icon="rotate-ccw">
+          <Text style={{ color: colors.textMuted, fontSize: 13 }}>Customers are waiting for your decision. Quick answers build trust.</Text>
+          <Button label="Review refunds" onPress={() => router.push('/owner/refunds')} />
+        </Card>
+      ) : null}
 
       {store.data && <SetupChecklist store={store.data} productCount={products.data?.length ?? 0} />}
 

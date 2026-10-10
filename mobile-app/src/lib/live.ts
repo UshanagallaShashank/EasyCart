@@ -5,13 +5,14 @@ import EventSource from 'react-native-sse';
 import { useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { api, apiUrl } from './api';
 
-type Topic = 'order' | 'rider' | 'settlement';
+type Topic = 'order' | 'rider' | 'settlement' | 'refund';
 
 // Every key starts with its area, so refreshing ['orders'] refreshes every order screen.
 const KEYS: Record<Topic, QueryKey[]> = {
   order: [['orders'], ['my-orders'], ['rider'], ['store-deliveries'], ['store-settlements'], ['admin'], ['products']],
   rider: [['rider'], ['admin']],
-  settlement: [['rider'], ['store-settlements'], ['admin']]
+  settlement: [['rider'], ['store-settlements'], ['admin']],
+  refund: [['refunds'], ['my-orders'], ['admin']]
 };
 
 // How long to wait before asking the server to confirm. Short, because the screen has already been updated.

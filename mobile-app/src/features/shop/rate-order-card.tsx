@@ -1,21 +1,19 @@
 // After an order is delivered, the customer rates the store, the delivery and each product, and can add up to 3 photos.
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/text';
 import { ContentText } from '@/components/content-text';
-import { Icon } from '@/components/icon';
 import { Button, Card, Field } from '@/components/ui';
 import { StarRating } from '@/components/star-rating';
 import { useToast } from '@/components/toast';
 import { errorMessage } from '@/lib/api';
-import { pickPhotos } from '@/lib/device';
 import { useT } from '@/lib/i18n';
 import { colors, radius, space, text } from '@/theme/theme';
-import { uploadOrderPhoto, useOrderRating, useRateOrder } from './shop-api';
+import { useOrderRating, useRateOrder } from './shop-api';
+import { OrderPhotoPicker } from './order-photo-picker';
 
 const WORDS = ['', 'Poor', 'Could be better', 'Okay', 'Good', 'Excellent'];
-const MAX_PHOTOS = 3;
 
 interface Item { product_id: string; name: string }
 
@@ -58,22 +56,6 @@ export function RateOrderCard({ orderId, wasDelivery, items }: { orderId: string
         <Text style={text.small}>Thanks for your feedback.</Text>
       </Card>
     );
-  }
-
-  async function addPhotos(source: 'camera' | 'library') {
-    try {
-      const picked = (await pickPhotos(source)).slice(0, MAX_PHOTOS - photos.length);
-      if (picked.length === 0) return;
-      setUploading(true);
-      for (const file of picked) {
-        const url = await uploadOrderPhoto(orderId, 'review', file);
-        setPhotos((current) => [...current, url].slice(0, MAX_PHOTOS));
-      }
-    } catch (err) {
-      toast(errorMessage(err, 'Could not add the photo'), 'error');
-    } finally {
-      setUploading(false);
-    }
   }
 
   function submit() {
@@ -125,27 +107,7 @@ export function RateOrderCard({ orderId, wasDelivery, items }: { orderId: string
 
       <View style={styles.block}>
         <Text style={text.label}>Photos (optional, up to 3)</Text>
-        <View style={styles.photos}>
-          {photos.map((url) => (
-            <View key={url}>
-              <Image source={{ uri: url }} style={styles.photo} contentFit="cover" />
-              <Pressable onPress={() => setPhotos((current) => current.filter((item) => item !== url))} style={styles.remove} hitSlop={8} accessibilityLabel="Remove photo">
-                <Icon name="x" size={12} color={colors.white} strokeWidth={3} />
-              </Pressable>
-            </View>
-          ))}
-          {uploading ? <View style={[styles.photo, styles.adding]}><ActivityIndicator color={colors.primary} /></View> : null}
-          {!uploading && photos.length < MAX_PHOTOS ? (
-            <>
-              <Pressable onPress={() => void addPhotos('camera')} style={[styles.photo, styles.adding]} accessibilityLabel="Take a photo">
-                <Icon name="camera" size={22} color={colors.primary} />
-              </Pressable>
-              <Pressable onPress={() => void addPhotos('library')} style={[styles.photo, styles.adding]} accessibilityLabel="Choose a photo">
-                <Icon name="image" size={22} color={colors.primary} />
-              </Pressable>
-            </>
-          ) : null}
-        </View>
+        <OrderPhotoPicker orderId={orderId} purpose="review" photos={photos} onChange={setPhotos} onBusyChange={setUploading} />
       </View>
 
       <Button icon="check" label="Submit rating" onPress={submit} loading={rate.isPending} disabled={store === 0 || uploading} />
@@ -167,7 +129,5 @@ const styles = StyleSheet.create({
   word: { fontSize: 13, fontWeight: '700', color: colors.primaryDark },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
   photos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
-  photo: { width: 72, height: 72, borderRadius: radius.md, backgroundColor: colors.borderSoft },
-  adding: { alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.primaryTint, backgroundColor: colors.primarySoft },
-  remove: { position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white }
+  photo: { width: 72, height: 72, borderRadius: radius.md, backgroundColor: colors.borderSoft }
 });

@@ -364,7 +364,27 @@ const WORDS: [string, string, string][] = [
   ["Each product (optional)", "ప్రతి ఉత్పత్తి (ఐచ్ఛికం)", "हर उत्पाद (वैकल्पिक)"],
   ["Photos (optional, up to 3)", "ఫోటోలు (ఐచ్ఛికం, 3 వరకు)", "फोटो (वैकल्पिक, 3 तक)"],
   ["Thanks for rating. Photos and product stars will appear after the next update.", "రేటింగ్ ఇచ్చినందుకు ధన్యవాదాలు. ఫోటోలు మరియు ఉత్పత్తి స్టార్లు తదుపరి అప్‌డేట్ తర్వాత కనిపిస్తాయి.", "रेटिंग के लिए धन्यवाद। फोटो और उत्पाद स्टार अगले अपडेट के बाद दिखेंगे।"],
-  ["Could not add the photo", "ఫోటోను జోడించలేకపోయాము", "फोटो नहीं जोड़ सके"]
+  ["Could not add the photo", "ఫోటోను జోడించలేకపోయాము", "फोटो नहीं जोड़ सके"],
+
+  // Refunds
+  ["Refund", "రీఫండ్", "रिफंड"],
+  ["Ask for a refund", "రీఫండ్ అడగండి", "रिफंड माँगें"],
+  ["Amount", "మొత్తం", "रकम"],
+  ["What went wrong?", "ఏమి తప్పు జరిగింది?", "क्या गड़बड़ हुई?"],
+  ["Tell the store more (optional)", "షాపుకు మరింత చెప్పండి (ఐచ్ఛికం)", "दुकान को और बताएँ (वैकल्पिक)"],
+  ["Send request", "అభ్యర్థన పంపండి", "अनुरोध भेजें"],
+  ["Enter an amount up to {amount}", "{amount} వరకు మొత్తం నమోదు చేయండి", "{amount} तक की रकम डालें"],
+  ["Refund request sent to the store", "రీఫండ్ అభ్యర్థన షాపుకు పంపబడింది", "रिफंड अनुरोध दुकान को भेज दिया गया"],
+  ["Up to {amount}", "{amount} వరకు", "{amount} तक"],
+  ["Back to your card or UPI", "మీ కార్డ్ లేదా UPI కి తిరిగి", "आपके कार्ड या UPI में वापस"],
+  ["Cash from the store", "షాపు నుండి నగదు", "दुकान से नकद"],
+  ["Damaged", "పాడైంది", "खराब हालत में"],
+  ["Wrong item", "తప్పు వస్తువు", "गलत सामान"],
+  ["Poor quality", "నాణ్యత బాగాలేదు", "खराब गुणवत्ता"],
+  ["Waiting for the store", "షాపు కోసం వేచి ఉంది", "दुकान का इंतज़ार"],
+  ["Refunded", "రీఫండ్ అయింది", "रिफंड हो गया"],
+  ["Not refunded", "రీఫండ్ చేయలేదు", "रिफंड नहीं हुआ"],
+  ["Refund failed", "రీఫండ్ విఫలమైంది", "रिफंड नहीं हो सका"]
 ];
 
 const TRANSLATIONS: Record<Language, Map<string, string>> = {
