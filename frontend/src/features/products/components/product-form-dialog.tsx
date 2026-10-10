@@ -102,8 +102,8 @@ export function ProductFormDialog({ product, trigger }: { product?: Product; tri
             </div>
             <div className="sm:col-span-2 flex flex-col gap-1.5">
               <ProductImageField
-                value={form.images?.[0] ?? ''}
-                onChange={(url) => setForm((p) => ({ ...p, images: url ? [url] : [] }))}
+                values={form.images ?? []}
+                onChange={(urls) => setForm((p) => ({ ...p, images: urls }))}
               />
               <details className="text-[11px] text-muted-foreground mt-0.5">
                 <summary className="cursor-pointer hover:text-foreground select-none">

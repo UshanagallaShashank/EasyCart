@@ -24,11 +24,15 @@ function attach_fallback_fields(store) {
   if ((result.max_delivery_radius_km === undefined || result.max_delivery_radius_km === null) && radius_fallback.has(tenant_id)) {
     result.max_delivery_radius_km = radius_fallback.get(tenant_id);
   }
-  if ((result.pincode === undefined || result.pincode === null) && pincode_fallback.has(tenant_id)) {
-    result.pincode = pincode_fallback.get(tenant_id);
+  if (result.address === undefined || result.address === null) {
+    result.address = store.business_address || store.address_line || address_fallback.get(tenant_id) || null;
   }
-  if ((result.address === undefined || result.address === null) && address_fallback.has(tenant_id)) {
-    result.address = address_fallback.get(tenant_id);
+  if (result.pincode === undefined || result.pincode === null) {
+    const fromFallback = pincode_fallback.get(tenant_id);
+    const fromAddress = (result.address && typeof result.address === 'string')
+      ? result.address.match(/\b\d{6}\b/)?.[0]
+      : null;
+    result.pincode = fromFallback || fromAddress || null;
   }
   if ((result.latitude === undefined || result.latitude === null) && lat_fallback.has(tenant_id)) {
     result.latitude = lat_fallback.get(tenant_id);
@@ -81,10 +85,18 @@ export async function save_store(store) {
   if (store.latitude !== undefined) lat_fallback.set(store.tenant_id, store.latitude);
   if (store.longitude !== undefined) lng_fallback.set(store.tenant_id, store.longitude);
 
+  const toSave = { ...store };
+  if (toSave.address && !toSave.business_address) {
+    toSave.business_address = toSave.address;
+  }
+  if (toSave.address && !toSave.address_line) {
+    toSave.address_line = toSave.address;
+  }
+
   if (DB_PROVIDER === 'supabase') {
-    const { promotion_banner_text, max_delivery_radius_km, pincode, address, latitude, longitude, ...supaStore } = store;
+    const { promotion_banner_text, max_delivery_radius_km, pincode, address, ...supaStore } = toSave;
     let data;
-    const res = await get_supabase().from('stores').insert([store]).select().single();
+    const res = await get_supabase().from('stores').insert([toSave]).select().single();
     if (res.error) {
       if (res.error.code === 'PGRST204') {
         const retryRes = await get_supabase().from('stores').insert([supaStore]).select().single();
@@ -98,12 +110,16 @@ export async function save_store(store) {
     }
     return attach_fallback_fields(data);
   }
-  const created = await Store.create(store);
+  const created = await Store.create(toSave);
   return created.toObject();
 }
 
 export async function update_store(tenant_id, updates) {
   const payload = { ...updates, updated_at: new Date().toISOString() };
+  if (updates.address !== undefined) {
+    payload.business_address = updates.address;
+    payload.address_line = updates.address;
+  }
   if (updates.promotion_banner_text !== undefined) {
     promotion_banner_fallback.set(tenant_id, updates.promotion_banner_text);
   }
@@ -128,7 +144,7 @@ export async function update_store(tenant_id, updates) {
     const { data, error } = await get_supabase().from('stores').update(payload).eq('tenant_id', tenant_id).select().single();
     if (error) {
       if (error.code === 'PGRST204') {
-        const { promotion_banner_text, max_delivery_radius_km, pincode, address, latitude, longitude, ...fallbackPayload } = payload;
+        const { promotion_banner_text, max_delivery_radius_km, pincode, address, ...fallbackPayload } = payload;
         const { data: retryData, error: retryError } = await get_supabase()
           .from('stores')
           .update(fallbackPayload)

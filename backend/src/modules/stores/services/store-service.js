@@ -5,15 +5,44 @@ import { validate_store_settings_input } from '../store-schemas.js';
 import { find_store_by_tenant_id, find_store_by_slug, save_store, update_store } from '../repositories/store-repository.js';
 import { find_tenant_by_id } from '../../tenants/repositories/tenant-repository.js';
 import { upload_store_asset_to_supabase } from './store-storage-service.js';
+import { read_request_details } from './store-request-document-service.js';
 
 export async function create_store_for_tenant(tenant_id, name, slug) {
   return save_store({ id: randomUUID(), tenant_id, name, slug, is_published: false });
 }
 
 export async function get_own_store(tenant_id) {
-  const store = await find_store_by_tenant_id(tenant_id);
+  let store = await find_store_by_tenant_id(tenant_id);
   if (!store) {
     throw new AppError('Store not found', 404);
+  }
+  if (!store.address || !store.pincode) {
+    try {
+      const tenant = await find_tenant_by_id(tenant_id);
+      if (tenant?.owner_id) {
+        const details = await read_request_details(tenant.owner_id);
+        if (details?.business_address) {
+          const addr = details.business_address;
+          const pin = addr.match(/\b\d{6}\b/)?.[0] || null;
+          const updates = {};
+          if (!store.address) {
+            updates.address = addr;
+            updates.business_address = addr;
+            store.address = addr;
+            store.business_address = addr;
+          }
+          if (!store.pincode && pin) {
+            updates.pincode = pin;
+            store.pincode = pin;
+          }
+          if (Object.keys(updates).length > 0) {
+            await update_store(tenant_id, updates);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to populate store address from request details:', err);
+    }
   }
   return store;
 }

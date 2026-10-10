@@ -28,7 +28,7 @@ export function StorefrontProductDetailPage() {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 md:gap-10 items-start">
         {/* Product Image Gallery Card */}
         <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm overflow-hidden flex items-center justify-center">
-          <ProductDetailGallery image={product.images[0]} name={product.name} />
+          <ProductDetailGallery images={product.images} name={product.name} />
         </div>
 
         {/* Product Details & Purchase Controls */}
