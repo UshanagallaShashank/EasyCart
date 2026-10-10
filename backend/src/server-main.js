@@ -87,6 +87,7 @@ export async function start_server_main() {
   });
 }
 
-if (process.env.NODE_ENV !== 'test') {
+// Vercel runs the app per request through api/index.js, so it must not open a port here.
+if (process.env.NODE_ENV !== 'test' && !process.env.VERCEL) {
   start_server_main();
 }
