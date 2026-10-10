@@ -67,7 +67,7 @@ function DeliverStep({ order }: { order: RiderOrder }) {
   );
 }
 
-export default function RiderOrderScreen() {
+function RiderOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: order, isLoading, refetch, isRefetching } = useRiderOrder(id);
 
@@ -129,3 +129,9 @@ const styles = StyleSheet.create({
   photo: { width: '100%', height: 220, borderRadius: radius.md },
   call: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.successSoft, alignItems: 'center', justifyContent: 'center' }
 });
+
+// Tab pages stay mounted, so keying by id makes opening a different item start with a clean screen.
+export default function RiderOrderScreenPage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <RiderOrderScreen key={id} />;
+}

@@ -28,6 +28,11 @@ const SLUG_KEY = 'easycart.shop';
 const cartKey = (slug: string) => `easycart.cart.${slug}`;
 const same = (line: CartLine, id: string, variant?: string) => line.product_id === id && (line.variant_label ?? '') === (variant ?? '');
 
+// Shows in the Expo terminal while developing.
+function log(message: string) {
+  if (__DEV__) console.log(`[cart] ${message}`);
+}
+
 const ShopContext = createContext<ShopState | null>(null);
 
 export function ShopProvider({ children }: { children: ReactNode }) {
@@ -41,12 +46,20 @@ export function ShopProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!loaded) return;
-    getItem(cartKey(slug)).then((raw) => setLines(raw ? JSON.parse(raw) : [])).catch(() => setLines([]));
+    getItem(cartKey(slug))
+      .then((raw) => {
+        const saved = raw ? JSON.parse(raw) : [];
+        log(`loaded ${saved.length} saved line(s) for shop "${slug}"`);
+        setLines(saved);
+      })
+      .catch((err) => { log(`could not read the saved cart: ${String(err)}`); setLines([]); });
   }, [slug, loaded]);
 
   const save = useCallback((next: CartLine[]) => {
     setLines(next);
-    void setItem(cartKey(slug), JSON.stringify(next));
+    log(`cart for "${slug}" now has ${next.length} line(s), ${next.reduce((sum, line) => sum + line.quantity, 0)} item(s)`);
+    // The phone's secure storage has a size limit, so a failure here is logged instead of lost.
+    setItem(cartKey(slug), JSON.stringify(next)).catch((err) => log(`could not save the cart: ${String(err)}`));
   }, [slug]);
 
   const value = useMemo<ShopState>(() => ({
@@ -60,6 +73,7 @@ export function ShopProvider({ children }: { children: ReactNode }) {
     count: lines.length,
     subtotal: lines.reduce((sum, line) => sum + line.price * line.quantity, 0),
     add: (line) => {
+      log(`add ${line.name}${line.variant_label ? ` (${line.variant_label})` : ''} x${line.quantity}, max ${line.max}`);
       const existing = lines.find((l) => same(l, line.product_id, line.variant_label));
       save(existing
         ? lines.map((l) => (l === existing ? { ...l, quantity: Math.min(l.max, l.quantity + line.quantity) } : l))

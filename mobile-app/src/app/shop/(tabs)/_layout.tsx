@@ -1,25 +1,9 @@
-import { Pressable, View } from 'react-native';
-import { Tabs, router } from 'expo-router';
-import { BrandTitle, useTabOptions } from '@/components/nav';
+import { View } from 'react-native';
+import { Tabs } from 'expo-router';
+import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
-import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
-import { useStore } from '@/features/shop/shop-api';
-import { colors } from '@/theme/theme';
-
-function HeaderBack() {
-  return (
-    <Pressable
-      onPress={() => router.navigate('/shop')}
-      hitSlop={12}
-      accessibilityLabel="Back to shop"
-      style={{ marginLeft: 16, padding: 4 }}
-    >
-      <Icon name="arrow-left" size={22} color={colors.text} />
-    </Pressable>
-  );
-}
 
 function HeaderRightActions() {
   return (
@@ -30,47 +14,31 @@ function HeaderRightActions() {
   );
 }
 
+// While one of these pages is open, the tab next to it stays lit.
+const ACTIVE_FOR = {
+  'product/[id]': 'index',
+  checkout: 'cart',
+  'order/[id]': 'orders',
+  addresses: 'account',
+  'store-request': 'account'
+};
+
 export default function ShopTabs() {
-  const tabOptions = useTabOptions();
-  const { slug } = useShop();
-  const store = useStore(slug);
+  const tabOptions = useTabOptions(ACTIVE_FOR);
+  const { lines } = useShop();
+  const units = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
-    <Tabs
-      screenOptions={{
-        ...tabOptions,
-        tabBarStyle: { display: 'none' },
-        headerRight: () => <HeaderRightActions />
-      }}
-    >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Shop',
-          headerShown: false
-        }}
-      />
-      <Tabs.Screen
-        name="cart"
-        options={{
-          title: 'Cart',
-          headerLeft: () => <HeaderBack />
-        }}
-      />
-      <Tabs.Screen
-        name="orders"
-        options={{
-          title: 'My orders',
-          headerLeft: () => <HeaderBack />
-        }}
-      />
-      <Tabs.Screen
-        name="account"
-        options={{
-          title: 'Account',
-          headerLeft: () => <HeaderBack />
-        }}
-      />
+    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
+      <Tabs.Screen name="index" options={{ title: 'Shop', headerShown: false, tabBarIcon: tabIcon('home') }} />
+      <Tabs.Screen name="cart" options={{ title: 'Cart', tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
+      <Tabs.Screen name="orders" options={{ title: 'My orders', tabBarLabel: 'Orders', tabBarIcon: tabIcon('clipboard') }} />
+      <Tabs.Screen name="account" options={{ title: 'Account', tabBarIcon: tabIcon('user') }} />
+      <Tabs.Screen name="product/[id]" options={hiddenPage('Product')} />
+      <Tabs.Screen name="checkout" options={hiddenPage('Checkout')} />
+      <Tabs.Screen name="order/[id]" options={hiddenPage('Order')} />
+      <Tabs.Screen name="addresses" options={hiddenPage('Delivery addresses')} />
+      <Tabs.Screen name="store-request" options={hiddenPage('Request a store')} />
     </Tabs>
   );
 }

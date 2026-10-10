@@ -4,8 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon, type IconName } from '@/components/icon';
+import { PressScale } from '@/components/motion';
 import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
-import { BrandTitle } from '@/components/nav';
+import { ShopSwitcher } from '@/features/shop/shop-switcher';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
@@ -16,7 +17,21 @@ import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
 import { ProductCard } from '@/features/shop/product-card';
 import { ApiError, errorMessage } from '@/lib/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { colors, radius, space } from '@/theme/theme';
+import { accentAt, accents, colors, radius, space } from '@/theme/theme';
+
+const CATEGORY_ICONS: IconName[] = ['tags', 'gift', 'heart', 'sparkles', 'box', 'zap', 'store'];
+
+// One round, coloured category button. The active one gets a coloured ring.
+function CategoryTile({ label, icon, accent, active, onPress }: { label: string; icon: IconName; accent: { fg: string; bg: string }; active: boolean; onPress(): void }) {
+  return (
+    <PressScale onPress={onPress} style={styles.tile} accessibilityRole="button" accessibilityState={{ selected: active }}>
+      <View style={[styles.tileIcon, { backgroundColor: accent.bg }, active && { borderColor: accent.fg, borderWidth: 2 }]}>
+        <Icon name={icon} size={22} color={accent.fg} />
+      </View>
+      <Text style={[styles.tileLabel, active && { color: accent.fg, fontWeight: '800' }]} numberOfLines={1}>{label}</Text>
+    </PressScale>
+  );
+}
 
 export default function ShopHome() {
   const { slug } = useShop();
@@ -81,7 +96,7 @@ export default function ShopHome() {
         {/* Index 0: Top Header Logo + Hero Banner + Features (fades out smoothly on scroll down) */}
         <Animated.View style={{ opacity: heroOpacity, transform: [{ translateY: heroTranslateY }], gap: space.md }}>
           <View style={styles.topHeader}>
-            <BrandTitle>{store.data?.name ?? 'Shop'}</BrandTitle>
+            <ShopSwitcher name={store.data?.name ?? 'Shop'} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <NotificationButton />
               <ProfileMenu />
@@ -89,13 +104,16 @@ export default function ShopHome() {
           </View>
 
           {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
-          <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <LinearGradient colors={['#0369a1', '#0284c7', '#0ea5e9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+            <View style={styles.heroCircleBig} />
+            <View style={styles.heroCircleSmall} />
+            <Text style={styles.heroTag}>{activeAddress ? `Delivering to ${activeAddress.zip}` : 'Local store, delivered'}</Text>
             <Text style={styles.heroTitle}>Fresh picks,{'\n'}delivered to your door.</Text>
             <Text style={styles.heroBody}>Fresh products from your neighbourhood store.</Text>
-            <Pressable style={styles.shopNowBtn}>
+            <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">
               <Text style={styles.shopNowText}>Shop now</Text>
-              <Icon name="arrow-right" size={14} color="#ffffff" />
-            </Pressable>
+              <Icon name="arrow-right" size={14} color={colors.primaryDark} />
+            </PressScale>
           </LinearGradient>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuresScroll}>
@@ -126,28 +144,17 @@ export default function ShopHome() {
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
-            <Pressable
-              onPress={() => setCategory('')}
-              style={[styles.categoryPill, category === '' && styles.categoryPillActive]}
-            >
-              <Text style={[styles.categoryName, category === '' && styles.categoryNameActive]}>
-                All
-              </Text>
-            </Pressable>
-            {(categories.data ?? []).map((cat) => {
-              const isActive = category === cat.id;
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => setCategory(isActive ? '' : cat.id)}
-                  style={[styles.categoryPill, isActive && styles.categoryPillActive]}
-                >
-                  <Text style={[styles.categoryName, isActive && styles.categoryNameActive]}>
-                    {cat.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
+            <CategoryTile label="All" icon="grid" accent={accents.sky} active={category === ''} onPress={() => setCategory('')} />
+            {(categories.data ?? []).map((cat, index) => (
+              <CategoryTile
+                key={cat.id}
+                label={cat.name}
+                icon={CATEGORY_ICONS[index % CATEGORY_ICONS.length]}
+                accent={accentAt(index + 1)}
+                active={category === cat.id}
+                onPress={() => setCategory(category === cat.id ? '' : cat.id)}
+              />
+            ))}
           </ScrollView>
         </View>
 
@@ -157,7 +164,7 @@ export default function ShopHome() {
             <EmptyState icon="search" message={search ? `No products match "${search}".` : 'This shop has no products yet.'} />
           ) : (
             <View style={styles.grid}>
-              {products.data!.map((product) => <ProductCard key={product.id} product={product} width={cardWidth} />)}
+              {products.data!.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} />)}
             </View>
           )}
         </View>
@@ -177,11 +184,14 @@ const FEATURES: { icon: IconName; title: string; text: string; fg: string; bg: s
 
 const styles = StyleSheet.create({
   topHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: space.xs },
-  hero: { borderRadius: radius.lg, padding: space.md, gap: 8, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
-  heroTitle: { color: '#0f172a', fontSize: 20, lineHeight: 24, fontWeight: '800', letterSpacing: -0.5 },
-  heroBody: { color: '#334155', fontSize: 13, lineHeight: 17 },
-  shopNowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: '#0284c7', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 7, marginTop: 2 },
-  shopNowText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
+  hero: { borderRadius: radius.xl, padding: space.xl, gap: 8, overflow: 'hidden', minHeight: 170 },
+  heroCircleBig: { position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroCircleSmall: { position: 'absolute', right: 50, bottom: -30, width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.10)' },
+  heroTag: { alignSelf: 'flex-start', color: '#ffffff', fontSize: 11, fontWeight: '700', letterSpacing: 0.4, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: 'hidden' },
+  heroTitle: { color: '#ffffff', fontSize: 26, lineHeight: 30, fontWeight: '900', letterSpacing: -0.7 },
+  heroBody: { color: '#e0f2fe', fontSize: 13, lineHeight: 18 },
+  shopNowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: colors.white, borderRadius: radius.pill, paddingHorizontal: 18, paddingVertical: 10, marginTop: 6 },
+  shopNowText: { color: colors.primaryDark, fontSize: 14, fontWeight: '800' },
   featuresScroll: { flexDirection: 'row', gap: space.sm, paddingRight: space.xs },
   feature: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: '#e8edf3', paddingHorizontal: 12, paddingVertical: 10, minWidth: 135, flexShrink: 0 },
   featureIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
@@ -191,11 +201,14 @@ const styles = StyleSheet.create({
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.4 },
   seeAllText: { fontSize: 13, fontWeight: '700', color: '#0284c7' },
-  categoryList: { flexDirection: 'row', gap: space.xs, paddingRight: space.xs, paddingVertical: 4 },
+  categoryList: { flexDirection: 'row', gap: space.md, paddingRight: space.xs, paddingVertical: 4 },
+  tile: { width: 68, alignItems: 'center', gap: 6 },
+  tileIcon: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
+  tileLabel: { fontSize: 12, fontWeight: '600', color: colors.textMuted, textAlign: 'center' },
   categoryPill: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' },
-  categoryPillActive: { borderColor: '#0284c7', backgroundColor: '#f0f9ff' },
+  categoryPillActive: { borderColor: colors.primary, backgroundColor: colors.primary },
   categoryName: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
-  categoryNameActive: { color: '#0284c7', fontWeight: '800' },
+  categoryNameActive: { color: colors.white, fontWeight: '800' },
   search: { flexDirection: 'row', alignItems: 'center', gap: space.sm, height: 50, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: space.lg, marginVertical: 4 },
   searchInput: { flex: 1, fontSize: 15, color: colors.text, height: '100%' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md }

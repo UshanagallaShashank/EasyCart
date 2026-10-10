@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { Button, Card, EmptyState, Field, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { manageCalls, useOwnCategories, useRefreshingAction } from '@/features/owner/owner-api';
 import { errorMessage } from '@/lib/api';
 import { colors, radius, space } from '@/theme/theme';
@@ -14,8 +15,7 @@ export default function OwnerCategories() {
   const remove = useRefreshingAction(manageCalls.deleteCategory, ['categories']);
   const toast = useToast();
   const [name, setName] = useState('');
-  // The id waiting for "tap again to confirm"; a delete is never one accidental tap.
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const askConfirm = useConfirm();
   if (isLoading) return <Loading />;
 
   function add() {
@@ -24,9 +24,10 @@ export default function OwnerCategories() {
     create.mutate(trimmed, { onSuccess: () => { setName(''); toast('Category added', 'success'); }, onError: (e) => toast(errorMessage(e), 'error') });
   }
 
-  function askOrDelete(id: string) {
-    if (confirmId !== id) { setConfirmId(id); return; }
-    remove.mutate(id, { onSuccess: () => { setConfirmId(null); toast('Category removed', 'success'); }, onError: (e) => toast(errorMessage(e), 'error') });
+  async function askOrDelete(id: string, name: string) {
+    const yes = await askConfirm({ title: `Remove "${name}"?`, message: 'Products in this category are kept, but lose the category.', confirmLabel: 'Remove', cancelLabel: 'Keep it', icon: 'trash-2' });
+    if (!yes) return;
+    remove.mutate(id, { onSuccess: () => toast('Category removed', 'success'), onError: (e) => toast(errorMessage(e), 'error') });
   }
 
   return (
@@ -39,7 +40,7 @@ export default function OwnerCategories() {
       {(data?.length ?? 0) === 0 ? <EmptyState icon="tags" message="No categories yet." /> : data!.map((category) => (
         <View key={category.id} style={styles.row}>
           <Text style={{ flex: 1, fontSize: 15, fontWeight: '600', color: colors.text }} numberOfLines={1}>{category.name}</Text>
-          <Button small variant={confirmId === category.id ? 'danger' : 'outline'} icon="trash-2" label={confirmId === category.id ? 'Tap again to remove' : 'Remove'} onPress={() => askOrDelete(category.id)} loading={remove.isPending && confirmId === category.id} />
+          <Button small variant="danger" icon="trash-2" label="Remove" onPress={() => void askOrDelete(category.id, category.name)} loading={remove.isPending && remove.variables === category.id} />
         </View>
       ))}
     </Screen>

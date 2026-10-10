@@ -3,6 +3,13 @@ const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000').rep
 export const BASE_URL = `${API_URL}/api`;
 const REQUEST_TIMEOUT_MS = 15_000;
 
+// Logs show in the Expo terminal while developing. They never include passwords, tokens or request bodies.
+function log(message: string) {
+  if (__DEV__) console.log(`[api] ${message}`);
+}
+
+log(`Server address: ${BASE_URL}`);
+
 export class ApiError extends Error {
   constructor(message: string, public status: number) {
     super(message);
@@ -39,15 +46,20 @@ export async function api<T>(path: string, options: { method?: string; body?: un
   const controller = new AbortController();
   const giveUpTimer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
+  const method = options.method ?? 'GET';
+  const startedAt = Date.now();
   let res: Response;
   try {
-    res = await fetch(apiUrl(path), { method: options.method ?? 'GET', headers, signal: controller.signal, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
-  } catch {
+    res = await fetch(apiUrl(path), { method, headers, signal: controller.signal, body: options.body === undefined ? undefined : JSON.stringify(options.body) });
+  } catch (err) {
+    const reason = controller.signal.aborted ? `no answer after ${REQUEST_TIMEOUT_MS / 1000}s` : String(err);
+    log(`${method} ${path} FAILED to connect (${reason})`);
     throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection and that the phone is on the same Wi-Fi as the computer.`, 0);
   } finally {
     clearTimeout(giveUpTimer);
   }
   const data = await res.json().catch(() => ({}));
+  log(`${method} ${path} -> ${res.status} (${Date.now() - startedAt}ms)${res.ok ? '' : ` ${data.error ?? ''}`}`);
   if (!res.ok) {
     if (res.status === 401 && token) onUnauthorized?.();
     throw new ApiError(data.error ?? 'Something went wrong', res.status);

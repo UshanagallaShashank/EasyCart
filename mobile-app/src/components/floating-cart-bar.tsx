@@ -1,13 +1,11 @@
 import { Image, Pressable, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
 
 export function FloatingCartBar() {
   const { lines } = useShop();
-  const insets = useSafeAreaInsets();
 
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
 
@@ -19,7 +17,8 @@ export function FloatingCartBar() {
     <View
       style={[
         styles.outerWrap,
-        { bottom: Math.max(insets.bottom, 14) + 10 }
+        // The tab bar below already clears the home indicator, so only a small gap is needed.
+        { bottom: 12 }
       ]}
       pointerEvents="box-none"
     >

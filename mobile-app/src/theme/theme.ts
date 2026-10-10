@@ -1,4 +1,4 @@
-// The web app's look in one place: sky accents on slate, soft rounded cards. Every screen uses these tokens.
+// The app's look in one place: sky accents on slate, soft rounded cards. Every screen uses these tokens.
 export const colors = {
   bg: '#f8fafc', // slate-50
   card: '#ffffff',
@@ -20,6 +20,22 @@ export const colors = {
   dangerSoft: '#fff1f2',
   white: '#ffffff'
 } as const;
+
+// Supporting colours for icon bubbles, category tiles and menus. Each is a strong colour (fg) on its soft tint (bg).
+export const accents = {
+  sky: { fg: '#0284c7', bg: '#e0f2fe' },
+  green: { fg: '#059669', bg: '#d1fae5' },
+  amber: { fg: '#d97706', bg: '#fef3c7' },
+  violet: { fg: '#7c3aed', bg: '#ede9fe' },
+  rose: { fg: '#e11d48', bg: '#ffe4e6' },
+  orange: { fg: '#ea580c', bg: '#ffedd5' },
+  pink: { fg: '#db2777', bg: '#fce7f3' },
+  teal: { fg: '#0d9488', bg: '#ccfbf1' }
+} as const;
+
+// Handy when a list needs one colour per row: accentAt(index) cycles through them.
+const ACCENT_LIST = Object.values(accents);
+export const accentAt = (index: number) => ACCENT_LIST[index % ACCENT_LIST.length];
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 } as const;
 export const radius = { sm: 10, md: 14, lg: 20, xl: 24, pill: 999 } as const;

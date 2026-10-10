@@ -5,18 +5,20 @@ import { useState } from 'react';
 import { Text } from '@/components/text';
 import { Badge, Button, Card, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { adminCalls, requestCalls, useAdminAction, useTenantDetail, verificationOf } from '@/features/admin/admin-api';
 import { errorMessage } from '@/lib/api';
 import { date, price } from '@/lib/format';
 import { colors, space, text } from '@/theme/theme';
 
-export default function AdminStoreDetail() {
+function AdminStoreDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading, refetch, isRefetching } = useTenantDetail(id);
   const approve = useAdminAction(requestCalls.approve);
   const reject = useAdminAction(requestCalls.reject);
   const tenantAction = useAdminAction(adminCalls.tenantAction);
   const toast = useToast();
+  const askConfirm = useConfirm();
   const [confirmReject, setConfirmReject] = useState(false);
   if (isLoading || !data) return <Loading />;
 
@@ -96,7 +98,7 @@ export default function AdminStoreDetail() {
           <Button variant={confirmReject ? 'danger' : 'outline'} icon="x-circle" label={confirmReject ? 'Tap again to reject this request' : 'Reject request'} loading={reject.isPending} onPress={rejectOrAsk} />
         </View>
       ) : tenant.status === 'active' ? (
-        <Button variant="danger" icon="slash" label="Suspend store" loading={tenantAction.isPending} onPress={() => tenantAction.mutate({ id: tenant.id, action: 'suspend' }, done('Store suspended'))} />
+        <Button variant="danger" icon="slash" label="Suspend store" loading={tenantAction.isPending} onPress={async () => { if (await askConfirm({ title: `Suspend ${tenant.name}?`, message: 'The shop closes to customers until you reactivate it.', confirmLabel: 'Suspend store', cancelLabel: 'Keep it open', icon: 'slash' })) tenantAction.mutate({ id: tenant.id, action: 'suspend' }, done('Store suspended')); }} />
       ) : tenant.status === 'suspended' ? (
         <Button variant="outline" icon="check" label="Reactivate store" loading={tenantAction.isPending} onPress={() => tenantAction.mutate({ id: tenant.id, action: 'reactivate' }, done('Store reactivated'))} />
       ) : null}
@@ -107,3 +109,9 @@ export default function AdminStoreDetail() {
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: space.md }
 });
+
+// Tab pages stay mounted, so keying by id makes opening a different item start with a clean screen.
+export default function AdminStoreDetailPage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <AdminStoreDetail key={id} />;
+}

@@ -5,6 +5,8 @@ import { Text, TextInput } from './text';
 import { Icon } from './icon';
 import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
 import { fileUrl } from '@/lib/api';
+import { useScreen } from '@/lib/responsive';
+import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
 import type { IconName } from './icon';
@@ -27,10 +29,11 @@ export function Screen({
   scrollEventThrottle?: number;
   stickyHeaderIndices?: number[];
 }) {
+  const { pagePadding } = useScreen();
   return (
     <View style={styles.screen}>
       <ScrollView
-        contentContainerStyle={styles.screenContent}
+        contentContainerStyle={[styles.screenContent, { padding: pagePadding, paddingTop: space.xl, paddingBottom: space.xxl * 2 }]}
         keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
@@ -67,16 +70,16 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
   const look = BUTTONS[variant];
   const inactive = disabled || loading;
   return (
-    <Pressable
+    <PressScale
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive }}
       onPress={onPress}
       disabled={inactive}
-      style={({ pressed }) => [styles.button, small && styles.buttonSmall, { backgroundColor: look.bg, borderColor: look.border }, pressed && { opacity: 0.85 }, inactive && { opacity: 0.5 }]}
+      style={[styles.button, small && styles.buttonSmall, { backgroundColor: look.bg, borderColor: look.border }, inactive && { opacity: 0.5 }]}
     >
       {loading ? <ActivityIndicator color={look.fg} size="small" /> : icon && <Icon name={icon} size={small ? 14 : 16} color={look.fg} />}
       <Text style={[styles.buttonText, small && { fontSize: 13 }, { color: look.fg }]}>{label}</Text>
-    </Pressable>
+    </PressScale>
   );
 }
 
@@ -146,7 +149,12 @@ export function EmptyState({ message, icon = 'package', action }: { message: str
 }
 
 export function Loading() {
-  return <View style={styles.loading}><ActivityIndicator color={colors.primary} /></View>;
+  return (
+    <View style={{ gap: space.md }}>
+      <View style={styles.card}><Skeleton width="45%" height={18} /><Skeleton height={14} /><Skeleton width="70%" height={14} /></View>
+      <View style={styles.card}><Skeleton width="55%" height={18} /><Skeleton height={14} /><Skeleton width="60%" height={14} /></View>
+    </View>
+  );
 }
 
 // Row of choices that filter a list, like the website's filter pills.
@@ -243,7 +251,23 @@ export function SectionTitle({ children, right }: { children: ReactNode; right?:
   );
 }
 
+// One tappable row with a coloured icon, a title and a hint. Used for menus and shortcuts.
+export function MenuRow({ icon, title, subtitle, onPress, fg = colors.primary, bg = colors.primaryTint }: { icon: IconName; title: string; subtitle?: string; onPress(): void; fg?: string; bg?: string }) {
+  return (
+    <PressScale onPress={onPress} accessibilityRole="button" style={[styles.card, styles.menuRow]}>
+      <View style={[styles.menuIcon, { backgroundColor: bg }]}><Icon name={icon} size={18} color={fg} /></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={text.heading}>{title}</Text>
+        {subtitle ? <Text style={text.small}>{subtitle}</Text> : null}
+      </View>
+      <Icon name="chevron-right" size={18} color={colors.textFaint} />
+    </PressScale>
+  );
+}
+
 export const styles = StyleSheet.create({
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  menuIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1, backgroundColor: colors.bg },
   screenContent: { padding: space.lg, paddingTop: space.xl, paddingBottom: space.xxl * 2 },
   column: { width: '100%', maxWidth: 720, alignSelf: 'center', gap: space.lg },

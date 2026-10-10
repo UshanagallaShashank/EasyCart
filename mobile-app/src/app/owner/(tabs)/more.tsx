@@ -5,6 +5,7 @@ import { Text } from '@/components/text';
 import { Icon, type IconName } from '@/components/icon';
 import { Avatar, Button, Screen, SectionTitle } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { useConfirmedSignOut } from '@/components/confirm';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 
 const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
@@ -15,7 +16,8 @@ const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/cu
 ];
 
 export default function OwnerMore() {
-  const { user, signOut } = useSession();
+  const { user } = useSession();
+  const logout = useConfirmedSignOut();
   return (
     <Screen>
       <View style={styles.account}>
@@ -38,7 +40,7 @@ export default function OwnerMore() {
         </Pressable>
       ))}
 
-      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void signOut()} />
+      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
     </Screen>
   );
 }

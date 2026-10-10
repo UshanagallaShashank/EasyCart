@@ -1,12 +1,14 @@
-// Shared navigation styling (white header with the EasyCart logo, sky accents) and the guard that keeps each role in its own area.
+// Shared navigation styling (white header with the EasyCart logo, teal accents) and the guard that keeps each role in its own area.
 import { type ReactNode } from 'react';
 import { Image, Pressable, View, type ColorValue } from 'react-native';
-import { Redirect } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Redirect, router } from 'expo-router';
+import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { colors } from '@/theme/theme';
 import { homeForRole, useSession } from '@/lib/session';
 import { useLiveUpdates } from '@/lib/live';
 import type { Role } from '@/types/catalog';
+import { AppTabBar, type ActiveFor } from './app-tab-bar';
+import { useConfirmedSignOut } from './confirm';
 import { Icon, type IconName } from './icon';
 import { Text } from './text';
 import { Loading } from './ui';
@@ -30,35 +32,41 @@ export function BrandTitle({ children }: { children: string }) {
   );
 }
 
-// Bottom tabs sized for the phone's home-bar area so labels are never cut off.
-export function useTabOptions() {
-  const insets = useSafeAreaInsets();
-  const bottom = Math.max(insets.bottom, 8);
+// Header styling and the shared bottom bar. `activeFor` says which tab to light up while a hidden page is open.
+export function useTabOptions(activeFor?: ActiveFor) {
   return {
     ...stackOptions,
     headerTitleAlign: 'left' as const,
     headerTitle: ({ children }: { children: string }) => <BrandTitle>{children}</BrandTitle>,
-    headerStyle: { backgroundColor: colors.card, height: 48, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
-    tabBarActiveTintColor: colors.primary,
-    tabBarInactiveTintColor: colors.textFaint,
-    tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border, height: 64 + bottom, paddingTop: 6, paddingBottom: bottom },
-    tabBarLabelStyle: { fontSize: 11, fontFamily: 'Inter_600SemiBold', lineHeight: 16, marginTop: 2 },
+    // No fixed height here: the header grows by itself to clear the status bar and notch.
+    headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
+    tabBar: (props: BottomTabBarProps) => <AppTabBar {...props} activeFor={activeFor} />,
     sceneStyle: { backgroundColor: colors.bg }
   };
 }
 
+// The tab bar draws the active highlight itself, so the icon is just the icon.
 export function tabIcon(name: IconName) {
-  return ({ color, focused }: { color: ColorValue; focused: boolean; size: number }) => (
-    <View style={{ paddingHorizontal: 14, paddingVertical: 2, borderRadius: 999, backgroundColor: focused ? colors.primarySoft : 'transparent' }}>
-      <Icon name={name} size={21} color={color} strokeWidth={focused ? 2.3 : 2} />
-    </View>
+  return ({ color, focused }: { color: ColorValue; focused: boolean; size: number }) => <Icon name={name} size={22} color={color} strokeWidth={focused ? 2.4 : 2} />;
+}
+
+function BackButton() {
+  return (
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={12} accessibilityLabel="Go back" style={{ marginLeft: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' }}>
+      <Icon name="arrow-left" size={20} color={colors.text} />
+    </Pressable>
   );
 }
 
+// A page that is not a tab button but still keeps the bottom bar on screen, with a back button in its header.
+export function hiddenPage(title: string) {
+  return { title, href: null, headerLeft: () => <BackButton /> };
+}
+
 export function SignOutButton() {
-  const { signOut } = useSession();
+  const logout = useConfirmedSignOut();
   return (
-    <Pressable onPress={() => void signOut()} accessibilityLabel="Log out" hitSlop={10} style={{ marginRight: 16, width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable onPress={() => void logout()} accessibilityLabel="Log out" hitSlop={10} style={{ marginRight: 16, width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="log-out" size={17} color={colors.textMuted} />
     </Pressable>
   );

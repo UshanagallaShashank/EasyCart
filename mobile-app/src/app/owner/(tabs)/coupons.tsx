@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { Badge, Button, Card, EmptyState, Field, Loading, Pills, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { manageCalls, useCoupons, useRefreshingAction, type Coupon } from '@/features/owner/owner-api';
 import { errorMessage } from '@/lib/api';
 import { date, price } from '@/lib/format';
@@ -29,7 +30,7 @@ export default function OwnerCoupons() {
   const [type, setType] = useState<'flat' | 'percent'>('flat');
   const [value, setValue] = useState('');
   const [expires, setExpires] = useState('');
-  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const askConfirm = useConfirm();
   if (isLoading) return <Loading />;
 
   function add() {
@@ -43,9 +44,10 @@ export default function OwnerCoupons() {
     );
   }
 
-  function askOrDelete(id: string) {
-    if (confirmId !== id) { setConfirmId(id); return; }
-    remove.mutate(id, { onSuccess: () => { setConfirmId(null); toast('Coupon removed', 'success'); }, onError: (e) => toast(errorMessage(e), 'error') });
+  async function askOrDelete(id: string, code: string) {
+    const yes = await askConfirm({ title: `Remove coupon ${code}?`, message: 'Customers will no longer be able to use it.', confirmLabel: 'Remove', cancelLabel: 'Keep it', icon: 'trash-2' });
+    if (!yes) return;
+    remove.mutate(id, { onSuccess: () => toast('Coupon removed', 'success'), onError: (e) => toast(errorMessage(e), 'error') });
   }
 
   return (
@@ -72,7 +74,7 @@ export default function OwnerCoupons() {
             <Text style={text.muted}>{info.discount} · {coupon.expires_at ? `expires ${date(coupon.expires_at)}` : 'no expiry'}</Text>
             <View style={{ flexDirection: 'row', gap: space.sm }}>
               <Button small variant="outline" label={info.expired ? 'Expired' : coupon.is_active ? 'Deactivate' : 'Activate'} disabled={info.expired} onPress={() => toggle.mutate({ id: coupon.id, is_active: !coupon.is_active }, { onError: (e) => toast(errorMessage(e), 'error') })} />
-              <Button small variant={confirmId === coupon.id ? 'danger' : 'outline'} icon="trash-2" label={confirmId === coupon.id ? 'Tap again to remove' : 'Remove'} onPress={() => askOrDelete(coupon.id)} />
+              <Button small variant="danger" icon="trash-2" label="Remove" onPress={() => void askOrDelete(coupon.id, coupon.code)} />
             </View>
           </View>
         );

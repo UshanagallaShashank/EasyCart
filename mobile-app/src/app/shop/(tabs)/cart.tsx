@@ -1,85 +1,103 @@
-// The cart for the current shop.
+// The cart for the current shop. Lines slide in and out, and the quantity buttons give a little press feedback.
 import { Image, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { router, useIsFocused } from 'expo-router';
 import { Text } from '@/components/text';
-import { router } from 'expo-router';
+import { useConfirm } from '@/components/confirm';
 import { Icon } from '@/components/icon';
+import { PressScale } from '@/components/motion';
 import { Button, Card, EmptyState, InfoRow, Screen } from '@/components/ui';
-import { useShop } from '@/features/shop/shop-context';
+import { useShop, type CartLine } from '@/features/shop/shop-context';
 import { price } from '@/lib/format';
-import { colors, radius, space, text } from '@/theme/theme';
+import { colors, radius, shadow, space, text } from '@/theme/theme';
+
+function CartRow({ line }: { line: CartLine }) {
+  const { setQuantity } = useShop();
+  const atMax = line.quantity >= line.max;
+  // A row added while this tab is hidden would play its entry animation unseen and can stay invisible, so only animate when the tab is showing.
+  const showing = useIsFocused();
+
+  return (
+    <Animated.View
+      entering={showing ? FadeIn.duration(150) : undefined}
+      exiting={FadeOut.duration(120)}
+      layout={LinearTransition.duration(150)}
+      style={styles.line}
+    >
+      <Pressable
+        style={styles.productPressable}
+        onPress={() => router.push({ pathname: '/shop/product/[id]', params: { id: line.product_id, variant: line.variant_label ?? '' } })}
+      >
+        <View style={styles.thumb}>
+          {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={20} color={colors.textFaint} />}
+        </View>
+        <View style={{ flex: 1, gap: 3 }}>
+          <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
+          {line.variant_label ? (
+            <View style={styles.variantBadge}>
+              <Text style={styles.variantBadgeText}>Option: {line.variant_label}</Text>
+            </View>
+          ) : null}
+          <Text style={text.small}>{price(line.price)} each</Text>
+        </View>
+      </Pressable>
+
+      <View style={styles.rightCol}>
+        <Text style={styles.lineTotal}>{price(line.price * line.quantity)}</Text>
+        <View style={styles.stepper}>
+          <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel={line.quantity === 1 ? 'Remove item' : 'Less'}>
+            <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={15} color={line.quantity === 1 ? colors.danger : colors.primaryDark} />
+          </PressScale>
+          <Text style={styles.qty}>{line.quantity}</Text>
+          <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={atMax} style={[styles.stepButton, atMax && { opacity: 0.3 }]} accessibilityLabel="More">
+            <Icon name="plus" size={15} color={colors.primaryDark} />
+          </PressScale>
+        </View>
+        {atMax ? <Text style={styles.maxHint}>Max available</Text> : null}
+      </View>
+    </Animated.View>
+  );
+}
 
 export default function CartScreen() {
-  const { lines, subtotal, count, setQuantity } = useShop();
+  const { lines, subtotal, count, clear } = useShop();
+  const askConfirm = useConfirm();
 
   if (lines.length === 0) {
-    return <Screen><EmptyState icon="shopping-cart" message="Your cart is empty." action={<Button label="Browse products" variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
+    return <Screen><EmptyState icon="shopping-cart" message="Your cart is empty. Add something you like and it will show up here." action={<Button label="Browse products" variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
   }
 
   return (
     <Screen footer={<Button icon="arrow-right" label={`Checkout · ${price(subtotal)}`} onPress={() => router.push('/shop/checkout')} />}>
-      <Card title={`${count} ${count === 1 ? 'product' : 'products'} in cart`}>
-        {lines.map((line) => (
-          <View key={`${line.product_id}-${line.variant_label ?? ''}`} style={styles.line}>
-            <Pressable
-              style={styles.productPressable}
-              onPress={() => router.push({ pathname: '/shop/product/[id]', params: { id: line.product_id, variant: line.variant_label ?? '' } })}
-            >
-              <View style={styles.thumb}>
-                {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
-                {line.variant_label ? (
-                  <View style={styles.variantBadge}>
-                    <Text style={styles.variantBadgeText}>Option: {line.variant_label}</Text>
-                  </View>
-                ) : null}
-                <Text style={text.small}>{price(line.price)} each</Text>
-              </View>
-            </Pressable>
+      <View style={styles.headerRow}>
+        <Text style={text.heading}>{count} {count === 1 ? 'product' : 'products'} in your cart</Text>
+        <Pressable onPress={async () => { if (await askConfirm({ title: 'Clear your cart?', message: `All ${count} ${count === 1 ? 'product' : 'products'} will be removed.`, confirmLabel: 'Clear cart', cancelLabel: 'Keep items', icon: 'trash-2' })) clear(); }} hitSlop={10} accessibilityRole="button"><Text style={styles.clear}>Clear cart</Text></Pressable>
+      </View>
 
-            <View style={styles.rightCol}>
-              <View style={styles.topRight}>
-                <Text style={[text.heading, { fontVariant: ['tabular-nums'] }]}>{price(line.price * line.quantity)}</Text>
-                <Pressable
-                  onPress={() => setQuantity(line.product_id, line.variant_label, 0)}
-                  style={styles.deleteButton}
-                  accessibilityLabel="Remove item"
-                >
-                  <Icon name="trash-2" size={16} color={colors.danger} />
-                </Pressable>
-              </View>
-              <View style={styles.stepper}>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less">
-                  <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={14} color={line.quantity === 1 ? colors.danger : colors.text} />
-                </Pressable>
-                <Text style={styles.qty}>{line.quantity}</Text>
-                <Pressable onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={line.quantity >= line.max} style={[styles.stepButton, line.quantity >= line.max && { opacity: 0.3 }]} accessibilityLabel="More">
-                  <Icon name="plus" size={14} color={colors.text} />
-                </Pressable>
-              </View>
-            </View>
-          </View>
-        ))}
-        <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.md }}>
-          <InfoRow label="Subtotal" value={price(subtotal)} strong />
-          <Text style={text.small}>Delivery fee and coupon are added at checkout.</Text>
-        </View>
+      <View style={{ gap: space.md }}>
+        {lines.map((line) => <CartRow key={`${line.product_id}-${line.variant_label ?? ''}`} line={line} />)}
+      </View>
+
+      <Card>
+        <InfoRow label="Subtotal" value={price(subtotal)} strong />
+        <Text style={text.small}>Delivery fee and coupon are added at checkout.</Text>
       </Card>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  line: { flexDirection: 'row', gap: space.sm, alignItems: 'center', justifyContent: 'space-between' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  clear: { fontSize: 13, fontWeight: '700', color: colors.danger },
+  line: { flexDirection: 'row', gap: space.sm, alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.md, ...shadow },
   productPressable: { flex: 1, flexDirection: 'row', gap: space.md, alignItems: 'center' },
-  thumb: { width: 56, height: 56, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
+  thumb: { width: 64, height: 64, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
   variantBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.sm, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },
   variantBadgeText: { fontSize: 11, fontWeight: '700', color: colors.primaryDark },
-  rightCol: { alignItems: 'flex-end', gap: 6 },
-  topRight: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
-  deleteButton: { padding: 4, borderRadius: radius.sm, backgroundColor: colors.dangerSoft },
-  stepper: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: colors.border, borderRadius: radius.sm, backgroundColor: colors.white },
-  stepButton: { width: 30, height: 28, alignItems: 'center', justifyContent: 'center' },
-  qty: { minWidth: 20, textAlign: 'center', fontWeight: '700', fontSize: 13, color: colors.text }
+  rightCol: { alignItems: 'flex-end', gap: 8 },
+  lineTotal: { fontSize: 15, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
+  stepper: { flexDirection: 'row', alignItems: 'center', borderRadius: radius.pill, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },
+  stepButton: { width: 34, height: 32, alignItems: 'center', justifyContent: 'center' },
+  qty: { minWidth: 22, textAlign: 'center', fontWeight: '800', fontSize: 14, color: colors.text },
+  maxHint: { fontSize: 10, color: colors.textMuted }
 });

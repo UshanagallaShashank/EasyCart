@@ -1,20 +1,18 @@
 // One order for the customer. For a delivery: where it is, the secret code to give the rider, and who is coming.
-import { Alert, Platform, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Icon } from '@/components/icon';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
+import { useReorder } from '@/features/shop/reorder';
 import { DeliverySteps, ProofPhoto, RiderCard, openMap } from '@/features/delivery/delivery-parts';
 import { api, errorMessage } from '@/lib/api';
 import { date, price, shortId } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
-
-function confirm(message: string, onYes: () => void) {
-  if (Platform.OS === 'web') { if (globalThis.confirm?.(message)) onYes(); return; }
-  Alert.alert('Cancel order?', message, [{ text: 'Keep it', style: 'cancel' }, { text: 'Cancel order', style: 'destructive', onPress: onYes }]);
-}
 
 export default function CustomerOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -23,6 +21,8 @@ export default function CustomerOrderScreen() {
   const { data: delivery } = useMyDelivery(id, Boolean(isDelivery));
   const queryClient = useQueryClient();
   const toast = useToast();
+  const reorder = useReorder();
+  const askConfirm = useConfirm();
 
   const cancel = useMutation({
     mutationFn: () => api(`/my-orders/${id}/cancel`, { method: 'PATCH' }),
@@ -39,9 +39,16 @@ export default function CustomerOrderScreen() {
   return (
     <Screen onRefresh={refetch} refreshing={isRefetching}>
       <Stack.Screen options={{ title: `Order ${shortId(order.id)}` }} />
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Text style={text.muted}>Placed {date(order.created_at)}</Text>
-        <Badge tone={status.tone} label={status.label} />
+      <View style={styles.hero}>
+        <View style={styles.heroIcon}>
+          <Icon name={order.status === 'cancelled' ? 'x-circle' : order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={26} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1, gap: 4 }}>
+          <Text style={styles.heroId}>{shortId(order.id)}</Text>
+          <Text style={text.small}>Placed {date(order.created_at)}</Text>
+          <Badge tone={status.tone} label={status.label} />
+        </View>
+        <Text style={styles.heroTotal}>{price(order.total)}</Text>
       </View>
 
       {isDelivery && delivery && (
@@ -91,12 +98,17 @@ export default function CustomerOrderScreen() {
         <Text style={text.small}>Cash on delivery · {order.payment_status === 'paid' ? 'Paid' : order.status === 'cancelled' ? 'Nothing to pay' : 'Pay when you receive it'}</Text>
       </Card>
 
-      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={() => confirm('The store has not started on it yet, so you can still cancel.', () => cancel.mutate())} />}
+      {order.status !== 'cancelled' && <Button variant="outline" icon="refresh-cw" label="Order again" onPress={() => reorder(order)} />}
+      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: 'The store has not started on it yet, so you can still cancel.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep my order', icon: 'x-circle' })) cancel.mutate(); }} />}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  hero: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.xl, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg },
+  heroIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+  heroId: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
+  heroTotal: { fontSize: 20, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },
   code: { backgroundColor: colors.primary, borderRadius: radius.lg, padding: space.lg, alignItems: 'center', gap: 4 },
   codeLabel: { fontSize: 11, fontWeight: '700', letterSpacing: 1, color: '#e0f2fe' },
   codeValue: { fontSize: 38, fontWeight: '800', letterSpacing: 8, color: colors.white, fontFamily: 'monospace' },

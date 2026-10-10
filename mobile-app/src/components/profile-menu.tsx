@@ -6,6 +6,7 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { Avatar } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { useConfirmedSignOut } from './confirm';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
@@ -13,7 +14,8 @@ import { CustomerSupportModal } from '@/components/customer-support-modal';
 export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const { user, signOut } = useSession();
+  const { user } = useSession();
+  const logout = useConfirmedSignOut();
   const { count } = useShop();
   const insets = useSafeAreaInsets();
 
@@ -103,7 +105,7 @@ export function ProfileMenu() {
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                void signOut();
+                setTimeout(() => void logout(), 300);
               }}
             >
               <Icon name="log-out" size={17} color="#ef4444" />

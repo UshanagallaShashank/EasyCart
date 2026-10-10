@@ -3,6 +3,7 @@ import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } f
 import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
+import { FadeIn, PressScale } from '@/components/motion';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
@@ -12,9 +13,11 @@ import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
 
+const PHOTO_HEIGHT = 300;
+
 export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
-  const { slug, add, lines, setQuantity: updateCartQuantity } = useShop();
+  const { slug, add, lines, subtotal, setQuantity: updateCartQuantity } = useShop();
   const toast = useToast();
   const { data: product, isLoading } = useProduct(slug, id);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
@@ -22,6 +25,13 @@ export default function ProductScreen() {
   const [photo, setPhoto] = useState(0);
   const pagerRef = useRef<ScrollView>(null);
   const { width: windowWidth } = useWindowDimensions();
+
+  useEffect(() => {
+    setVariantLabel(queryVariant);
+    setQuantity(1);
+    setPhoto(0);
+    pagerRef.current?.scrollTo({ x: 0, animated: false });
+  }, [id, queryVariant]);
 
   // Width of the photo container within Screen column (padding 16 on each side)
   const cardWidth = Math.max(280, Math.min(windowWidth - 32, 680));
@@ -61,15 +71,17 @@ export default function ProductScreen() {
       ? { label: `Only ${stock} left`, fg: colors.warning, bg: colors.warningSoft, border: '#fde68a', dot: '#f59e0b' }
       : { label: 'In Stock', fg: colors.success, bg: colors.successSoft, border: '#a7f3d0', dot: '#10b981' };
 
-  function handleCartAction() {
+  function handleAddToCart() {
     if (!product) return;
-    if (existingCartLine) {
-      updateCartQuantity(product.id, variant?.label, quantity);
-      toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} cart updated`, 'success');
-    } else {
-      add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
-      toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} added to cart`, 'success');
-    }
+    if (__DEV__) console.log(`[cart] tapped add: ${product.name}, option=${variant?.label ?? 'none'}, stock=${stock}, quantity=${quantity}`);
+    add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
+    toast(`${product.name}${variant?.label ? ` (${variant.label})` : ''} added to cart`, 'success');
+  }
+
+  // Once the item is in the cart, the stepper changes the cart straight away.
+  function changeCartQuantity(next: number) {
+    if (!product || !existingCartLine) return;
+    updateCartQuantity(product.id, variant?.label, Math.min(stock, next));
   }
 
   function handleThumbnailPress(index: number) {
@@ -77,8 +89,27 @@ export default function ProductScreen() {
     pagerRef.current?.scrollTo({ x: index * cardWidth, animated: true });
   }
 
+  const footer = existingCartLine ? (
+    <View style={styles.footerRow}>
+      <View style={styles.stepper}>
+        <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity - 1)} style={styles.stepButton} accessibilityLabel={existingCartLine.quantity === 1 ? 'Remove from cart' : 'Less'}>
+          <Icon name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={existingCartLine.quantity === 1 ? colors.danger : colors.primaryDark} />
+        </PressScale>
+        <Text style={styles.qty}>{existingCartLine.quantity}</Text>
+        <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity + 1)} disabled={existingCartLine.quantity >= stock} style={[styles.stepButton, existingCartLine.quantity >= stock && { opacity: 0.35 }]} accessibilityLabel="More">
+          <Icon name="plus" size={16} color={colors.primaryDark} />
+        </PressScale>
+      </View>
+      <View style={{ flex: 1 }}>
+        <Button icon="shopping-cart" label={`View cart · ${price(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
+      </View>
+    </View>
+  ) : (
+    <Button variant="primary" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : `Add to cart · ${price(unitPrice * quantity)}`} onPress={handleAddToCart} disabled={needsVariant || stock <= 0} />
+  );
+
   return (
-    <Screen footer={<Button variant="primary" icon="shopping-bag" label={needsVariant ? 'Choose an option' : stock <= 0 ? 'Out of stock' : existingCartLine ? `Update cart · ${price(unitPrice * quantity)}` : `Add to cart · ${price(unitPrice * quantity)}`} onPress={handleCartAction} disabled={needsVariant || stock <= 0} />}>
+    <Screen footer={footer}>
       <Stack.Screen options={{ title: product.name }} />
 
       {/* Flipkart-style 1-Image View with Carousel Paging */}
@@ -92,8 +123,8 @@ export default function ProductScreen() {
             snapToInterval={cardWidth}
             snapToAlignment="start"
             decelerationRate="fast"
-            style={{ width: cardWidth, height: 240 }}
-            contentContainerStyle={{ width: cardWidth * images.length, height: 240 }}
+            style={{ width: cardWidth, height: PHOTO_HEIGHT }}
+            contentContainerStyle={{ width: cardWidth * images.length, height: PHOTO_HEIGHT }}
             onMomentumScrollEnd={(e) => {
               const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
               if (newIndex >= 0 && newIndex < images.length) {
@@ -107,7 +138,7 @@ export default function ProductScreen() {
                 key={`${uri}-${idx}`}
                 style={{
                   width: cardWidth,
-                  height: 240,
+                  height: PHOTO_HEIGHT,
                   flexShrink: 0,
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -116,18 +147,18 @@ export default function ProductScreen() {
               >
                 <Image
                   source={{ uri }}
-                  style={{ width: cardWidth - 28, height: 212 }}
+                  style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }}
                   resizeMode="contain"
                 />
               </View>
             ))}
           </ScrollView>
         ) : images[0] ? (
-          <View style={{ width: cardWidth, height: 240, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
-            <Image source={{ uri: images[0] }} style={{ width: cardWidth - 28, height: 212 }} resizeMode="contain" />
+          <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
+            <Image source={{ uri: images[0] }} style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }} resizeMode="contain" />
           </View>
         ) : (
-          <View style={{ width: cardWidth, height: 240, alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
             <Icon name="image" size={36} color={colors.textFaint} />
           </View>
         )}
@@ -195,7 +226,7 @@ export default function ProductScreen() {
         </ScrollView>
       )}
 
-      <View style={styles.details}>
+      <FadeIn style={styles.details}>
         {!needsVariant && (
           <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
             <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
@@ -205,7 +236,7 @@ export default function ProductScreen() {
         <Text style={styles.title}>{product.name}</Text>
         <Text style={styles.price}>{price(unitPrice)}</Text>
         {product.description ? <Text style={styles.description}>{product.description}</Text> : null}
-      </View>
+      </FadeIn>
       <View style={styles.divider} />
 
       {product.variants.length > 0 && (
@@ -215,22 +246,22 @@ export default function ProductScreen() {
             {product.variants.map((v) => {
               const active = v.label === variantLabel;
               return (
-                <Pressable key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
+                <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
                   <Text style={[styles.variantText, active && { color: colors.primaryDark }]}>{v.label}</Text>
-                </Pressable>
+                </PressScale>
               );
             })}
           </View>
         </View>
       )}
 
-      {!needsVariant && stock > 0 && (
+      {!needsVariant && stock > 0 && !existingCartLine && (
         <View style={styles.stepperRow}>
           <Text style={text.heading}>Quantity</Text>
           <View style={styles.stepper}>
-            <Pressable onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={15} color={colors.text} /></Pressable>
+            <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
             <Text style={styles.qty}>{quantity}</Text>
-            <Pressable onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={15} color={colors.text} /></Pressable>
+            <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.primaryDark} /></PressScale>
           </View>
         </View>
       )}
@@ -244,7 +275,7 @@ export default function ProductScreen() {
 }
 
 const styles = StyleSheet.create({
-  photo: { height: 240, borderRadius: 18, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: '#e8edf3', position: 'relative' },
+  photo: { height: PHOTO_HEIGHT, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: '#e8edf3', position: 'relative' },
   navBtnLeft: {
     position: 'absolute',
     left: 8,
@@ -291,12 +322,12 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(148, 163, 184, 0.45)' },
   dotActive: { width: 14, backgroundColor: colors.primary, borderRadius: 3 },
   details: { gap: 6 },
-  title: { fontSize: 18, fontWeight: '700', color: colors.text, letterSpacing: -0.2, lineHeight: 24 },
+  title: { fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.4, lineHeight: 28 },
   stock: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
   stockDot: { width: 6, height: 6, borderRadius: 3 },
   stockText: { fontSize: 11, fontWeight: '700' },
-  price: { fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.2 },
-  description: { fontSize: 13, lineHeight: 18, color: colors.textMuted },
+  price: { fontSize: 28, fontWeight: '900', color: colors.primaryDark, letterSpacing: -0.6 },
+  description: { fontSize: 14, lineHeight: 21, color: colors.textMuted },
   divider: { height: 1, backgroundColor: colors.border },
   trust: { gap: 8, padding: 12, borderRadius: radius.md, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },
   trustRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -307,8 +338,9 @@ const styles = StyleSheet.create({
   variant: { minWidth: 56, height: 36, paddingHorizontal: 12, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   variantActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   variantText: { fontSize: 13, fontWeight: '600', color: colors.text },
+  footerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: colors.border, borderRadius: radius.pill, backgroundColor: colors.white, paddingHorizontal: 4 },
-  stepButton: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center' },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: colors.primaryTint, borderRadius: radius.pill, backgroundColor: colors.primarySoft, paddingHorizontal: 4 },
+  stepButton: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   qty: { minWidth: 20, textAlign: 'center', fontSize: 14, fontWeight: '700', color: colors.text }
 });

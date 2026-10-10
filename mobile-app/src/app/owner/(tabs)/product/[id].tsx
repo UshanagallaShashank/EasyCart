@@ -11,7 +11,7 @@ import { pickPhotos } from '@/lib/device';
 import { errorMessage, fileUrl } from '@/lib/api';
 import { colors, radius, space, text } from '@/theme/theme';
 
-export default function OwnerProduct() {
+function OwnerProduct() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const products = useOwnerProducts();
@@ -270,3 +270,9 @@ const styles = StyleSheet.create({
   setCoverBtn: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15, 23, 42, 0.75)', paddingVertical: 3, alignItems: 'center' },
   setCoverText: { fontSize: 9, fontWeight: '700', color: colors.white }
 });
+
+// Tab pages stay mounted, so keying by id makes opening a different item start with a clean screen.
+export default function OwnerProductPage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <OwnerProduct key={id} />;
+}

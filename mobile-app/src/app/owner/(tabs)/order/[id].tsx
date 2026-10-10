@@ -4,6 +4,7 @@ import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { ownerCalls, orderStage, useOrder, useOrderDelivery, useOwnerAction } from '@/features/owner/owner-api';
 import { DeliverySteps, ProofPhoto, RiderCard, TimelineList, openMap } from '@/features/delivery/delivery-parts';
 import { errorMessage } from '@/lib/api';
@@ -17,6 +18,7 @@ function NextStep({ order }: { order: Order }) {
   const fulfil = useOwnerAction(ownerCalls.setFulfillment);
   const run = <T,>(m: { mutate(input: T, o: object): void }, input: T, done: string) => m.mutate(input, { onSuccess: () => toast(done, 'success'), onError: (e: unknown) => toast(errorMessage(e), 'error') });
   const busy = status.isPending || fulfil.isPending;
+  const askConfirm = useConfirm();
   const pickup = order.fulfillment_method === 'pickup';
   const canConfirm = order.status === 'pending';
   const canReady = pickup && order.status === 'confirmed' && order.fulfillment_status === 'not_started';
@@ -30,7 +32,7 @@ function NextStep({ order }: { order: Order }) {
       {canConfirm && <Button icon="check" label="Confirm order" loading={busy} onPress={() => run(status, { id: order.id, status: 'confirmed' as const }, 'Order confirmed')} />}
       {canReady && <Button icon="package" label="Ready for pickup" loading={busy} onPress={() => run(fulfil, { id: order.id, fulfillment_status: 'ready_for_pickup' }, 'Customer can collect it')} />}
       {canComplete && <Button variant="success" icon="check-circle" label="Customer collected it" loading={busy} onPress={() => run(status, { id: order.id, status: 'fulfilled' as const }, 'Order completed')} />}
-      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={busy} onPress={() => run(status, { id: order.id, status: 'cancelled' as const }, 'Order cancelled, items back in stock')} />}
+      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={busy} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: 'The items go back in stock and the customer is told it was cancelled.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep order', icon: 'x-circle' })) run(status, { id: order.id, status: 'cancelled' as const }, 'Order cancelled, items back in stock'); }} />}
     </Card>
   );
 }

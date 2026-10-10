@@ -5,17 +5,19 @@ import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Avatar, Badge, Button, Card, EmptyState, Field, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { adminCalls, useAdminAction, useRider } from '@/features/admin/admin-api';
 import { errorMessage, fileUrl } from '@/lib/api';
 import { dateTime, price } from '@/lib/format';
 import { RIDER_STATUS, VEHICLE_LABELS } from '@/lib/delivery-labels';
 import { radius, space, text } from '@/theme/theme';
 
-export default function AdminRider() {
+function AdminRider() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data, isLoading } = useRider(id);
   const action = useAdminAction(adminCalls.riderAction);
   const toast = useToast();
+  const askConfirm = useConfirm();
   const [note, setNote] = useState('');
   if (isLoading) return <Loading />;
   if (!data) return <Screen><EmptyState message="Partner not found." /></Screen>;
@@ -70,11 +72,17 @@ export default function AdminRider() {
       <Card title="Review" icon="check-square">
         {(rider.status === 'pending' || rider.status === 'approved') && <Field label="Note (needed to reject or suspend)" value={note} onChangeText={setNote} placeholder="e.g. Licence photo is blurry" multiline />}
         {(rider.status === 'pending' || rider.status === 'rejected') && <Button variant="success" icon="check" label="Approve" loading={action.isPending} disabled={rider.missing_steps.length > 0} onPress={() => run('approve', `${rider.full_name} can now deliver`)} />}
-        {rider.status === 'pending' && <Button variant="danger" icon="x" label="Reject" disabled={note.trim().length < 3} onPress={() => run('reject', 'Application rejected')} />}
-        {rider.status === 'approved' && <Button variant="danger" icon="slash" label="Suspend" disabled={note.trim().length < 3} onPress={() => run('suspend', 'Partner suspended')} />}
+        {rider.status === 'pending' && <Button variant="danger" icon="x" label="Reject" disabled={note.trim().length < 3} onPress={async () => { if (await askConfirm({ title: 'Reject this application?', message: 'The applicant will see your note and can not deliver.', confirmLabel: 'Reject', cancelLabel: 'Go back', icon: 'x' })) run('reject', 'Application rejected'); }} />}
+        {rider.status === 'approved' && <Button variant="danger" icon="slash" label="Suspend" disabled={note.trim().length < 3} onPress={async () => { if (await askConfirm({ title: 'Suspend this partner?', message: 'They stop getting orders until you reactivate them.', confirmLabel: 'Suspend', cancelLabel: 'Go back', icon: 'slash' })) run('suspend', 'Partner suspended'); }} />}
         {rider.status === 'suspended' && <Button icon="rotate-ccw" label="Reactivate" onPress={() => run('reactivate', 'Partner reactivated')} />}
         {rider.status === 'draft' && <Text style={text.small}>The partner has not sent the application yet.</Text>}
       </Card>
     </Screen>
   );
+}
+
+// Tab pages stay mounted, so keying by id makes opening a different item start with a clean screen.
+export default function AdminRiderPage() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return <AdminRider key={id} />;
 }

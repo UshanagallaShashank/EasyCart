@@ -1,9 +1,10 @@
 // Checkout: pickup or delivery, address, coupon, and the final bill.
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
+import { PressScale } from '@/components/motion';
 import { useMutation } from '@tanstack/react-query';
 import { Button, Card, EmptyState, Field, InfoRow, Notice, Screen } from '@/components/ui';
 import { addressLocation, addressText, useAddresses } from '@/features/shop/addresses';
@@ -70,11 +71,13 @@ export default function CheckoutScreen() {
       <Card title="How do you want it?">
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
-            <Pressable key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && styles.methodActive]} accessibilityState={{ selected: method === option }}>
-              <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={18} color={method === option ? colors.primary : colors.textMuted} />
+            <PressScale key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && styles.methodActive]} accessibilityState={{ selected: method === option }}>
+              <View style={[styles.methodIcon, method === option && { backgroundColor: colors.primaryTint }]}>
+                <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? colors.primary : colors.textMuted} />
+              </View>
               <Text style={[styles.methodText, method === option && { color: colors.primaryDark }]}>{option === 'delivery' ? 'Delivery' : 'Pick up'}</Text>
               <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : 'Free') : 'Free'}</Text>
-            </Pressable>
+            </PressScale>
           ))}
         </View>
         {method === 'delivery' ? (
@@ -107,6 +110,13 @@ export default function CheckoutScreen() {
           <View style={{ flex: 1 }}><Field label="Code" value={coupon} onChangeText={setCoupon} autoCapitalize="characters" placeholder="e.g. WELCOME10" /></View>
           <Button small variant="outline" label="Apply" onPress={() => applyCoupon.mutate()} loading={applyCoupon.isPending} disabled={!coupon.trim()} />
         </View>
+        {discount && (
+          <View style={styles.applied}>
+            <Icon name="check-circle" size={18} color={colors.success} />
+            <Text style={[text.muted, { flex: 1, color: colors.success, fontWeight: '700' }]}>You save {price(discount.amount)} with {discount.code}</Text>
+            <Button small variant="ghost" label="Remove" onPress={() => { setDiscount(null); setCoupon(''); }} />
+          </View>
+        )}
       </Card>
 
       <Card title="Bill">
@@ -124,7 +134,9 @@ const styles = StyleSheet.create({
   addressBox: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.primarySoft, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primaryTint, padding: space.md },
   addressIcon: { width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' },
   methods: { flexDirection: 'row', gap: space.sm },
-  method: { flex: 1, alignItems: 'center', gap: 4, padding: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
+  method: { flex: 1, alignItems: 'center', gap: 6, padding: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white },
   methodActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  methodText: { fontSize: 14, fontWeight: '600', color: colors.text }
+  methodIcon: { width: 42, height: 42, borderRadius: 13, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
+  methodText: { fontSize: 14, fontWeight: '700', color: colors.text },
+  applied: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.successSoft, borderRadius: radius.md, padding: space.md }
 });
