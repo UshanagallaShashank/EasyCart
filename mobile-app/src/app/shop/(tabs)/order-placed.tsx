@@ -46,7 +46,7 @@ function OrderPlaced() {
             <Card>
               <InfoRow label="Order" value={shortId(order.id)} />
               <InfoRow label={itemCount === 1 ? t('1 item') : t('{n} items', { n: itemCount })} value={price(order.total)} strong />
-              <Text style={text.small}>{delivery ? t('Pay in cash when it arrives.') : t('Pay in cash when you collect it.')}</Text>
+              <Text style={text.small}>{order.payment_status === 'paid' ? t('Paid online. Nothing to pay at the door.') : delivery ? t('Pay in cash when it arrives.') : t('Pay in cash when you collect it.')}</Text>
             </Card>
           </Animated.View>
         )}

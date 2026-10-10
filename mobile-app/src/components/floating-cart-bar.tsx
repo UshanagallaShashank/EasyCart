@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
@@ -60,7 +61,7 @@ export function FloatingCartBar() {
                 <Image
                   source={{ uri: item.image }}
                   style={styles.thumbnailImg}
-                  resizeMode="cover"
+                  contentFit="cover"
                 />
               ) : (
                 <View style={styles.thumbnailPlaceholder}>

@@ -5,6 +5,7 @@ import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { useShop } from '@/features/shop/shop-context';
 import { useT } from '@/lib/i18n';
+import { useOrderAlerts } from '@/features/shop/use-order-alerts';
 
 function HeaderRightActions() {
   return (
@@ -21,6 +22,7 @@ const ACTIVE_FOR = {
   checkout: 'cart',
   'order/[id]': 'orders',
   'order-placed': 'orders',
+  pay: 'orders',
   nearby: 'index',
   addresses: 'account',
   'store-request': 'account'
@@ -30,6 +32,7 @@ export default function ShopTabs() {
   const tabOptions = useTabOptions(ACTIVE_FOR);
   const { lines } = useShop();
   const t = useT();
+  useOrderAlerts();
   const units = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
@@ -40,6 +43,7 @@ export default function ShopTabs() {
       <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user') }} />
       <Tabs.Screen name="product/[id]" options={hiddenPage(t('Product'))} />
       <Tabs.Screen name="checkout" options={hiddenPage(t('Checkout'))} />
+      <Tabs.Screen name="pay" options={hiddenPage(t('Pay online'))} />
       <Tabs.Screen name="nearby" options={hiddenPage(t('Shops near you'))} />
       <Tabs.Screen name="order/[id]" options={hiddenPage(t('Order'))} />
       <Tabs.Screen name="order-placed" options={{ title: t('Order placed'), href: null, headerShown: false }} />

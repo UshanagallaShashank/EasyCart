@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
-import { Animated, Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
@@ -8,6 +9,7 @@ import { PressScale, Skeleton } from '@/components/motion';
 import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { ShopSwitcher } from '@/features/shop/shop-switcher';
 import { useT } from '@/lib/i18n';
+import { estimateDelivery } from '@/lib/eta';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
@@ -154,7 +156,7 @@ export default function ShopHome() {
 
           {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
           <View style={styles.hero}>
-            {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : null}
+            {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
             <LinearGradient
               colors={banner ? ['rgba(3,105,161,0.95)', 'rgba(2,132,199,0.88)'] : ['#0369a1', '#0284c7', '#0ea5e9']}
               start={{ x: 0, y: 0 }}
@@ -163,7 +165,7 @@ export default function ShopHome() {
             />
             <View style={styles.heroCircleBig} />
             <View style={styles.heroCircleSmall} />
-            <Text style={styles.heroTag}>{activeAddress ? t('Delivering to {zip}', { zip: activeAddress.zip }) : t('Local store, delivered')}</Text>
+            <Text style={styles.heroTag}>{activeAddress ? t('Delivering to {zip}', { zip: activeAddress.zip }) : t('Local store, delivered')}{range?.isEligible ? ` · ${(() => { const eta = estimateDelivery(range.distanceKm); return t('{low}–{high} min', { low: eta.low, high: eta.high }); })()}` : ''}</Text>
             <Text style={styles.heroTitle} numberOfLines={2}>{t('Welcome to')}{'\n'}{store.data.name}</Text>
             <Text style={styles.heroBody} numberOfLines={2}>{store.data.address ? t('{address}. Delivered to your door.', { address: store.data.address }) : t('Fresh products from your neighbourhood store.')}</Text>
             <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">

@@ -1,6 +1,7 @@
 // One product in the grid: an inset rounded photo, name, price, and a wide ADD button that turns into a quantity stepper.
 import { memo, useCallback, useMemo } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
@@ -13,6 +14,7 @@ import type { Product } from '@/types/catalog';
 import { useShop, type CartLine } from './shop-context';
 import { useToast } from '@/components/toast';
 import { useT } from '@/lib/i18n';
+import { useContent } from '@/lib/content-translation';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;
@@ -46,6 +48,7 @@ export function useCardActions(): CardActions {
 
 function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
   const t = useT();
+  const name = useContent(product.name);
   const image = fileUrl(product.images[0]);
   const stock = productStock(product);
   const needsChoice = product.variants.length > 0;
@@ -63,7 +66,7 @@ function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity
     <FadeIn index={index} style={{ width }}>
       <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} style={styles.card} accessibilityRole="button" accessibilityLabel={product.name}>
         <View style={styles.imageWrap}>
-          {image ? <Image source={{ uri: image }} style={styles.image} resizeMode="cover" /> : <Icon name="image" size={28} color={colors.textFaint} />}
+          {image ? <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} cachePolicy="memory-disk" recyclingKey={product.id} /> : <Icon name="image" size={28} color={colors.textFaint} />}
           <View style={styles.heart}><FavouriteButton productId={product.id} size={30} /></View>
           {stock <= 0 ? (
             <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><Text style={[styles.badgeText, { color: colors.white }]}>{t('Sold out')}</Text></View>
@@ -73,7 +76,7 @@ function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity
         </View>
 
         <View style={styles.body}>
-          <Text style={styles.name} numberOfLines={2}>{product.name}</Text>
+          <Text style={styles.name} numberOfLines={2}>{name}</Text>
           <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
           <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
 

@@ -1,13 +1,14 @@
 // One order for the customer. For a delivery: where it is, the secret code to give the rider, and who is coming.
 import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Icon } from '@/components/icon';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
 import { useT } from '@/lib/i18n';
+import { ContentText } from '@/components/content-text';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { RateOrderCard } from '@/features/shop/rate-order-card';
@@ -99,7 +100,7 @@ export default function CustomerOrderScreen() {
         {order.items.map((item, index) => (
           <View key={index} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: space.md }}>
             <View style={{ flex: 1 }}>
-              <Text style={text.body} numberOfLines={2}>{item.name}</Text>
+              <ContentText value={item.name} style={text.body} numberOfLines={2} />
               <Text style={text.small}>{item.variant_label ? `${item.variant_label} · ` : ''}{price(item.price)} × {item.quantity}</Text>
             </View>
             <Text style={[text.body, { fontWeight: '600' }]}>{price(item.price * item.quantity)}</Text>
@@ -112,8 +113,12 @@ export default function CustomerOrderScreen() {
         {order.discount_amount > 0 && <InfoRow label={t('Coupon {code}', { code: order.coupon_code ?? '' })} value={`-${price(order.discount_amount)}`} tone="success" />}
         {order.delivery_fee > 0 && <InfoRow label="Delivery fee" value={price(order.delivery_fee)} />}
         <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}><InfoRow label="Total" value={price(order.total)} strong /></View>
-        <Text style={text.small}>{t(order.payment_status === 'paid' ? 'Cash on delivery · Paid' : order.status === 'cancelled' ? 'Cash on delivery · Nothing to pay' : 'Cash on delivery · Pay when you receive it')}</Text>
+        <Text style={text.small}>{t(order.payment_method === 'online' ? (order.payment_status === 'paid' ? 'Paid online' : order.status === 'cancelled' ? 'Online payment · Nothing to pay' : 'Online payment · Waiting for payment') : order.payment_status === 'paid' ? 'Cash on delivery · Paid' : order.status === 'cancelled' ? 'Cash on delivery · Nothing to pay' : 'Cash on delivery · Pay when you receive it')}</Text>
       </Card>
+
+      {order.payment_method === 'online' && order.payment_status === 'unpaid' && order.status !== 'cancelled' && (
+        <Button icon="credit-card" label={`${t('Pay now')} · ${price(order.total)}`} onPress={() => router.push(`/shop/pay?id=${order.id}`)} />
+      )}
 
       {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} />}
 

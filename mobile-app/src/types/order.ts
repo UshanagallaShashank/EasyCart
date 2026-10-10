@@ -21,7 +21,7 @@ export interface Order {
   total: number;
   status: 'pending' | 'confirmed' | 'fulfilled' | 'cancelled';
   payment_status: 'unpaid' | 'paid';
-  payment_method: 'cash_on_delivery';
+  payment_method: 'cash_on_delivery' | 'online';
   fulfillment_method: 'pickup' | 'delivery';
   delivery_address: string | null;
   delivery_fee: number;

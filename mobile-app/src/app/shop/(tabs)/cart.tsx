@@ -1,5 +1,6 @@
 // The cart for the current shop. Lines slide in and out, and the quantity buttons give a little press feedback.
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { router, useIsFocused } from 'expo-router';
 import { Text } from '@/components/text';
@@ -11,6 +12,7 @@ import { useShop, type CartLine } from '@/features/shop/shop-context';
 import { price } from '@/lib/format';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
+import { ContentText } from '@/components/content-text';
 
 function CartRow({ line }: { line: CartLine }) {
   const { setQuantity } = useShop();
@@ -34,7 +36,7 @@ function CartRow({ line }: { line: CartLine }) {
           {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={20} color={colors.textFaint} />}
         </View>
         <View style={{ flex: 1, gap: 3 }}>
-          <Text style={text.heading} numberOfLines={2}>{line.name}</Text>
+          <ContentText value={line.name} style={text.heading} numberOfLines={2} />
           {line.variant_label ? (
             <View style={styles.variantBadge}>
               <Text style={styles.variantBadgeText}>Option: {line.variant_label}</Text>

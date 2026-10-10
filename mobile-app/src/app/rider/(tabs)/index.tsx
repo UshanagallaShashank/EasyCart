@@ -3,7 +3,6 @@ import { router } from 'expo-router';
 import { Button, Card, EmptyState, HeroHeader, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
 import { ActiveOrderRow, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
-import { useOfferAlert } from '@/features/rider/use-offer-alert';
 import { ApplicationStatus } from '@/features/rider/application-status';
 import { price } from '@/lib/format';
 
@@ -18,7 +17,6 @@ export default function RiderHome() {
   const { data: rider, isLoading } = useMyRider();
   const approved = rider?.status === 'approved';
   const home = useRiderHome(approved);
-  useOfferAlert(home.data?.offers);
 
   if (isLoading || !rider) return <Loading />;
 

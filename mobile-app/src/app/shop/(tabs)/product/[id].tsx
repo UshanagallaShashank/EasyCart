@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
 import { useT } from '@/lib/i18n';
+import { useContent } from '@/lib/content-translation';
 import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
@@ -23,6 +25,8 @@ export default function ProductScreen() {
   const toast = useToast();
   const t = useT();
   const { data: product, isLoading } = useProduct(slug, id);
+  const name = useContent(product?.name);
+  const description = useContent(product?.description);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
   const [quantity, setQuantity] = useState(1);
   const [photo, setPhoto] = useState(0);
@@ -117,7 +121,7 @@ export default function ProductScreen() {
 
   return (
     <Screen footer={footer}>
-      <Stack.Screen options={{ title: product.name }} />
+      <Stack.Screen options={{ title: name }} />
 
       {/* Flipkart-style 1-Image View with Carousel Paging */}
       <View style={[styles.photo, { width: cardWidth }]}>
@@ -155,14 +159,14 @@ export default function ProductScreen() {
                 <Image
                   source={{ uri }}
                   style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }}
-                  resizeMode="contain"
+                  contentFit="contain"
                 />
               </View>
             ))}
           </ScrollView>
         ) : images[0] ? (
           <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
-            <Image source={{ uri: images[0] }} style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }} resizeMode="contain" />
+            <Image source={{ uri: images[0] }} style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }} contentFit="contain" />
           </View>
         ) : (
           <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
@@ -228,7 +232,7 @@ export default function ProductScreen() {
                 style={[styles.thumb, active && styles.thumbActive]}
                 accessibilityLabel={`View photo ${index + 1}`}
               >
-                <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+                <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
               </Pressable>
             );
           })}
@@ -242,9 +246,9 @@ export default function ProductScreen() {
             <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
           </View>
         )}
-        <Text style={styles.title}>{product.name}</Text>
+        <Text style={styles.title}>{name}</Text>
         <Text style={styles.price}>{price(unitPrice)}</Text>
-        {product.description ? <Text style={styles.description}>{product.description}</Text> : null}
+        {product.description ? <Text style={styles.description}>{description}</Text> : null}
       </FadeIn>
       <View style={styles.divider} />
 

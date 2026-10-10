@@ -1,6 +1,7 @@
 // Store owner data and actions.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { findInCachedLists } from '@/lib/instant';
 import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { Order } from '@/types/order';
 import type { Product } from '@/types/catalog';
@@ -21,7 +22,15 @@ export interface OwnerStore {
 
 export const useOwnStore = () => useQuery({ queryKey: ['store'], queryFn: async () => (await api<{ store: OwnerStore }>('/stores/me')).store });
 export const useOrders = () => useQuery({ queryKey: ['orders'], queryFn: async () => (await api<{ orders: Order[] }>('/orders')).orders });
-export const useOrder = (id: string) => useQuery({ queryKey: ['orders', id], queryFn: async () => (await api<{ order: Order }>(`/orders/${id}`)).order });
+export function useOrder(id: string) {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ['orders', id],
+    queryFn: async () => (await api<{ order: Order }>(`/orders/${id}`)).order,
+    // Shown at once from the order list already on the phone.
+    placeholderData: () => findInCachedLists<Order>(queryClient, ['orders'], id)
+  });
+}
 export const useOrderDelivery = (id: string, enabled: boolean) => useQuery({ queryKey: ['orders', id, 'delivery'], queryFn: async () => (await api<{ delivery: StoreOrderDelivery }>(`/orders/${id}/delivery`)).delivery, enabled });
 export const useStoreDeliveries = () => useQuery({ queryKey: ['store-deliveries'], queryFn: async () => (await api<{ deliveries: StoreDeliveryRow[] }>('/delivery/orders')).deliveries });
 export const useStoreSettlements = () => useQuery({ queryKey: ['store-settlements'], queryFn: () => api<StoreSettlementSummary>('/delivery/settlements') });

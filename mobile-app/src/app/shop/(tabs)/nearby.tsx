@@ -1,6 +1,7 @@
 // "Shops near you": the customer's current location (or a pin they drop on the map) decides which shops they see.
 import { useEffect, useState } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
@@ -11,6 +12,7 @@ import { useNearbyShops } from '@/features/shop/shop-api';
 import { useShop } from '@/features/shop/shop-context';
 import { errorMessage, fileUrl } from '@/lib/api';
 import { readCurrentPosition, type Coords } from '@/lib/location';
+import { estimateDelivery } from '@/lib/eta';
 import { price } from '@/lib/format';
 import { accents, colors, radius, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
@@ -88,6 +90,15 @@ export default function NearbyShops() {
                     <View style={[styles.chip, { backgroundColor: shop.delivers_to_you ? accents.green.bg : accents.amber.bg }]}>
                       <Text style={[styles.chipText, { color: shop.delivers_to_you ? accents.green.fg : accents.amber.fg }]}>{shop.delivers_to_you ? t('Delivers to you') : t('Pickup only')}</Text>
                     </View>
+                    {shop.delivers_to_you ? (() => {
+                      const eta = estimateDelivery(shop.distance_km);
+                      return (
+                        <View style={[styles.chip, { backgroundColor: eta.fast ? accents.orange.bg : accents.sky.bg, flexDirection: 'row', alignItems: 'center', gap: 4 }]}>
+                          {eta.fast ? <Icon name="zap" size={12} color={accents.orange.fg} /> : <Icon name="clock" size={12} color={accents.sky.fg} />}
+                          <Text style={[styles.chipText, { color: eta.fast ? accents.orange.fg : accents.sky.fg }]}>{t('{low}–{high} min', { low: eta.low, high: eta.high })}</Text>
+                        </View>
+                      );
+                    })() : null}
                     {shop.delivers_to_you ? <Text style={text.small}>{shop.delivery_fee > 0 ? t('Delivery {fee}', { fee: price(shop.delivery_fee) }) : t('Free delivery')}</Text> : null}
                   </View>
                 </View>

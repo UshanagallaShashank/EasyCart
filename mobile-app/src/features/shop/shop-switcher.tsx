@@ -1,6 +1,7 @@
 // Lets a customer who shops at several stores jump between them from the top of the home screen.
 import { useState } from 'react';
-import { Image, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import Animated, { FadeIn as FadeInView, SlideInDown } from 'react-native-reanimated';
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
@@ -36,7 +37,7 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={styles.trigger} accessibilityRole="button" accessibilityLabel="Switch shop">
-        <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={styles.headerLogo} resizeMode="cover" />
+        <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={styles.headerLogo} contentFit="cover" />
         <Text style={styles.headerName} numberOfLines={1}>{name}</Text>
         <Icon name="chevron-down" size={18} color={colors.textMuted} />
       </Pressable>

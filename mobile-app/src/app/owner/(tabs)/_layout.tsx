@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router';
 import { SignOutButton, hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { useOrders } from '@/features/owner/owner-api';
+import { useNewOrderAlert } from '@/features/owner/use-new-order-alert';
 
 // While one of these pages is open, the tab next to it stays lit.
 const ACTIVE_FOR = {
@@ -16,6 +17,7 @@ const ACTIVE_FOR = {
 export default function OwnerTabs() {
   const tabOptions = useTabOptions(ACTIVE_FOR);
   const { data: orders } = useOrders();
+  useNewOrderAlert(orders);
   const fresh = (orders ?? []).filter((order) => order.status === 'pending').length;
   return (
     <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <SignOutButton /> }}>

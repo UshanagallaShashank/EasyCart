@@ -6,13 +6,9 @@ import { WebView, type WebViewMessageEvent } from 'react-native-webview';
 import { Text } from './text';
 import { colors, radius, text } from '@/theme/theme';
 import type { Coords } from '@/lib/location';
+import { forScript } from '@/lib/script-safe';
 
 export interface MapShop { name: string; latitude: number; longitude: number; distance_km: number }
-
-// Safe to place inside a <script>: a "<" in a shop name can never close the script early.
-function forScript(value: unknown): string {
-  return JSON.stringify(value).split('<').join('\\u003c');
-}
 
 function buildHtml(center: Coords, shops: MapShop[]): string {
   return `<!doctype html><html><head>

@@ -11,11 +11,12 @@ import { addressLocation, addressText, useAddresses } from '@/features/shop/addr
 import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
-import { useStore } from '@/features/shop/shop-api';
+import { useAppConfig, useStore } from '@/features/shop/shop-api';
 import { api, errorMessage } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
+import { estimateDelivery } from '@/lib/eta';
 import type { Order } from '@/types/order';
 
 type Method = 'delivery' | 'pickup';
@@ -26,6 +27,10 @@ export default function CheckoutScreen() {
   const toast = useToast();
   const t = useT();
   const [method, setMethod] = useState<Method>('delivery');
+  const config = useAppConfig();
+  const [payWith, setPayWith] = useState<'cash_on_delivery' | 'online'>('cash_on_delivery');
+  // If the server has switched online payment off, never send "online", whatever was chosen earlier.
+  const paymentChoice = config.data?.online_payments ? payWith : 'cash_on_delivery';
   const { active: address } = useAddresses();
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState<{ code: string; amount: number } | null>(null);
@@ -48,7 +53,7 @@ export default function CheckoutScreen() {
       method: 'POST',
       body: {
         items: lines.map((line) => ({ product_id: line.product_id, variant_label: line.variant_label, quantity: line.quantity })),
-        payment_method: 'cash_on_delivery',
+        payment_method: paymentChoice,
         fulfillment_method: method,
         ...(method === 'delivery' && address ? { delivery_address: addressText(address) } : {}),
         ...(discount ? { coupon_code: discount.code } : {})
@@ -57,7 +62,8 @@ export default function CheckoutScreen() {
     onSuccess: ({ order }) => {
       clear();
       toast('Order placed', 'success');
-      router.replace(`/shop/order-placed?id=${order.id}`);
+      // Online orders go straight to payment; cash orders to the celebration.
+      router.replace(paymentChoice === 'online' ? `/shop/pay?id=${order.id}` : `/shop/order-placed?id=${order.id}`);
     },
     onError: (err) => toast(errorMessage(err, 'Could not place the order'), 'error')
   });
@@ -69,7 +75,7 @@ export default function CheckoutScreen() {
   }
 
   return (
-    <Screen footer={<Button icon="check" label={`${t('Place order')} · ${price(total)}`} onPress={() => placeOrder.mutate()} loading={placeOrder.isPending} disabled={!ready} />}>
+    <Screen footer={<Button icon="check" label={`${t(paymentChoice === 'online' ? 'Place order & pay' : 'Place order')} · ${price(total)}`} onPress={() => placeOrder.mutate()} loading={placeOrder.isPending} disabled={!ready} />}>
       <Card title={t('How do you want it?')}>
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
@@ -101,6 +107,10 @@ export default function CheckoutScreen() {
               </>
             )}
             {range && <Notice tone={range.isEligible ? 'success' : 'warning'} icon={range.isEligible ? 'truck' : 'alert-triangle'}>{range.message}</Notice>}
+            {range?.isEligible ? (() => {
+              const eta = estimateDelivery(range.distanceKm);
+              return <Notice tone="primary" icon={eta.fast ? 'zap' : 'clock'}>{t('Estimated delivery')}: {t('{low}–{high} min', { low: eta.low, high: eta.high })}</Notice>;
+            })() : null}
           </>
         ) : (
           <Notice icon="shopping-bag">Pick up at {store?.name ?? 'the store'}{store?.address ? `, ${store.address}` : ''}. We will tell you when it is ready.</Notice>
@@ -121,12 +131,27 @@ export default function CheckoutScreen() {
         )}
       </Card>
 
+      {config.data?.online_payments ? (
+        <Card title={t('How will you pay?')}>
+          <View style={styles.methods}>
+            {(['cash_on_delivery', 'online'] as const).map((option) => (
+              <PressScale key={option} onPress={() => setPayWith(option)} style={[styles.method, paymentChoice === option && styles.methodActive]} accessibilityState={{ selected: paymentChoice === option }}>
+                <View style={[styles.methodIcon, paymentChoice === option && { backgroundColor: colors.primaryTint }]}>
+                  <Icon name={option === 'online' ? 'credit-card' : 'wallet'} size={20} color={paymentChoice === option ? colors.primary : colors.textMuted} />
+                </View>
+                <Text style={[styles.methodText, paymentChoice === option && { color: colors.primaryDark }]}>{option === 'online' ? t('Pay online') : t('Cash on delivery')}</Text>
+              </PressScale>
+            ))}
+          </View>
+        </Card>
+      ) : null}
+
       <Card title={t('Bill')}>
         <InfoRow label={t('Items')} value={price(subtotal)} />
         {discount && <InfoRow label={t('Coupon {code}', { code: discount.code })} value={`-${price(discount.amount)}`} tone="success" />}
         {method === 'delivery' && <InfoRow label={t('Delivery fee')} value={price(fee)} />}
         <View style={{ borderTopWidth: 1, borderTopColor: colors.borderSoft, paddingTop: space.sm }}><InfoRow label={t('Total')} value={price(total)} strong /></View>
-        <Text style={text.small}>{t('Pay in cash when you receive your order.')}</Text>
+        <Text style={text.small}>{paymentChoice === 'online' ? t('You will pay online right after placing the order.') : t('Pay in cash when you receive your order.')}</Text>
       </Card>
     </Screen>
   );

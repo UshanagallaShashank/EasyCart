@@ -20,7 +20,9 @@ function NextStep({ order }: { order: Order }) {
   const busy = status.isPending || fulfil.isPending;
   const askConfirm = useConfirm();
   const pickup = order.fulfillment_method === 'pickup';
-  const canConfirm = order.status === 'pending';
+  // An online order is worked on only once the customer has paid (the server checks this too).
+  const waitingForPayment = order.payment_method === 'online' && order.payment_status !== 'paid' && order.status === 'pending';
+  const canConfirm = order.status === 'pending' && !waitingForPayment;
   const canReady = pickup && order.status === 'confirmed' && order.fulfillment_status === 'not_started';
   const canComplete = pickup && order.fulfillment_status === 'ready_for_pickup';
   const canCancel = order.status !== 'cancelled' && order.status !== 'fulfilled' && order.fulfillment_status === 'not_started';
@@ -29,6 +31,7 @@ function NextStep({ order }: { order: Order }) {
 
   return (
     <Card title="Next step" icon="arrow-right-circle">
+      {waitingForPayment && <Notice icon="clock" tone="warning">The customer chose to pay online and has not paid yet. You can confirm the order once it is paid.</Notice>}
       {canConfirm && <Button icon="check" label="Confirm order" loading={busy} onPress={() => run(status, { id: order.id, status: 'confirmed' as const }, 'Order confirmed')} />}
       {canReady && <Button icon="package" label="Ready for pickup" loading={busy} onPress={() => run(fulfil, { id: order.id, fulfillment_status: 'ready_for_pickup' }, 'Customer can collect it')} />}
       {canComplete && <Button variant="success" icon="check-circle" label="Customer collected it" loading={busy} onPress={() => run(status, { id: order.id, status: 'fulfilled' as const }, 'Order completed')} />}
@@ -117,7 +120,7 @@ export default function OwnerOrderScreen() {
           {order.discount_amount > 0 && <InfoRow label={`Coupon ${order.coupon_code}`} value={`-${price(order.discount_amount)}`} tone="success" />}
           {order.delivery_fee > 0 && <InfoRow label="Delivery fee" value={price(order.delivery_fee)} />}
           <InfoRow label="Total" value={price(order.total)} strong />
-          <Text style={text.small}>Cash on delivery · {order.payment_status === 'paid' ? 'Paid' : 'Not paid yet'}</Text>
+          <Text style={text.small}>{order.payment_method === 'online' ? (order.payment_status === 'paid' ? 'Paid online. Do not collect cash.' : 'Online payment. Waiting for the customer to pay.') : `Cash on delivery · ${order.payment_status === 'paid' ? 'Paid' : 'Not paid yet'}`}</Text>
         </View>
       </Card>
     </Screen>
