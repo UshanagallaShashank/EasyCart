@@ -24,6 +24,7 @@ import { earnings_router } from './modules/earnings/earnings-route.js';
 import { payment_router } from './modules/payments/payment-route.js';
 import { translate_router } from './modules/translate/translate-route.js';
 import { photo_router } from './modules/photos/photo-route.js';
+import { refund_router } from './modules/refunds/refund-route.js';
 import { private_file_router } from './platform/storage/private-file-route.js';
 import { live_router } from './platform/live/live-route.js';
 import { start_dispatch_loop } from './modules/delivery/services/dispatch-service.js';
@@ -65,6 +66,7 @@ export function create_express_app() {
   app.use('/api', payment_router);
   app.use('/api', translate_router);
   app.use('/api', photo_router);
+  app.use('/api', refund_router);
   app.use('/api', not_found_handler);
   app.use(error_handler);
   return app;

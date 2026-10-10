@@ -20,6 +20,10 @@ function create_mock_provider() {
         throw new AppError('The test payment was not approved', 400);
       }
       return { reference: `mock_${order.id}` };
+    },
+    // A test refund: nothing moves, but it behaves like a real one.
+    async refund({ amount }) {
+      return { refund_id: `mock_refund_${amount}_${Date.now()}` };
     }
   };
 }
@@ -64,6 +68,11 @@ function create_razorpay_provider({ key_id, key_secret, http }) {
         throw new AppError('The payment does not match this order', 400);
       }
       return { reference: razorpay_payment_id };
+    },
+    // Sends `amount` paise of this payment back to the customer's card or UPI.
+    async refund({ reference, amount }) {
+      const done = await call(`/payments/${encodeURIComponent(reference)}/refund`, { method: 'POST', body: JSON.stringify({ amount }) });
+      return { refund_id: done.id };
     }
   };
 }

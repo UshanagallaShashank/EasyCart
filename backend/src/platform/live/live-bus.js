@@ -71,6 +71,12 @@ export function publish_order_change(order, previous_rider_id = null) {
   publish([channel.tenant(order.tenant_id), channel.customer(order.customer_id), channel.rider(order.rider_id), channel.rider(previous_rider_id), channel.admins], 'order', order.id, order_patch(order));
 }
 
+// A refund changed: the store, its customer and admins refresh their refund screens.
+export function publish_refund_change(refund) {
+  if (!refund) return;
+  publish([channel.tenant(refund.tenant_id), channel.customer(refund.customer_id), channel.admins], 'refund', refund.id);
+}
+
 export function publish_rider_change(rider) {
   if (!rider) return;
   publish([channel.rider(rider.id), channel.admins], 'rider', rider.id);

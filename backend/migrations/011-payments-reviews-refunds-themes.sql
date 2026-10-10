@@ -30,6 +30,9 @@ create table if not exists refunds (
   decided_at timestamptz
 );
 
+-- What the customer wrote about the problem.
+alter table refunds add column if not exists details text;
+
 create index if not exists refunds_tenant_idx on refunds (tenant_id, created_at desc);
 create index if not exists refunds_customer_idx on refunds (customer_id, created_at desc);
 -- At most one open request per order at a time.

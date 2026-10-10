@@ -103,3 +103,27 @@ describe('razorpay provider', () => {
     await expect(provider.start(order)).rejects.toThrow('could not be reached');
   });
 });
+
+describe('refunds', () => {
+  it('a test refund returns an id and moves no money', async () => {
+    const result = await create_payment_provider({ provider: 'mock' }).refund({ reference: 'mock_order-1', amount: 5000 });
+    expect(result.refund_id).toContain('mock_refund_5000');
+  });
+
+  it('a Razorpay refund asks for the exact amount on the exact payment', async () => {
+    const calls = [];
+    const http = async (url, options) => { calls.push({ url, options }); return { ok: true, json: async () => ({ id: 'rfnd_1' }) }; };
+    const provider = create_payment_provider({ provider: 'razorpay', key_id: 'k', key_secret: secret, http });
+    const result = await provider.refund({ reference: 'pay_1', amount: 12050 });
+    expect(result).toEqual({ refund_id: 'rfnd_1' });
+    expect(calls[0].url).toBe('https://api.razorpay.com/v1/payments/pay_1/refund');
+    expect(JSON.parse(calls[0].options.body)).toEqual({ amount: 12050 });
+  });
+
+  it('a refused Razorpay refund is reported, not hidden', async () => {
+    const http = async () => ({ ok: false, json: async () => ({}) });
+    const provider = create_payment_provider({ provider: 'razorpay', key_id: 'k', key_secret: secret, http });
+    await expect(provider.refund({ reference: 'pay_1', amount: 100 })).rejects.toThrow('refused');
+  });
+});
+
