@@ -18,7 +18,7 @@ const PHOTO_HEIGHT = 300;
 
 export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
-  const { slug, add, lines, subtotal, setQuantity: updateCartQuantity } = useShop();
+  const { slug, add, lines, subtotal, setQuantity: updateCartQuantity, markViewed } = useShop();
   const toast = useToast();
   const { data: product, isLoading } = useProduct(slug, id);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
@@ -33,6 +33,10 @@ export default function ProductScreen() {
     setPhoto(0);
     pagerRef.current?.scrollTo({ x: 0, animated: false });
   }, [id, queryVariant]);
+
+  useEffect(() => {
+    if (product) markViewed(product.id);
+  }, [product?.id]);
 
   // Width of the photo container within Screen column (padding 16 on each side)
   const cardWidth = Math.max(280, Math.min(windowWidth - 32, 680));

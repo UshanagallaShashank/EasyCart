@@ -1,6 +1,7 @@
 // Store owner data and actions.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { Order } from '@/types/order';
 import type { Product } from '@/types/catalog';
 import type { StoreDeliveryRow, StoreOrderDelivery, StoreSettlementSummary, NearbyRider } from '@/types/delivery';
@@ -26,6 +27,14 @@ export const useStoreDeliveries = () => useQuery({ queryKey: ['store-deliveries'
 export const useStoreSettlements = () => useQuery({ queryKey: ['store-settlements'], queryFn: () => api<StoreSettlementSummary>('/delivery/settlements') });
 export const useRidersNearby = () => useQuery({ queryKey: ['store-deliveries', 'riders'], queryFn: () => api<{ riders: NearbyRider[] }>('/delivery/riders-nearby') });
 export const useCustomerCount = () => useQuery({ queryKey: ['customers'], queryFn: async () => (await api<{ customers: unknown[] }>('/customers')).customers.length });
+export interface OwnerEarnings {
+  commission_percent: number;
+  all_time: EarningsTotals;
+  last_7_days: EarningsTotals;
+  by_day: EarningsDay[];
+}
+export const useEarnings = () => useQuery({ queryKey: ['earnings'], queryFn: async () => (await api<{ earnings: OwnerEarnings }>('/earnings')).earnings });
+
 export interface RatingsSummary {
   count: number;
   average_store: number | null;
@@ -109,7 +118,7 @@ export const manageCalls = {
   deleteCoupon: (id: string) => api(`/coupons/${id}`, { method: 'DELETE' }),
   createCategory: (name: string) => api('/categories', { method: 'POST', body: { name } }),
   deleteCategory: (id: string) => api(`/categories/${id}`, { method: 'DELETE' }),
-  saveStore: (payload: Partial<{ name: string; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string }>) => api('/stores/me', { method: 'PATCH', body: payload }),
+  saveStore: (payload: Partial<{ name: string; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string; latitude: number; longitude: number }>) => api('/stores/me', { method: 'PATCH', body: payload }),
   setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' })
 };
 

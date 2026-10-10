@@ -5,7 +5,10 @@ import { Text } from '@/components/text';
 import { Icon, type IconName } from '@/components/icon';
 import { Badge, Button, Card, EmptyState, Field, Loading, Pills, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { MapPicker } from '@/components/map-picker';
 import { addressLocation, useAddresses, type SavedAddress } from '@/features/shop/addresses';
+import { describePlace, readCurrentPosition, type Coords } from '@/lib/location';
+import { errorMessage } from '@/lib/api';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 
 const LABEL_ICONS: Record<string, IconName> = { Home: 'home', Work: 'store', Other: 'map-pin' };
@@ -22,18 +25,59 @@ export default function AddressesScreen() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  // The spot on the map for the address being written, and whether the map is open.
+  const [pin, setPin] = useState<Coords | null>(null);
+  const [mapStart, setMapStart] = useState<Coords | null>(null);
+  const [showMap, setShowMap] = useState(false);
+  const [locating, setLocating] = useState(false);
   if (isLoading) return <Loading />;
 
   const set = (key: keyof typeof EMPTY) => (value: string) => setForm((current) => ({ ...current, [key]: value }));
 
+  // Fills street, city, state and pincode from a spot on the map. Name and phone are never touched.
+  async function fillFrom(coords: Coords) {
+    setPin(coords);
+    try {
+      const place = await describePlace(coords);
+      setForm((current) => ({
+        ...current,
+        street: current.street.trim() ? current.street : place.street,
+        city: place.city || current.city,
+        state: place.state || current.state,
+        zip: place.zip || current.zip
+      }));
+    } catch {
+      toast('Saved the spot, but could not read the address. Please type it in.', 'info');
+    }
+  }
+
+  async function useMyLocation() {
+    setLocating(true);
+    try {
+      const coords = await readCurrentPosition();
+      setMapStart(coords);
+      await fillFrom(coords);
+    } catch (err) {
+      toast(errorMessage(err, 'We could not find your location'), 'error');
+    } finally {
+      setLocating(false);
+    }
+  }
+
   function startAdd() {
     setEditingId(null);
     setForm(EMPTY);
+    setPin(null);
+    setMapStart(null);
+    setShowMap(false);
     setShowForm(true);
   }
 
   function startEdit(address: SavedAddress) {
     setEditingId(address.id);
+    setPin(address.latitude !== undefined && address.longitude !== undefined ? { latitude: address.latitude, longitude: address.longitude } : null);
+    setMapStart(null);
+    setShowMap(false);
     setForm({ label: address.label, recipientName: address.recipientName, phone: address.phone, street: address.street, landmark: address.landmark ?? '', city: address.city, state: address.state, zip: address.zip });
     setShowForm(true);
   }
@@ -57,7 +101,9 @@ export default function AddressesScreen() {
       landmark: form.landmark.trim() || undefined,
       city: form.city.trim(),
       state: form.state.trim(),
-      zip: form.zip.trim()
+      zip: form.zip.trim(),
+      latitude: pin?.latitude,
+      longitude: pin?.longitude
     });
     toast(editingId ? 'Address updated' : 'Address added and set as active', 'success');
     setShowForm(false);
@@ -77,6 +123,17 @@ export default function AddressesScreen() {
 
       {showForm && (
         <Card title={editingId ? 'Edit delivery address' : 'New delivery address'} icon="map-pin">
+          <View style={styles.locationBox}>
+            <Text style={text.label}>Where should we deliver?</Text>
+            <View style={{ flexDirection: 'row', gap: space.sm }}>
+              <View style={{ flex: 1 }}><Button small icon="navigation" label={locating ? 'Finding you…' : 'Use my location'} onPress={() => void useMyLocation()} loading={locating} /></View>
+              <View style={{ flex: 1 }}><Button small variant="outline" icon="map" label={showMap ? 'Hide map' : 'Pick on map'} onPress={() => { if (!showMap && !(mapStart ?? pin)) void useMyLocation(); setShowMap((open) => !open); }} /></View>
+            </View>
+            {pin ? <Text style={[text.small, { color: colors.success }]}>Spot saved. Check the address below.</Text> : <Text style={text.small}>Or type the address by hand below.</Text>}
+            {showMap && (mapStart ?? pin) ? <MapPicker center={(mapStart ?? pin) as Coords} onPick={(coords) => void fillFrom(coords)} height={240} /> : null}
+            {showMap && !(mapStart ?? pin) ? <Text style={text.small}>Finding where to open the map…</Text> : null}
+          </View>
+
           <View style={{ gap: 6 }}>
             <Text style={text.label}>Address type</Text>
             <Pills options={['Home', 'Work', 'Other'].map((label) => ({ value: label, label }))} value={form.label} onChange={set('label')} />
@@ -125,6 +182,7 @@ export default function AddressesScreen() {
 }
 
 const styles = StyleSheet.create({
+  locationBox: { gap: space.sm, backgroundColor: colors.primarySoft, borderRadius: radius.md, borderWidth: 1, borderColor: colors.primaryTint, padding: space.md },
   row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   rowActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },

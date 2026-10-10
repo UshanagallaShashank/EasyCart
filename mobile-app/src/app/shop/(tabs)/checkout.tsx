@@ -20,7 +20,7 @@ import type { Order } from '@/types/order';
 type Method = 'delivery' | 'pickup';
 
 export default function CheckoutScreen() {
-  const { slug, lines, subtotal, clear } = useShop();
+  const { slug, lines, subtotal, clear, location } = useShop();
   const { data: store } = useStore(slug);
   const toast = useToast();
   const [method, setMethod] = useState<Method>('delivery');
@@ -55,13 +55,13 @@ export default function CheckoutScreen() {
     onSuccess: ({ order }) => {
       clear();
       toast('Order placed', 'success');
-      router.replace(`/shop/order/${order.id}`);
+      router.replace(`/shop/order-placed?id=${order.id}`);
     },
     onError: (err) => toast(errorMessage(err, 'Could not place the order'), 'error')
   });
 
   const ready = lines.length > 0 && (method === 'pickup' || Boolean(address));
-  const range = method === 'delivery' && address && store ? checkDeliveryRange(store, address.zip) : null;
+  const range = method === 'delivery' && address && store ? checkDeliveryRange(store, address.zip, address.latitude !== undefined && address.longitude !== undefined ? { latitude: address.latitude, longitude: address.longitude } : location?.coords) : null;
   if (lines.length === 0) {
     return <Screen><EmptyState icon="shopping-cart" message="Your cart is empty, so there is nothing to check out." action={<Button label="Browse products" variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
   }

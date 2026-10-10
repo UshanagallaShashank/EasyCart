@@ -43,8 +43,6 @@ export default function OwnerOverview() {
         </View>
       </LinearGradient>
 
-      {store.data && !store.data.is_published && <Notice tone="warning" icon="eye-off">Your store is not published, so customers cannot see it. Publish it from the website's Store settings.</Notice>}
-      {store.data && store.data.latitude == null && <Notice icon="map-pin">Pin your store location in Store settings on the website so deliveries go to the nearest rider.</Notice>}
 
       {store.data && <SetupChecklist store={store.data} productCount={products.data?.length ?? 0} />}
 

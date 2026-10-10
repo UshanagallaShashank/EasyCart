@@ -59,6 +59,28 @@ export function useRateOrder(orderId: string) {
   });
 }
 
+export interface NearbyShop {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  banner_url: string | null;
+  address: string | null;
+  delivery_fee: number;
+  max_delivery_radius_km: number;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  delivers_to_you: boolean;
+}
+
+export function useNearbyShops(point: { latitude: number; longitude: number } | null) {
+  return useQuery({
+    queryKey: ['nearby-shops', point?.latitude.toFixed(3), point?.longitude.toFixed(3)],
+    queryFn: async () => (await api<{ stores: NearbyShop[] }>(`/stores/nearby?lat=${point!.latitude}&lng=${point!.longitude}`)).stores,
+    enabled: point !== null
+  });
+}
+
 export function useMyStores() {
   return useQuery({ queryKey: ['my-stores'], queryFn: async () => (await api<{ stores: { slug: string; name: string; logo_url: string | null }[] }>('/my-stores')).stores });
 }

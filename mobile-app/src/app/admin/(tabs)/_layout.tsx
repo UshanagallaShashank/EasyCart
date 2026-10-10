@@ -6,6 +6,7 @@ import { useRiders, useTenants } from '@/features/admin/admin-api';
 const ACTIVE_FOR = {
   'rider/[id]': 'partners',
   'store/[id]': 'stores',
+  earnings: 'more',
   users: 'more',
   sales: 'more',
   growth: 'more'
@@ -26,6 +27,7 @@ export default function AdminTabs() {
       <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: tabIcon('list') }} />
       <Tabs.Screen name="rider/[id]" options={hiddenPage('Delivery partner')} />
       <Tabs.Screen name="store/[id]" options={hiddenPage('Store')} />
+      <Tabs.Screen name="earnings" options={hiddenPage('Earnings')} />
       <Tabs.Screen name="users" options={hiddenPage('Users')} />
       <Tabs.Screen name="sales" options={hiddenPage('Sales')} />
       <Tabs.Screen name="growth" options={hiddenPage('Growth')} />

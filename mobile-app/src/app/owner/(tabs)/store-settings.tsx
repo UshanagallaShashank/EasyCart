@@ -1,11 +1,14 @@
 // Store settings: publish switch, name, delivery fee and radius, pincode, address and the shop announcement.
 import { useEffect, useState } from 'react';
 import { Text } from '@/components/text';
+import { View } from 'react-native';
 import { Badge, Button, Card, Field, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { manageCalls, useOwnStore, useRefreshingAction } from '@/features/owner/owner-api';
 import { errorMessage } from '@/lib/api';
-import { text } from '@/theme/theme';
+import { MapPicker } from '@/components/map-picker';
+import { describePlace, readCurrentPosition, type Coords } from '@/lib/location';
+import { colors, space, text } from '@/theme/theme';
 
 export default function OwnerStoreSettings() {
   const { data: store, isLoading, refetch, isRefetching } = useOwnStore();
@@ -13,6 +16,10 @@ export default function OwnerStoreSettings() {
   const publish = useRefreshingAction(manageCalls.setPublished, ['store']);
   const toast = useToast();
   const [form, setForm] = useState({ name: '', delivery_fee: '', radius: '', pincode: '', address: '', banner: '' });
+  // Where the shop is on the map. Customers' "Shops near you" list and rider dispatch both use it.
+  const [pin, setPin] = useState<Coords | null>(null);
+  const [mapStart, setMapStart] = useState<Coords | null>(null);
+  const [locating, setLocating] = useState(false);
 
   useEffect(() => {
     if (!store) return;
@@ -24,10 +31,43 @@ export default function OwnerStoreSettings() {
       address: store.address ?? '',
       banner: store.promotion_banner_text ?? ''
     });
+    if (store.latitude != null && store.longitude != null) {
+      const saved = { latitude: store.latitude, longitude: store.longitude };
+      setPin(saved);
+      setMapStart(saved);
+    }
   }, [store]);
 
   if (isLoading || !store) return <Loading />;
   const set = (key: keyof typeof form) => (value: string) => setForm((current) => ({ ...current, [key]: value }));
+
+  // Fills an empty address and pincode from the spot, so the owner types less.
+  async function choosePin(coords: Coords) {
+    setPin(coords);
+    try {
+      const place = await describePlace(coords);
+      setForm((current) => ({
+        ...current,
+        address: current.address.trim() ? current.address : [place.street, place.city].filter(Boolean).join(', '),
+        pincode: current.pincode.trim() ? current.pincode : place.zip
+      }));
+    } catch {
+      // The pin is saved either way; the address can be typed.
+    }
+  }
+
+  async function useMyLocation() {
+    setLocating(true);
+    try {
+      const coords = await readCurrentPosition();
+      setMapStart(coords);
+      await choosePin(coords);
+    } catch (err) {
+      toast(errorMessage(err, 'We could not find your location'), 'error');
+    } finally {
+      setLocating(false);
+    }
+  }
 
   function handleSave() {
     const fee = Number(form.delivery_fee);
@@ -36,7 +76,7 @@ export default function OwnerStoreSettings() {
     if (Number.isNaN(fee) || fee < 0) { toast('Delivery fee must be 0 or more', 'error'); return; }
     if (Number.isNaN(radius) || radius < 0.5 || radius > 100) { toast('Delivery radius must be between 0.5 and 100 km', 'error'); return; }
     save.mutate(
-      { name: form.name.trim(), delivery_fee: fee, max_delivery_radius_km: radius, pincode: form.pincode.trim(), address: form.address.trim(), promotion_banner_text: form.banner.trim() },
+      { name: form.name.trim(), delivery_fee: fee, max_delivery_radius_km: radius, pincode: form.pincode.trim(), address: form.address.trim(), promotion_banner_text: form.banner.trim(), ...(pin ? { latitude: pin.latitude, longitude: pin.longitude } : {}) },
       { onSuccess: () => toast('Store settings saved', 'success'), onError: (e) => toast(errorMessage(e), 'error') }
     );
   }
@@ -62,13 +102,24 @@ export default function OwnerStoreSettings() {
         <Field label="Pincode" value={form.pincode} onChangeText={set('pincode')} keyboardType="number-pad" maxLength={10} placeholder="e.g. 502278" />
       </Card>
 
+      <Card title="Shop location" icon="map-pin" right={<Badge tone={pin ? 'success' : 'warning'} label={pin ? 'Pinned' : 'Not pinned'} />}>
+        <Text style={text.muted}>Customers near you find your shop by this pin, and riders come here to collect orders. Stand at your shop and tap the button, or drop the pin on the map.</Text>
+        <Button small variant={pin ? 'outline' : 'primary'} icon="navigation" label={locating ? 'Finding you…' : 'Use my current location'} onPress={() => void useMyLocation()} loading={locating} />
+        {mapStart ? (
+          <View style={{ gap: space.sm }}>
+            <MapPicker center={mapStart} onPick={(coords) => void choosePin(coords)} height={240} />
+            <Text style={[text.small, { color: colors.textMuted }]}>Tap the map or drag the pin to the exact spot, then press Save changes.</Text>
+          </View>
+        ) : null}
+      </Card>
+
       <Card title="Delivery and announcement" icon="truck">
         <Field label="Standard delivery fee (Rs.)" value={form.delivery_fee} onChangeText={set('delivery_fee')} keyboardType="decimal-pad" placeholder="0" />
         <Field label="Max delivery radius (km)" value={form.radius} onChangeText={set('radius')} keyboardType="decimal-pad" placeholder="5" />
         <Field label="Storefront announcement" hint="Shown to shoppers at the top of your shop" value={form.banner} onChangeText={set('banner')} multiline placeholder="e.g. Free delivery this weekend!" />
       </Card>
 
-      <Notice icon="info">Logo, banner image and the pickup pin can be changed on the website for now.</Notice>
+      <Notice icon="info">Logo and banner images can be changed on the website for now.</Notice>
       <Button icon="save" label="Save changes" onPress={handleSave} loading={save.isPending} />
     </Screen>
   );

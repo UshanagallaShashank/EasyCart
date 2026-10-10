@@ -21,6 +21,11 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
     if (next !== slug) setSlug(next);
   }
 
+  function findNearby() {
+    setOpen(false);
+    router.push('/shop/nearby');
+  }
+
   function enterCode() {
     setOpen(false);
     router.push('/shop/account');
@@ -57,6 +62,11 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
               })}
             </ScrollView>
 
+            <PressScale onPress={findNearby} style={styles.nearbyRow} accessibilityRole="button">
+              <Icon name="map-pin" size={18} color={colors.white} />
+              <Text style={styles.nearbyText}>Find shops near me</Text>
+            </PressScale>
+
             <PressScale onPress={enterCode} style={styles.addRow} accessibilityRole="button">
               <Icon name="plus" size={18} color={colors.primary} />
               <Text style={styles.addText}>Open another shop by its code</Text>
@@ -79,6 +89,8 @@ const styles = StyleSheet.create({
   rowActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   logo: { width: 42, height: 42, borderRadius: 12, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   storeName: { flex: 1, fontSize: 15, fontWeight: '700', color: colors.text },
+  nearbyRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, height: 48, borderRadius: radius.md, backgroundColor: colors.primary },
+  nearbyText: { fontSize: 14, fontWeight: '700', color: colors.white },
   addRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, height: 48, borderRadius: radius.md, backgroundColor: colors.primarySoft },
   addText: { fontSize: 14, fontWeight: '700', color: colors.primary }
 });

@@ -8,6 +8,8 @@ export interface PublicStore {
   max_delivery_radius_km?: number;
   pincode?: string | null;
   address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   promotion_banner_text?: string | null;
 }
 

@@ -1,5 +1,5 @@
 // Building blocks every screen uses, in the website's look: white rounded cards on slate, sky buttons, soft badges.
-import { useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from './text';
@@ -7,10 +7,14 @@ import { Icon } from './icon';
 import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
 import { fileUrl } from '@/lib/api';
 import { useScreen } from '@/lib/responsive';
+import { useKeyboardTop } from '@/lib/keyboard';
 import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
 import type { IconName } from './icon';
+
+// Lets a Field ask its page to scroll it into view when the keyboard opens.
+const ScrollToInputContext = createContext<((input: View) => void) | null>(null);
 
 // Scrollable page with pull-to-refresh and comfortable phone margins (wider screens get a centred column).
 export function Screen({
@@ -31,9 +35,33 @@ export function Screen({
   stickyHeaderIndices?: number[];
 }) {
   const { pagePadding } = useScreen();
+  const rootRef = useRef<View>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const keyboardTop = useKeyboardTop();
+  // How much of this page the keyboard covers. It is measured, so phones that already shrink the window get no extra gap.
+  const [covered, setCovered] = useState(0);
+
+  useEffect(() => {
+    if (keyboardTop === null) {
+      setCovered(0);
+      return;
+    }
+    rootRef.current?.measureInWindow((_x, y, _width, height) => setCovered(Math.max(0, y + height - keyboardTop)));
+  }, [keyboardTop]);
+
+  function scrollToInput(input: View) {
+    // React Native has this method on ScrollView but leaves it out of its type definitions.
+    const inner = (scrollRef.current as unknown as { getInnerViewRef?(): unknown } | null)?.getInnerViewRef?.();
+    if (!inner) return;
+    input.measureLayout(inner as never, (_x, y) => scrollRef.current?.scrollTo({ y: Math.max(0, y - 90), animated: true }), () => undefined);
+  }
+
   return (
-    <View style={styles.screen}>
+    <ScrollToInputContext.Provider value={scrollToInput}>
+    <View ref={rootRef} style={[styles.screen, { paddingBottom: covered }]}>
       <ScrollView
+        ref={scrollRef}
+        keyboardDismissMode="on-drag"
         contentContainerStyle={[styles.screenContent, { padding: pagePadding, paddingTop: space.xl, paddingBottom: space.xxl * 2 }]}
         keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
@@ -45,6 +73,7 @@ export function Screen({
       </ScrollView>
       {footer && <View style={styles.footer}><View style={styles.column}>{footer}</View></View>}
     </View>
+    </ScrollToInputContext.Provider>
   );
 }
 
@@ -97,12 +126,22 @@ const BUTTONS: Record<ButtonVariant, { bg: string; fg: string; border: string }>
 export function Field({ label, hint, error, icon, ...props }: TextInputProps & { label?: string; hint?: string; error?: string; icon?: IconName }) {
   const [hidden, setHidden] = useState(true);
   const secret = Boolean(props.secureTextEntry);
+  const wrapRef = useRef<View>(null);
+  const scrollToInput = useContext(ScrollToInputContext);
   return (
     <View style={{ gap: 6 }}>
       {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
-      <View style={[styles.inputWrap, props.multiline && { alignItems: 'flex-start', paddingTop: 12 }, error ? { borderColor: '#fda4af' } : null]}>
+      <View ref={wrapRef} style={[styles.inputWrap, props.multiline && { alignItems: 'flex-start', paddingTop: 12 }, error ? { borderColor: '#fda4af' } : null]}>
         {icon && <Icon name={icon} size={18} color={colors.textFaint} />}
-        <TextInput placeholderTextColor={colors.textFaint} {...props} secureTextEntry={secret && hidden} style={[styles.input, props.multiline && { minHeight: 80, textAlignVertical: 'top', paddingTop: 0 }]} />
+        <TextInput
+          placeholderTextColor={colors.textFaint}
+          {...props}
+          onFocus={(event) => {
+            props.onFocus?.(event);
+            // Give the keyboard a moment to open, then bring this field into view.
+            setTimeout(() => { if (wrapRef.current) scrollToInput?.(wrapRef.current); }, 300);
+          }}
+          secureTextEntry={secret && hidden} style={[styles.input, props.multiline && { minHeight: 80, textAlignVertical: 'top', paddingTop: 0 }]} />
         {secret && (
           <Pressable onPress={() => setHidden((h) => !h)} hitSlop={10} accessibilityLabel={hidden ? 'Show password' : 'Hide password'}>
             <Icon name={hidden ? 'eye' : 'eye-off'} size={18} color={colors.textFaint} />

@@ -13,8 +13,9 @@ import { FloatingCartBar } from '@/components/floating-cart-bar';
 import { useAddresses } from '@/features/shop/addresses';
 import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useShop } from '@/features/shop/shop-context';
-import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
-import { ProductCard } from '@/features/shop/product-card';
+import { useCategories, useMyOrders, useProducts, useStore } from '@/features/shop/shop-api';
+import { ProductCard, productStock, useCardActions } from '@/features/shop/product-card';
+import { ProductRail } from '@/features/shop/product-rail';
 import { ApiError, errorMessage, fileUrl } from '@/lib/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { accentAt, accents, colors, radius, space } from '@/theme/theme';
@@ -52,7 +53,9 @@ function ProductGridSkeleton({ width }: { width: number }) {
 type View_ = 'all' | 'favourites' | 'low' | 'high';
 
 export default function ShopHome() {
-  const { slug, favourites } = useShop();
+  const { slug, favourites, recent, location } = useShop();
+  const { data: pastOrders } = useMyOrders();
+  const cardActions = useCardActions();
   const [search, setSearch] = useState('');
   const [view, setView] = useState<View_>('all');
   const [category, setCategory] = useState('');
@@ -103,8 +106,18 @@ export default function ShopHome() {
   if (view === 'low') shown = [...shown].sort((a, b) => a.price - b.price);
   if (view === 'high') shown = [...shown].sort((a, b) => b.price - a.price);
   const count = shown.length;
+
+  // Shelves above the grid, only while nobody is searching or filtering. Each one is worked out from data the app already has.
+  const catalog = products.data ?? [];
+  const showRails = !search.trim() && category === '' && view === 'all' && catalog.length > 0;
+  const inStock = (product: (typeof catalog)[number]) => productStock(product) > 0;
+  const orderedIds = [...(pastOrders ?? [])].filter((order) => order.status !== 'cancelled').sort((a, b) => b.created_at.localeCompare(a.created_at)).flatMap((order) => order.items.map((item) => item.product_id));
+  const orderAgain = [...new Set(orderedIds)].map((id) => catalog.find((product) => product.id === id)).filter((product): product is (typeof catalog)[number] => Boolean(product) && inStock(product!)).slice(0, 8);
+  const favouriteProducts = catalog.filter((product) => favourites.includes(product.id)).slice(0, 8);
+  const recentlyViewed = recent.map((id) => catalog.find((product) => product.id === id)).filter((product): product is (typeof catalog)[number] => Boolean(product)).slice(0, 8);
+  const almostGone = catalog.filter((product) => productStock(product) > 0 && productStock(product) <= (product.low_stock_threshold ?? 5)).slice(0, 8);
   const banner = fileUrl(store.data.banner_url);
-  const range = activeAddress ? checkDeliveryRange(store.data, activeAddress.zip) : null;
+  const range = activeAddress || location ? checkDeliveryRange(store.data, activeAddress?.zip ?? null, activeAddress?.latitude !== undefined && activeAddress?.longitude !== undefined ? { latitude: activeAddress.latitude, longitude: activeAddress.longitude } : location?.coords) : null;
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
@@ -197,6 +210,15 @@ export default function ShopHome() {
 
         {/* Index 2: Products Grid */}
         <View style={{ marginTop: space.xs, gap: space.md }}>
+          {showRails && (
+            <>
+              <ProductRail actions={cardActions} title="Order again" subtitle="From your past orders" icon="refresh-cw" accent={accents.sky} products={orderAgain} />
+              <ProductRail actions={cardActions} title="Your favourites" icon="heart" accent={accents.rose} products={favouriteProducts} />
+              <ProductRail actions={cardActions} title="Almost gone" subtitle="Grab them before they sell out" icon="zap" accent={accents.orange} products={almostGone} />
+              <ProductRail actions={cardActions} title="Recently viewed" icon="clock" accent={accents.violet} products={recentlyViewed} />
+            </>
+          )}
+          {showRails && <Text style={styles.sectionTitle}>All products</Text>}
           <Pills<View_>
             value={view}
             onChange={setView}
@@ -211,7 +233,7 @@ export default function ShopHome() {
             <EmptyState icon={view === 'favourites' ? 'heart' : 'search'} message={view === 'favourites' ? 'Tap the heart on a product to save it here.' : search ? `No products match "${search}".` : 'This shop has no products yet.'} />
           ) : (
             <View style={styles.grid}>
-              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} />)}
+              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} line={cardActions.lineFor(product.id)} onAdd={cardActions.onAdd} onSetQuantity={cardActions.onSetQuantity} />)}
             </View>
           )}
         </View>

@@ -19,6 +19,8 @@ const ACTIVE_FOR = {
   'product/[id]': 'index',
   checkout: 'cart',
   'order/[id]': 'orders',
+  'order-placed': 'orders',
+  nearby: 'index',
   addresses: 'account',
   'store-request': 'account'
 };
@@ -36,7 +38,9 @@ export default function ShopTabs() {
       <Tabs.Screen name="account" options={{ title: 'Account', tabBarIcon: tabIcon('user') }} />
       <Tabs.Screen name="product/[id]" options={hiddenPage('Product')} />
       <Tabs.Screen name="checkout" options={hiddenPage('Checkout')} />
+      <Tabs.Screen name="nearby" options={hiddenPage('Shops near you')} />
       <Tabs.Screen name="order/[id]" options={hiddenPage('Order')} />
+      <Tabs.Screen name="order-placed" options={{ title: 'Order placed', href: null, headerShown: false }} />
       <Tabs.Screen name="addresses" options={hiddenPage('Delivery addresses')} />
       <Tabs.Screen name="store-request" options={hiddenPage('Request a store')} />
     </Tabs>

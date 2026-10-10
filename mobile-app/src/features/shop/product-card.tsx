@@ -1,4 +1,5 @@
 // One product in the grid: an inset rounded photo, name, price, and a wide ADD button that turns into a quantity stepper.
+import { memo, useCallback, useMemo } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
@@ -9,28 +10,50 @@ import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, shadow, space } from '@/theme/theme';
 import type { Product } from '@/types/catalog';
-import { useShop } from './shop-context';
+import { useShop, type CartLine } from './shop-context';
 import { useToast } from '@/components/toast';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;
 }
 
-export function ProductCard({ product, width, index = 0 }: { product: Product; width: number; index?: number }) {
-  const { add, lines, setQuantity } = useShop();
+// The cart behaviour every card shares. Cards get these as props instead of reading the cart themselves,
+// so tapping ADD redraws only that one card and not the whole shop.
+export interface CardActions {
+  lineFor(productId: string): CartLine | undefined;
+  onAdd(product: Product): void;
+  onSetQuantity(productId: string, quantity: number): void;
+}
+
+export function useCardActions(): CardActions {
+  const { lines, add, setQuantity } = useShop();
   const toast = useToast();
+  // Only plain products (no options) can be added from the card, so only their lines matter here.
+  const plainLines = useMemo(() => new Map(lines.filter((line) => !line.variant_label).map((line) => [line.product_id, line])), [lines]);
+  const lineFor = useCallback((productId: string) => plainLines.get(productId), [plainLines]);
+
+  const onAdd = useCallback((product: Product) => {
+    add({ product_id: product.id, name: product.name, price: product.price, quantity: 1, image: fileUrl(product.images[0]), max: product.stock_quantity });
+    toast(`${product.name} added to cart`, 'success');
+  }, [add, toast]);
+
+  const onSetQuantity = useCallback((productId: string, quantity: number) => setQuantity(productId, undefined, quantity), [setQuantity]);
+
+  return useMemo(() => ({ lineFor, onAdd, onSetQuantity }), [lineFor, onAdd, onSetQuantity]);
+}
+
+function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
   const image = fileUrl(product.images[0]);
   const stock = productStock(product);
   const needsChoice = product.variants.length > 0;
   const fewLeft = stock > 0 && stock <= (product.low_stock_threshold ?? 5);
   // Items with options are chosen on the product page, so only plain products get the in-card stepper.
-  const inCart = needsChoice ? undefined : lines.find((line) => line.product_id === product.id && !line.variant_label);
+  const inCart = needsChoice ? undefined : line;
   const from = needsChoice ? Math.min(...product.variants.map((v) => v.price)) : product.price;
 
   function quickAdd() {
     if (needsChoice) return router.push(`/shop/product/${product.id}`);
-    add({ product_id: product.id, name: product.name, price: product.price, quantity: 1, image, max: product.stock_quantity });
-    toast(`${product.name} added to cart`, 'success');
+    onAdd(product);
   }
 
   return (
@@ -55,11 +78,11 @@ export function ProductCard({ product, width, index = 0 }: { product: Product; w
             <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>Sold out</Text></View>
           ) : inCart ? (
             <View style={[styles.action, styles.stepper]}>
-              <PressScale onPress={() => setQuantity(product.id, undefined, inCart.quantity - 1)} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
+              <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity - 1)} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
                 <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={colors.white} strokeWidth={2.5} />
               </PressScale>
               <Text style={styles.qty}>{inCart.quantity}</Text>
-              <PressScale onPress={() => setQuantity(product.id, undefined, inCart.quantity + 1)} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
+              <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity + 1)} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
                 <Icon name="plus" size={16} color={colors.white} strokeWidth={2.5} />
               </PressScale>
             </View>
@@ -74,6 +97,9 @@ export function ProductCard({ product, width, index = 0 }: { product: Product; w
     </FadeIn>
   );
 }
+
+// memo: the card is redrawn only when its own product, size or cart line changes.
+export const ProductCard = memo(ProductCardView);
 
 const styles = StyleSheet.create({
   card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: 8, ...shadow },

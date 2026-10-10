@@ -8,7 +8,8 @@ import { useSession } from '@/lib/session';
 import { useConfirmedSignOut } from '@/components/confirm';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 
-const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
+const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/earnings' | '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
+  { icon: 'wallet', title: 'Earnings', subtitle: 'What you keep after the platform fee', href: '/owner/earnings', fg: '#059669', bg: '#d1fae5' },
   { icon: 'users', title: 'Customers', subtitle: 'Who has ordered, and how much', href: '/owner/customers', fg: '#7c3aed', bg: '#ede9fe' },
   { icon: 'ticket', title: 'Coupons', subtitle: 'Discount codes for your shoppers', href: '/owner/coupons', fg: '#d97706', bg: '#fef3c7' },
   { icon: 'tags', title: 'Categories', subtitle: 'Group your products', href: '/owner/categories', fg: '#0284c7', bg: '#e0f2fe' },

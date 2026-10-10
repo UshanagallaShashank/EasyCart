@@ -1,4 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
@@ -8,6 +11,18 @@ export function FloatingCartBar() {
   const { lines } = useShop();
 
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
+
+  // The pill gives a little pop and a tap when something is added.
+  const pop = useSharedValue(1);
+  const previousTotal = useRef(0);
+  useEffect(() => {
+    if (totalItems > previousTotal.current && previousTotal.current > 0) {
+      pop.value = withSequence(withTiming(1.07, { duration: 90 }), withSpring(1, { damping: 10, stiffness: 260 }));
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    }
+    previousTotal.current = totalItems;
+  }, [totalItems, pop]);
+  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
 
   if (totalItems <= 0) return null;
 
@@ -22,6 +37,7 @@ export function FloatingCartBar() {
       ]}
       pointerEvents="box-none"
     >
+      <Animated.View style={popStyle}>
       <Pressable
         style={({ pressed }) => [
           styles.pill,
@@ -68,6 +84,7 @@ export function FloatingCartBar() {
           <Icon name="chevron-right" size={20} color="#ffffff" strokeWidth={2.8} />
         </View>
       </Pressable>
+      </Animated.View>
     </View>
   );
 }

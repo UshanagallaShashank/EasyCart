@@ -1,5 +1,7 @@
-// The website's delivery-range check: a rough distance from the store's pincode to the customer's pincode,
-// compared with the store's maximum delivery radius. It is only a guide; the store has the final say.
+// The delivery-range check. When we know where the customer is, it uses the real distance on the map;
+// otherwise it falls back to a rough guess from the two pincodes. It is only a guide; the store has the final say.
+import { distanceKm as mapDistanceKm, type Coords } from './location';
+
 export interface DeliveryCheck {
   isEligible: boolean;
   distanceKm: number;
@@ -22,9 +24,16 @@ export function estimateDistanceBetweenPincodes(storePincode: string | null, cus
   return Math.min(50, difference * 1.5);
 }
 
-export function checkDeliveryRange(store: { max_delivery_radius_km?: number; pincode?: string | null }, customerPincode: string | null): DeliveryCheck {
+export function checkDeliveryRange(
+  store: { max_delivery_radius_km?: number; pincode?: string | null; latitude?: number | null; longitude?: number | null },
+  customerPincode: string | null,
+  customerLocation?: Coords | null
+): DeliveryCheck {
   const maxRadiusKm = store.max_delivery_radius_km ?? 10;
-  const distanceKm = estimateDistanceBetweenPincodes(store.pincode ?? null, customerPincode);
+  const storeHasLocation = store.latitude != null && store.longitude != null;
+  const distanceKm = customerLocation && storeHasLocation
+    ? mapDistanceKm(customerLocation, { latitude: store.latitude as number, longitude: store.longitude as number })
+    : estimateDistanceBetweenPincodes(store.pincode ?? null, customerPincode);
   const isEligible = distanceKm <= maxRadiusKm;
   const message = isEligible
     ? `Delivers to your location (about ${distanceKm.toFixed(1)} km away)`
