@@ -38,6 +38,10 @@ create index if not exists refunds_customer_idx on refunds (customer_id, created
 -- At most one open request per order at a time.
 create unique index if not exists refunds_one_open_per_order on refunds (order_id) where status = 'requested';
 
+-- The brand colours a store picked for its shop in the app (sky, emerald, sunset, violet, rose or teal).
+-- Separate from stores.theme, which the website uses for its light or dark mode.
+alter table stores add column if not exists color_theme text;
+
 -- Small platform-wide settings the admin controls, such as which shop themes owners may pick.
 create table if not exists platform_settings (
   key text primary key,

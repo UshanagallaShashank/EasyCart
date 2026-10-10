@@ -123,7 +123,8 @@ export async function get_public_store_by_slug(slug) {
     address: store.address ?? null,
     latitude: store.latitude ?? null,
     longitude: store.longitude ?? null,
-    promotion_banner_text: store.promotion_banner_text
+    promotion_banner_text: store.promotion_banner_text,
+    color_theme: store.color_theme ?? null
   };
 }
 

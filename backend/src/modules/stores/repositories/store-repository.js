@@ -3,6 +3,7 @@ import { get_supabase } from '../../../platform/db/db.js';
 import { DB_PROVIDER } from '../../../env.js';
 import { chunk_array } from '../../../platform/shared/chunk-array.js';
 import { Store } from './store-model.js';
+import { AppError } from '../../../platform/shared/app-error.js';
 
 const SUPABASE_IN_CHUNK_SIZE = 100;
 
@@ -121,6 +122,18 @@ export async function save_store(store) {
   }
   const created = await Store.create(toSave);
   return created.toObject();
+}
+
+// Saves just the shop's colour theme. A clear message if the column is not there yet (migration 011 not run).
+export async function update_store_color_theme(tenant_id, color_theme) {
+  if (DB_PROVIDER !== 'supabase') {
+    await Store.updateOne({ tenant_id }, { color_theme, updated_at: new Date().toISOString() });
+    return;
+  }
+  const { error } = await get_supabase().from('stores').update({ color_theme, updated_at: new Date().toISOString() }).eq('tenant_id', tenant_id);
+  if (!error) return;
+  if (error.code === 'PGRST204' || error.code === '42703') throw new AppError('Shop themes are not set up yet. Run migration 011 in Supabase.', 503);
+  throw error;
 }
 
 export async function update_store(tenant_id, updates) {
