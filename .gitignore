@@ -1,0 +1,14 @@
+# Root gitignore excluding build outputs, dependency directories, environment files, and logs.
+node_modules/
+dist/
+build/
+.env
+.env.local
+*.log
+.DS_Store
+Coverage/
+.idea/
+.vscode/
+.claude/.private-uploads/
+.claude/settings.json
+.claude/settings.local.json
