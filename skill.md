@@ -548,11 +548,15 @@ AI features additionally require evaluation fixtures and measurable evaluation r
 
 # Current Development Rule
 
-Always work on the **current phase only**.
+As of 2026-08-28, Phases 1-3 (Foundation, Store, Products) were built together as one combined push, by explicit decision. As of 2026-08-28, Phases 4-5 (Shopping, Orders & Payments) are now also being built together as one combined push, since together they form the MVP's single purchase lifecycle and can't be meaningfully verified apart from each other. Phases 6+ still follow the one-phase-at-a-time rule below.
 
-Do not build the entire roadmap upfront.
+As of 2026-08-29, Phase 1.8 (platform admin shell) was extended beyond its original read-only scope, by explicit decision, to include tenant suspend/reactivate — the smallest real management action a platform operator needs, not just a list view. This also retroactively closed a gap: the `Tenant.status` field existed since Phase 1.5 but nothing ever read it, so suspending a tenant had no effect until this pass wired it into public storefront resolution.
 
-When starting a new phase:
+As of 2026-09-14, Phase 6 (Delivery) is complete — pickup/delivery checkout, delivery fee, per-method fulfillment status lifecycle, staff assignment, and customer-facing tracking, all verified live via Playwright plus a 90/90 automated test suite. `fulfillment_method` was made to default to `pickup` rather than strictly required, to stay backward-compatible with the existing checkout contract — this was caught only because making it required broke every pre-existing checkout test. Two pre-existing bugs surfaced only by the live browser pass (not by any unit test) were fixed as part of this phase: `store_settings_schema` rejected empty-string `logo_url`/`banner_url` as invalid URLs, silently blocking every settings save when those fields were blank; and the public store endpoint never returned `delivery_fee`, so checkout always computed a $0 fee regardless of store configuration.
+
+As of 2026-09-14, Phase 7 (Customers & Marketing) has started, with three scoping decisions made explicit before implementation: tenant-customer relationships are derived from order history (no new join table), coupons are a single flat-or-percent code per store with no expiry/limits yet, and notifications/abandoned-cart detection are in-app only (no email/SMS provider). Subphase breakdown is in README.md.
+
+When starting a phase not already in progress:
 
 ```text
 Understand
