@@ -9,6 +9,7 @@ import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
 import { useT } from '@/lib/i18n';
 import { ContentText } from '@/components/content-text';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { RateOrderCard } from '@/features/shop/rate-order-card';
@@ -120,6 +121,13 @@ export default function CustomerOrderScreen() {
       {order.payment_method === 'online' && order.payment_status === 'unpaid' && order.status !== 'cancelled' && (
         <Button icon="credit-card" label={`${t('Pay now')} · ${price(order.total)}`} onPress={() => router.push(`/shop/pay?id=${order.id}`)} />
       )}
+
+      <Button
+        variant="outline"
+        icon="message-square"
+        label="Share on WhatsApp"
+        onPress={() => void openWhatsApp(t('My EasyCart order {id}: {count} items, {total}. Status: {status}.', { id: shortId(order.id), count: order.items.reduce((sum, item) => sum + item.quantity, 0), total: price(order.total), status: t(status.label) }))}
+      />
 
       <RefundCard order={order} />
 

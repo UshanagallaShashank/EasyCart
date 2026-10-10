@@ -6,7 +6,8 @@ import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } fro
 import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
 import { OrderRefundCard } from '@/features/owner/order-refund-card';
-import { ownerCalls, orderStage, useOrder, useOrderDelivery, useOwnerAction } from '@/features/owner/owner-api';
+import { ownerCalls, orderStage, useOrder, useOrderDelivery, useOwnStore, useOwnerAction } from '@/features/owner/owner-api';
+import { WhatsAppCustomerButton } from '@/features/owner/whatsapp-customer';
 import { DeliverySteps, ProofPhoto, RiderCard, TimelineList, openMap } from '@/features/delivery/delivery-parts';
 import { errorMessage } from '@/lib/api';
 import { dateTime, price, shortId } from '@/lib/format';
@@ -95,6 +96,7 @@ function DeliveryCard({ order }: { order: Order }) {
 export default function OwnerOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: order, isLoading, refetch, isRefetching } = useOrder(id);
+  const { data: store } = useOwnStore();
   if (isLoading) return <Loading />;
   if (!order) return <Screen><EmptyState message="Order not found." /></Screen>;
   const stage = orderStage(order);
@@ -109,6 +111,7 @@ export default function OwnerOrderScreen() {
       </View>
       <NextStep order={order} />
       <OrderRefundCard order={order} />
+      <WhatsAppCustomerButton order={order} shop={store?.name ?? 'our shop'} />
       {order.fulfillment_method === 'delivery' && <DeliveryCard order={order} />}
       {order.fulfillment_method === 'delivery' && (
         <Card title="Deliver to" icon="map-pin">
