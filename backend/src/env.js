@@ -45,9 +45,13 @@ export const PAYMENT_PROVIDER = process.env.PAYMENT_PROVIDER === 'razorpay' ? 'r
 export const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || '';
 export const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
-// Translating product names and descriptions into Telugu or Hindi. Off unless TRANSLATE_PROVIDER=anthropic and ANTHROPIC_API_KEY is set.
-// Without it, products simply show in the language the shop typed them.
-export const TRANSLATE_PROVIDER = process.env.TRANSLATE_PROVIDER === 'anthropic' ? 'anthropic' : 'none';
+// Translating the app (screens and product names) into Telugu or Hindi. Off unless a provider and its key are set:
+//   TRANSLATE_PROVIDER=google     with GOOGLE_TRANSLATE_API_KEY  (Google Cloud Translation; detects any source language)
+//   TRANSLATE_PROVIDER=anthropic  with ANTHROPIC_API_KEY
+// Without it, everything simply shows in English (or the language the shop typed).
+const TRANSLATE_PROVIDERS = ['google', 'anthropic'];
+export const TRANSLATE_PROVIDER = TRANSLATE_PROVIDERS.includes(process.env.TRANSLATE_PROVIDER) ? process.env.TRANSLATE_PROVIDER : 'none';
+export const GOOGLE_TRANSLATE_API_KEY = process.env.GOOGLE_TRANSLATE_API_KEY || '';
 export const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 export const TRANSLATE_MODEL = process.env.TRANSLATE_MODEL || 'claude-haiku-4-5-20251001';
 
