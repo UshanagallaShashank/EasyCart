@@ -28,7 +28,7 @@ export function ProductRail({ title, subtitle, icon, accent, products, actions }
         </View>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
-        {products.map((product, index) => <ProductCard key={product.id} product={product} width={CARD_WIDTH} index={index} line={actions.lineFor(product.id)} onAdd={actions.onAdd} onSetQuantity={actions.onSetQuantity} />)}
+        {products.map((product, index) => <ProductCard key={product.id} product={product} width={CARD_WIDTH} index={index} line={actions.lineFor(product.id)} rating={actions.ratingFor(product.id)} onAdd={actions.onAdd} onSetQuantity={actions.onSetQuantity} />)}
       </ScrollView>
     </View>
   );

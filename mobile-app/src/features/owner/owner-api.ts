@@ -48,7 +48,7 @@ export interface RatingsSummary {
   count: number;
   average_store: number | null;
   average_delivery: number | null;
-  recent: { store_stars: number; delivery_stars: number | null; comment: string; created_at: string }[];
+  recent: { store_stars: number; delivery_stars: number | null; comment: string | null; photo_urls?: string[]; created_at: string }[];
 }
 // retry is off so a server without the ratings tables just shows no card instead of retrying.
 export const useRatingsSummary = () => useQuery({ queryKey: ['ratings-summary'], queryFn: async () => (await api<{ summary: RatingsSummary }>('/ratings/summary')).summary, retry: false });

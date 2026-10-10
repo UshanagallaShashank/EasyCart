@@ -11,7 +11,8 @@ import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
-import { useProduct } from '@/features/shop/shop-api';
+import { useProduct, useProductRatings } from '@/features/shop/shop-api';
+import { StarRating } from '@/components/star-rating';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
@@ -26,6 +27,7 @@ export default function ProductScreen() {
   const t = useT();
   const { data: product, isLoading } = useProduct(slug, id);
   const name = useContent(product?.name);
+  const productRating = useProductRatings(slug).data?.[id];
   const description = useContent(product?.description);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
   const [quantity, setQuantity] = useState(1);
@@ -247,6 +249,12 @@ export default function ProductScreen() {
           </View>
         )}
         <Text style={styles.title}>{name}</Text>
+        {productRating && productRating.count > 0 && productRating.average !== null ? (
+          <View style={styles.ratingRow}>
+            <StarRating value={Math.round(productRating.average)} size={16} />
+            <Text style={styles.ratingText}>{t('{average} out of 5 · {count} ratings', { average: productRating.average.toFixed(1), count: productRating.count })}</Text>
+          </View>
+        ) : null}
         <Text style={styles.price}>{price(unitPrice)}</Text>
         {product.description ? <Text style={styles.description}>{description}</Text> : null}
       </FadeIn>
@@ -336,6 +344,8 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(148, 163, 184, 0.45)' },
   dotActive: { width: 14, backgroundColor: colors.primary, borderRadius: 3 },
   details: { gap: 6 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  ratingText: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
   title: { fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.4, lineHeight: 28 },
   stock: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
   stockDot: { width: 6, height: 6, borderRadius: 3 },

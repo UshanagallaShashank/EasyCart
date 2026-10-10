@@ -68,6 +68,8 @@ export interface OrderRating {
   store_stars: number;
   delivery_stars: number | null;
   comment: string | null;
+  photo_urls?: string[];
+  item_stars?: Record<string, number>;
 }
 
 export function useOrderRating(orderId: string, enabled: boolean) {
@@ -82,7 +84,8 @@ export function useOrderRating(orderId: string, enabled: boolean) {
 export function useRateOrder(orderId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (rating: { store_stars: number; delivery_stars?: number; comment?: string }) => api(`/my-orders/${orderId}/rating`, { method: 'POST', body: rating }),
+    mutationFn: (rating: { store_stars: number; delivery_stars?: number; comment?: string; photo_urls?: string[]; item_stars?: Record<string, number> }) =>
+      api<{ rating: OrderRating & { extras_saved?: boolean } }>(`/my-orders/${orderId}/rating`, { method: 'POST', body: rating }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-orders', orderId, 'rating'] })
   });
 }
@@ -99,6 +102,8 @@ export interface NearbyShop {
   longitude: number;
   distance_km: number;
   delivers_to_you: boolean;
+  rating_average: number | null;
+  rating_count: number;
 }
 
 export function useNearbyShops(point: { latitude: number; longitude: number } | null) {
@@ -107,6 +112,27 @@ export function useNearbyShops(point: { latitude: number; longitude: number } | 
     queryFn: async () => (await api<{ stores: NearbyShop[] }>(`/stores/nearby?lat=${point!.latitude}&lng=${point!.longitude}`)).stores,
     enabled: point !== null
   });
+}
+
+// Adds a photo to one of the customer's orders (for a rating or a refund). Returns its public link.
+export async function uploadOrderPhoto(orderId: string, purpose: 'review' | 'refund', file: string): Promise<string> {
+  const { url } = await api<{ url: string }>(`/my-orders/${orderId}/photos`, { method: 'POST', body: { purpose, file } });
+  return url;
+}
+
+export interface StarSummary { average: number | null; count: number }
+
+export interface StoreReviews extends StarSummary {
+  recent: { store_stars: number; comment: string | null; photo_urls: string[]; created_at: string }[];
+}
+
+export function useStoreReviews(slug: string) {
+  return useQuery({ queryKey: ['storefront', slug, 'reviews'], queryFn: async () => (await api<{ reviews: StoreReviews }>(`/stores/${slug}/reviews`)).reviews, staleTime: 5 * 60_000 });
+}
+
+// { "product id": { average, count } } for the shop's rated products.
+export function useProductRatings(slug: string) {
+  return useQuery({ queryKey: ['storefront', slug, 'product-ratings'], queryFn: async () => (await api<{ ratings: Record<string, StarSummary> }>(`/stores/${slug}/product-ratings`)).ratings, staleTime: 5 * 60_000 });
 }
 
 export function useMyStores() {

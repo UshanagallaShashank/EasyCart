@@ -1,6 +1,7 @@
 // Store overview, like the website's dashboard: greeting, headline numbers, orders that need you, recent orders, low stock.
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
@@ -94,7 +95,12 @@ export default function OwnerOverview() {
           {ratings.data.recent.map((item, index) => (
             <View key={index} style={styles.comment}>
               <StarRating value={item.store_stars} size={13} />
-              <Text style={styles.commentText}>{item.comment}</Text>
+              {item.comment ? <Text style={styles.commentText}>{item.comment}</Text> : null}
+              {(item.photo_urls ?? []).length > 0 ? (
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  {item.photo_urls!.map((url) => <Image key={url} source={{ uri: url }} style={styles.commentPhoto} contentFit="cover" />)}
+                </View>
+              ) : null}
             </View>
           ))}
         </Card>
@@ -144,6 +150,7 @@ const styles = StyleSheet.create({
   ratingNumber: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: -0.5 },
   ratingLabel: { fontSize: 12, fontWeight: '700', color: colors.textMuted },
   comment: { gap: 4, backgroundColor: colors.bg, borderRadius: radius.md, padding: space.md },
+  commentPhoto: { width: 56, height: 56, borderRadius: radius.sm, backgroundColor: colors.borderSoft },
   commentText: { fontSize: 13, color: colors.textSoft },
   repeat: { fontSize: 12, fontWeight: '700', color: '#059669' },
   sellerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },

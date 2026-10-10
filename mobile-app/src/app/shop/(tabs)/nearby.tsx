@@ -7,7 +7,7 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { MapPicker } from '@/components/map-picker';
 import { PressScale } from '@/components/motion';
-import { Badge, Button, Card, EmptyState, Loading, Notice, Screen } from '@/components/ui';
+import { Badge, Button, Card, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { useNearbyShops } from '@/features/shop/shop-api';
 import { useShop } from '@/features/shop/shop-context';
 import { errorMessage, fileUrl } from '@/lib/api';
@@ -22,6 +22,7 @@ export default function NearbyShops() {
   const t = useT();
   const [locating, setLocating] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  const [order, setOrder] = useState<'near' | 'rating'>('near');
   // Where the map starts. It only moves when we find the phone again, never while a pin is being dragged.
   const [mapStart, setMapStart] = useState<Coords | null>(location?.coords ?? null);
   const shops = useNearbyShops(location?.coords ?? null);
@@ -50,7 +51,10 @@ export default function NearbyShops() {
     router.navigate('/shop');
   }
 
-  const list = shops.data ?? [];
+  // Nearest first (as the server sends them), or best rated first with unrated shops last.
+  const list = order === 'rating'
+    ? [...(shops.data ?? [])].sort((a, b) => (b.rating_average ?? -1) - (a.rating_average ?? -1))
+    : shops.data ?? [];
 
   return (
     <Screen onRefresh={() => void shops.refetch()} refreshing={shops.isRefetching}>
@@ -72,6 +76,7 @@ export default function NearbyShops() {
       {location ? (
         <>
           <Text style={styles.heading}>{t('Shops near you')}</Text>
+          <Pills<'near' | 'rating'> value={order} onChange={setOrder} options={[{ value: 'near', label: t('Nearest') }, { value: 'rating', label: t('Top rated') }]} />
           {shops.isLoading ? <Loading /> : list.length === 0 ? (
             <EmptyState icon="store" message="No shops near this spot yet. Try moving the pin, or ask your local shop to join." />
           ) : list.map((shop) => {
@@ -83,6 +88,14 @@ export default function NearbyShops() {
                   <View style={styles.titleRow}>
                     <Text style={styles.name} numberOfLines={1}>{shop.name}</Text>
                     {shop.slug === slug ? <Badge tone="primary" label="Open now" /> : null}
+                  </View>
+                  <View style={styles.titleRow}>
+                    {shop.rating_count > 0 && shop.rating_average !== null ? (
+                      <View style={[styles.chip, { backgroundColor: accents.amber.bg, flexDirection: 'row', alignItems: 'center', gap: 3 }]}>
+                        <Icon name="star" size={11} color={accents.amber.fg} fill={accents.amber.fg} />
+                        <Text style={[styles.chipText, { color: '#92400e' }]}>{shop.rating_average.toFixed(1)} ({shop.rating_count})</Text>
+                      </View>
+                    ) : <Text style={text.small}>{t('New shop')}</Text>}
                   </View>
                   {shop.address ? <Text style={text.small} numberOfLines={1}>{shop.address}</Text> : null}
                   <View style={styles.chips}>

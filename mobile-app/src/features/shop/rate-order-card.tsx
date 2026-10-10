@@ -1,42 +1,97 @@
-// After an order is delivered, the customer rates the store (and the delivery, if a rider brought it).
+// After an order is delivered, the customer rates the store, the delivery and each product, and can add up to 3 photos.
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Text } from '@/components/text';
+import { ContentText } from '@/components/content-text';
+import { Icon } from '@/components/icon';
 import { Button, Card, Field } from '@/components/ui';
 import { StarRating } from '@/components/star-rating';
 import { useToast } from '@/components/toast';
 import { errorMessage } from '@/lib/api';
-import { colors, space, text } from '@/theme/theme';
-import { useOrderRating, useRateOrder } from './shop-api';
+import { pickPhotos } from '@/lib/device';
+import { useT } from '@/lib/i18n';
+import { colors, radius, space, text } from '@/theme/theme';
+import { uploadOrderPhoto, useOrderRating, useRateOrder } from './shop-api';
 
 const WORDS = ['', 'Poor', 'Could be better', 'Okay', 'Good', 'Excellent'];
+const MAX_PHOTOS = 3;
 
-export function RateOrderCard({ orderId, wasDelivery }: { orderId: string; wasDelivery: boolean }) {
+interface Item { product_id: string; name: string }
+
+export function RateOrderCard({ orderId, wasDelivery, items }: { orderId: string; wasDelivery: boolean; items: Item[] }) {
   const existing = useOrderRating(orderId, true);
   const rate = useRateOrder(orderId);
   const toast = useToast();
+  const t = useT();
   const [store, setStore] = useState(0);
   const [delivery, setDelivery] = useState(0);
   const [comment, setComment] = useState('');
+  const [itemStars, setItemStars] = useState<Record<string, number>>({});
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  // One row per product, even if the order had it in two sizes.
+  const products = [...new Map(items.map((item) => [item.product_id, item])).values()];
 
   // While loading, or if ratings are not available on the server yet, show nothing instead of an error.
   if (existing.isLoading || existing.isError) return null;
 
   if (existing.data) {
+    const given = existing.data;
     return (
       <Card title="Your rating" icon="star">
-        <Row label="Store" stars={existing.data.store_stars} />
-        {existing.data.delivery_stars ? <Row label="Delivery" stars={existing.data.delivery_stars} /> : null}
-        {existing.data.comment ? <Text style={text.muted}>"{existing.data.comment}"</Text> : null}
+        <Row label="Store" stars={given.store_stars} />
+        {given.delivery_stars ? <Row label="Delivery" stars={given.delivery_stars} /> : null}
+        {products.filter((product) => given.item_stars?.[product.product_id]).map((product) => (
+          <View key={product.product_id} style={styles.row}>
+            <ContentText value={product.name} style={[text.muted, { flex: 1 }]} numberOfLines={1} />
+            <StarRating value={given.item_stars![product.product_id]} size={16} />
+          </View>
+        ))}
+        {given.comment ? <Text style={text.muted}>"{given.comment}"</Text> : null}
+        {(given.photo_urls ?? []).length > 0 ? (
+          <View style={styles.photos}>
+            {given.photo_urls!.map((url) => <Image key={url} source={{ uri: url }} style={styles.photo} contentFit="cover" />)}
+          </View>
+        ) : null}
         <Text style={text.small}>Thanks for your feedback.</Text>
       </Card>
     );
   }
 
+  async function addPhotos(source: 'camera' | 'library') {
+    try {
+      const picked = (await pickPhotos(source)).slice(0, MAX_PHOTOS - photos.length);
+      if (picked.length === 0) return;
+      setUploading(true);
+      for (const file of picked) {
+        const url = await uploadOrderPhoto(orderId, 'review', file);
+        setPhotos((current) => [...current, url].slice(0, MAX_PHOTOS));
+      }
+    } catch (err) {
+      toast(errorMessage(err, 'Could not add the photo'), 'error');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   function submit() {
     rate.mutate(
-      { store_stars: store, ...(wasDelivery && delivery > 0 ? { delivery_stars: delivery } : {}), ...(comment.trim() ? { comment: comment.trim() } : {}) },
-      { onSuccess: () => toast('Thanks for rating', 'success'), onError: (err) => toast(errorMessage(err), 'error') }
+      {
+        store_stars: store,
+        ...(wasDelivery && delivery > 0 ? { delivery_stars: delivery } : {}),
+        ...(comment.trim() ? { comment: comment.trim() } : {}),
+        ...(photos.length > 0 ? { photo_urls: photos } : {}),
+        ...(Object.keys(itemStars).length > 0 ? { item_stars: itemStars } : {})
+      },
+      {
+        onSuccess: (result) => {
+          const extrasLost = result.rating.extras_saved === false && (photos.length > 0 || Object.keys(itemStars).length > 0);
+          toast(extrasLost ? t('Thanks for rating. Photos and product stars will appear after the next update.') : t('Thanks for rating'), 'success');
+        },
+        onError: (err) => toast(errorMessage(err), 'error')
+      }
     );
   }
 
@@ -53,8 +108,47 @@ export function RateOrderCard({ orderId, wasDelivery }: { orderId: string; wasDe
           <StarRating value={delivery} onChange={setDelivery} size={34} />
         </View>
       )}
+
+      {products.length > 0 && (
+        <View style={styles.block}>
+          <Text style={text.label}>Each product (optional)</Text>
+          {products.map((product) => (
+            <View key={product.product_id} style={styles.row}>
+              <ContentText value={product.name} style={[text.body, { flex: 1 }]} numberOfLines={2} />
+              <StarRating value={itemStars[product.product_id] ?? 0} onChange={(stars) => setItemStars((current) => ({ ...current, [product.product_id]: stars }))} size={22} />
+            </View>
+          ))}
+        </View>
+      )}
+
       <Field value={comment} onChangeText={setComment} placeholder="Add a comment (optional)" multiline maxLength={300} />
-      <Button icon="check" label="Submit rating" onPress={submit} loading={rate.isPending} disabled={store === 0} />
+
+      <View style={styles.block}>
+        <Text style={text.label}>Photos (optional, up to 3)</Text>
+        <View style={styles.photos}>
+          {photos.map((url) => (
+            <View key={url}>
+              <Image source={{ uri: url }} style={styles.photo} contentFit="cover" />
+              <Pressable onPress={() => setPhotos((current) => current.filter((item) => item !== url))} style={styles.remove} hitSlop={8} accessibilityLabel="Remove photo">
+                <Icon name="x" size={12} color={colors.white} strokeWidth={3} />
+              </Pressable>
+            </View>
+          ))}
+          {uploading ? <View style={[styles.photo, styles.adding]}><ActivityIndicator color={colors.primary} /></View> : null}
+          {!uploading && photos.length < MAX_PHOTOS ? (
+            <>
+              <Pressable onPress={() => void addPhotos('camera')} style={[styles.photo, styles.adding]} accessibilityLabel="Take a photo">
+                <Icon name="camera" size={22} color={colors.primary} />
+              </Pressable>
+              <Pressable onPress={() => void addPhotos('library')} style={[styles.photo, styles.adding]} accessibilityLabel="Choose a photo">
+                <Icon name="image" size={22} color={colors.primary} />
+              </Pressable>
+            </>
+          ) : null}
+        </View>
+      </View>
+
+      <Button icon="check" label="Submit rating" onPress={submit} loading={rate.isPending} disabled={store === 0 || uploading} />
     </Card>
   );
 }
@@ -71,5 +165,9 @@ function Row({ label, stars }: { label: string; stars: number }) {
 const styles = StyleSheet.create({
   block: { gap: space.sm },
   word: { fontSize: 13, fontWeight: '700', color: colors.primaryDark },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.md },
+  photos: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  photo: { width: 72, height: 72, borderRadius: radius.md, backgroundColor: colors.borderSoft },
+  adding: { alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderStyle: 'dashed', borderColor: colors.primaryTint, backgroundColor: colors.primarySoft },
+  remove: { position: 'absolute', top: -6, right: -6, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.white }
 });

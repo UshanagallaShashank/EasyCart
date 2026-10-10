@@ -120,7 +120,7 @@ export default function CustomerOrderScreen() {
         <Button icon="credit-card" label={`${t('Pay now')} · ${price(order.total)}`} onPress={() => router.push(`/shop/pay?id=${order.id}`)} />
       )}
 
-      {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} />}
+      {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} items={order.items} />}
 
       {order.status !== 'cancelled' && <Button variant="outline" icon="refresh-cw" label="Order again" onPress={() => reorder(order)} />}
       {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={async () => { if (await askConfirm({ title: t('Cancel this order?'), message: 'The store has not started on it yet, so you can still cancel.', confirmLabel: t('Yes, cancel order'), cancelLabel: t('Keep my order'), icon: 'x-circle' })) cancel.mutate(); }} />}

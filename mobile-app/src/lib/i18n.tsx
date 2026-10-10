@@ -353,7 +353,18 @@ const WORDS: [string, string, string][] = [
   ["View order", "ఆర్డర్ చూడండి", "ऑर्डर देखें"],
   ["This is a test payment. No real money moves. Real payments need the payment provider switched on in the server settings.", "ఇది టెస్ట్ చెల్లింపు. నిజమైన డబ్బు కదలదు. నిజమైన చెల్లింపులకు సర్వర్ సెట్టింగ్స్‌లో పేమెంట్ ప్రొవైడర్‌ను ఆన్ చేయాలి.", "यह एक टेस्ट भुगतान है। असली पैसा नहीं जाता। असली भुगतान के लिए सर्वर सेटिंग में पेमेंट प्रोवाइडर चालू करना होगा।"],
   ["You can also pay later from your order page.", "మీరు మీ ఆర్డర్ పేజీ నుండి తర్వాత కూడా చెల్లించవచ్చు.", "आप अपने ऑर्डर पेज से बाद में भी भुगतान कर सकते हैं।"],
-  ["Paid online. Nothing to pay at the door.", "ఆన్‌లైన్‌లో చెల్లించారు. తలుపు వద్ద ఏమీ చెల్లించాల్సిన పని లేదు.", "ऑनलाइन भुगतान हो गया। दरवाज़े पर कुछ नहीं देना है।"]
+  ["Paid online. Nothing to pay at the door.", "ఆన్‌లైన్‌లో చెల్లించారు. తలుపు వద్ద ఏమీ చెల్లించాల్సిన పని లేదు.", "ऑनलाइन भुगतान हो गया। दरवाज़े पर कुछ नहीं देना है।"],
+
+  // Ratings, reviews and sorting
+  ["Top rated", "అత్యధిక రేటింగ్", "सबसे अच्छी रेटिंग"],
+  ["Nearest", "దగ్గరిది", "सबसे पास"],
+  ["New shop", "కొత్త షాపు", "नई दुकान"],
+  ["{average} out of 5 · {count} ratings", "5 లో {average} · {count} రేటింగ్‌లు", "5 में से {average} · {count} रेटिंग"],
+  ["What customers say", "కస్టమర్లు ఏమంటున్నారు", "ग्राहक क्या कहते हैं"],
+  ["Each product (optional)", "ప్రతి ఉత్పత్తి (ఐచ్ఛికం)", "हर उत्पाद (वैकल्पिक)"],
+  ["Photos (optional, up to 3)", "ఫోటోలు (ఐచ్ఛికం, 3 వరకు)", "फोटो (वैकल्पिक, 3 तक)"],
+  ["Thanks for rating. Photos and product stars will appear after the next update.", "రేటింగ్ ఇచ్చినందుకు ధన్యవాదాలు. ఫోటోలు మరియు ఉత్పత్తి స్టార్లు తదుపరి అప్‌డేట్ తర్వాత కనిపిస్తాయి.", "रेटिंग के लिए धन्यवाद। फोटो और उत्पाद स्टार अगले अपडेट के बाद दिखेंगे।"],
+  ["Could not add the photo", "ఫోటోను జోడించలేకపోయాము", "फोटो नहीं जोड़ सके"]
 ];
 
 const TRANSLATIONS: Record<Language, Map<string, string>> = {

@@ -16,7 +16,8 @@ import { FloatingCartBar } from '@/components/floating-cart-bar';
 import { useAddresses } from '@/features/shop/addresses';
 import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useShop } from '@/features/shop/shop-context';
-import { useCategories, useMyOrders, useProducts, useStore } from '@/features/shop/shop-api';
+import { useCategories, useMyOrders, useProducts, useStore, useStoreReviews } from '@/features/shop/shop-api';
+import { ReviewsStrip } from '@/features/shop/reviews-strip';
 import { ProductCard, productStock, useCardActions } from '@/features/shop/product-card';
 import { ProductRail } from '@/features/shop/product-rail';
 import { ApiError, errorMessage, fileUrl } from '@/lib/api';
@@ -53,7 +54,7 @@ function ProductGridSkeleton({ width }: { width: number }) {
   );
 }
 
-type View_ = 'all' | 'favourites' | 'low' | 'high';
+type View_ = 'all' | 'favourites' | 'rating' | 'low' | 'high';
 
 export default function ShopHome() {
   const { slug, favourites, recent, location } = useShop();
@@ -64,6 +65,7 @@ export default function ShopHome() {
   const [view, setView] = useState<View_>('all');
   const [category, setCategory] = useState('');
   const store = useStore(slug);
+  const reviews = useStoreReviews(slug);
   const categories = useCategories(slug);
   const products = useProducts(slug, search.trim(), category);
   const { width } = useWindowDimensions();
@@ -109,6 +111,8 @@ export default function ShopHome() {
   if (view === 'favourites') shown = shown.filter((product) => favourites.includes(product.id));
   if (view === 'low') shown = [...shown].sort((a, b) => a.price - b.price);
   if (view === 'high') shown = [...shown].sort((a, b) => b.price - a.price);
+  // Best rated first; products nobody has rated yet go to the end.
+  if (view === 'rating') shown = [...shown].sort((a, b) => (cardActions.ratingFor(b.id)?.average ?? -1) - (cardActions.ratingFor(a.id)?.average ?? -1));
   const count = shown.length;
 
   // Shelves above the grid, only while nobody is searching or filtering. Each one is worked out from data the app already has.
@@ -168,6 +172,12 @@ export default function ShopHome() {
             <Text style={styles.heroTag}>{activeAddress ? t('Delivering to {zip}', { zip: activeAddress.zip }) : t('Local store, delivered')}{range?.isEligible ? ` · ${(() => { const eta = estimateDelivery(range.distanceKm); return t('{low}–{high} min', { low: eta.low, high: eta.high }); })()}` : ''}</Text>
             <Text style={styles.heroTitle} numberOfLines={2}>{t('Welcome to')}{'\n'}{store.data.name}</Text>
             <Text style={styles.heroBody} numberOfLines={2}>{store.data.address ? t('{address}. Delivered to your door.', { address: store.data.address }) : t('Fresh products from your neighbourhood store.')}</Text>
+            {reviews.data && reviews.data.count > 0 && reviews.data.average !== null ? (
+              <View style={styles.heroRating}>
+                <Icon name="star" size={13} color="#fbbf24" fill="#fbbf24" />
+                <Text style={styles.heroRatingText}>{t('{average} out of 5 · {count} ratings', { average: reviews.data.average.toFixed(1), count: reviews.data.count })}</Text>
+              </View>
+            ) : null}
             <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">
               <Text style={styles.shopNowText}>{t('Shop now')}</Text>
               <Icon name="arrow-right" size={14} color={colors.primaryDark} />
@@ -220,6 +230,7 @@ export default function ShopHome() {
               <ProductRail actions={cardActions} title={t('Your favourites')} icon="heart" accent={accents.rose} products={favouriteProducts} />
               <ProductRail actions={cardActions} title={t('Almost gone')} subtitle={t('Grab them before they sell out')} icon="zap" accent={accents.orange} products={almostGone} />
               <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} />
+              <ReviewsStrip reviews={reviews.data} />
             </>
           )}
           {showRails && <Text style={styles.sectionTitle}>{t('All products')}</Text>}
@@ -229,6 +240,7 @@ export default function ShopHome() {
             options={[
               { value: 'all', label: t('All') },
               { value: 'favourites', label: t('Favourites'), count: favourites.length },
+              { value: 'rating', label: t('Top rated') },
               { value: 'low', label: t('Price: low to high') },
               { value: 'high', label: t('Price: high to low') }
             ]}
@@ -237,7 +249,7 @@ export default function ShopHome() {
             <EmptyState icon={view === 'favourites' ? 'heart' : 'search'} message={view === 'favourites' ? t('Tap the heart on a product to save it here.') : search ? t('No products match "{search}".', { search }) : t('This shop has no products yet.')} />
           ) : (
             <View style={styles.grid}>
-              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} line={cardActions.lineFor(product.id)} onAdd={cardActions.onAdd} onSetQuantity={cardActions.onSetQuantity} />)}
+              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} line={cardActions.lineFor(product.id)} rating={cardActions.ratingFor(product.id)} onAdd={cardActions.onAdd} onSetQuantity={cardActions.onSetQuantity} />)}
             </View>
           )}
         </View>
@@ -263,6 +275,8 @@ const styles = StyleSheet.create({
   heroCircleSmall: { position: 'absolute', right: 50, bottom: -30, width: 90, height: 90, borderRadius: 45, backgroundColor: 'rgba(255,255,255,0.10)' },
   heroTag: { alignSelf: 'flex-start', color: '#ffffff', fontSize: 11, fontWeight: '700', letterSpacing: 0.4, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: 'hidden' },
   heroTitle: { color: '#ffffff', fontSize: 26, lineHeight: 30, fontWeight: '900', letterSpacing: -0.7 },
+  heroRating: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: 'rgba(255,255,255,0.18)', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
+  heroRatingText: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
   heroBody: { color: '#e0f2fe', fontSize: 13, lineHeight: 18 },
   shopNowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: colors.white, borderRadius: radius.pill, paddingHorizontal: 18, paddingVertical: 10, marginTop: 6 },
   shopNowText: { color: colors.primaryDark, fontSize: 14, fontWeight: '800' },

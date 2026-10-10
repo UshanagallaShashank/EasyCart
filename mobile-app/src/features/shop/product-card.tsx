@@ -9,9 +9,10 @@ import { FavouriteButton } from './favourite-button';
 import { Text } from '@/components/text';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
-import { colors, radius, shadow, space } from '@/theme/theme';
+import { accents, colors, radius, shadow, space } from '@/theme/theme';
 import type { Product } from '@/types/catalog';
 import { useShop, type CartLine } from './shop-context';
+import { useProductRatings, type StarSummary } from './shop-api';
 import { useToast } from '@/components/toast';
 import { useT } from '@/lib/i18n';
 import { useContent } from '@/lib/content-translation';
@@ -24,14 +25,17 @@ export function productStock(product: Product) {
 // so tapping ADD redraws only that one card and not the whole shop.
 export interface CardActions {
   lineFor(productId: string): CartLine | undefined;
+  ratingFor(productId: string): StarSummary | undefined;
   onAdd(product: Product): void;
   onSetQuantity(productId: string, quantity: number): void;
 }
 
 export function useCardActions(): CardActions {
-  const { lines, add, setQuantity } = useShop();
+  const { slug, lines, add, setQuantity } = useShop();
   const toast = useToast();
   const t = useT();
+  const productRatings = useProductRatings(slug);
+  const ratingFor = useCallback((productId: string) => productRatings.data?.[productId], [productRatings.data]);
   // Only plain products (no options) can be added from the card, so only their lines matter here.
   const plainLines = useMemo(() => new Map(lines.filter((line) => !line.variant_label).map((line) => [line.product_id, line])), [lines]);
   const lineFor = useCallback((productId: string) => plainLines.get(productId), [plainLines]);
@@ -43,10 +47,10 @@ export function useCardActions(): CardActions {
 
   const onSetQuantity = useCallback((productId: string, quantity: number) => setQuantity(productId, undefined, quantity), [setQuantity]);
 
-  return useMemo(() => ({ lineFor, onAdd, onSetQuantity }), [lineFor, onAdd, onSetQuantity]);
+  return useMemo(() => ({ lineFor, ratingFor, onAdd, onSetQuantity }), [lineFor, ratingFor, onAdd, onSetQuantity]);
 }
 
-function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
+function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; rating?: StarSummary; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
   const t = useT();
   const name = useContent(product.name);
   const image = fileUrl(product.images[0]);
@@ -77,7 +81,15 @@ function ProductCardView({ product, width, index = 0, line, onAdd, onSetQuantity
 
         <View style={styles.body}>
           <Text style={styles.name} numberOfLines={2}>{name}</Text>
-          <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
+          <View style={styles.metaRow}>
+            {rating && rating.count > 0 && rating.average !== null ? (
+              <View style={styles.rating}>
+                <Icon name="star" size={11} color={accents.amber.fg} fill={accents.amber.fg} />
+                <Text style={styles.ratingText}>{rating.average.toFixed(1)}</Text>
+              </View>
+            ) : null}
+            <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
+          </View>
           <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
 
           {stock <= 0 ? (
@@ -116,7 +128,10 @@ const styles = StyleSheet.create({
   badgeText: { fontSize: 11, fontWeight: '700' },
   body: { paddingHorizontal: 4, paddingTop: 10, paddingBottom: 2, gap: 2 },
   name: { fontSize: 14, fontWeight: '700', color: colors.text, minHeight: 36, lineHeight: 18 },
-  meta: { fontSize: 11, color: colors.textMuted },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  rating: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: accents.amber.bg, borderRadius: radius.pill, paddingHorizontal: 6, paddingVertical: 1 },
+  ratingText: { fontSize: 11, fontWeight: '800', color: '#92400e' },
+  meta: { fontSize: 11, color: colors.textMuted, flexShrink: 1 },
   from: { fontSize: 11, fontWeight: '600', color: colors.textMuted },
   price: { fontSize: 16, fontWeight: '800', color: colors.text, marginTop: 2, marginBottom: 8 },
   action: { height: 38, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
