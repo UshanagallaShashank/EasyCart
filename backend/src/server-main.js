@@ -20,6 +20,7 @@ import { notification_router } from './modules/notifications/routes/notification
 import { delivery_router } from './modules/delivery/routes/delivery-route.js';
 import { favourite_router } from './modules/favourites/favourite-route.js';
 import { rating_router } from './modules/ratings/rating-route.js';
+import { earnings_router } from './modules/earnings/earnings-route.js';
 import { private_file_router } from './platform/storage/private-file-route.js';
 import { live_router } from './platform/live/live-route.js';
 import { start_dispatch_loop } from './modules/delivery/services/dispatch-service.js';
@@ -57,6 +58,7 @@ export function create_express_app() {
   app.use('/api', delivery_router);
   app.use('/api', favourite_router);
   app.use('/api', rating_router);
+  app.use('/api', earnings_router);
   app.use('/api', not_found_handler);
   app.use(error_handler);
   return app;

@@ -16,6 +16,15 @@ export const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017
 export const SUPABASE_URL = process.env.SUPABASE_URL || '';
 export const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
+// What the platform earns. Both are percentages and can be changed with PLATFORM_COMMISSION_PERCENT and RIDER_SHARE_PERCENT.
+// Commission is taken from the item value of a delivered order. The rider keeps their share of the delivery fee.
+function read_percent(name, fallback) {
+  const value = Number(process.env[name]);
+  return Number.isFinite(value) && value >= 0 && value <= 100 ? value : fallback;
+}
+export const PLATFORM_COMMISSION_PERCENT = read_percent('PLATFORM_COMMISSION_PERCENT', 6);
+export const RIDER_SHARE_PERCENT = read_percent('RIDER_SHARE_PERCENT', 80);
+
 // Passcode required to create a platform admin via POST /api/admin/register. Empty disables admin sign-up.
 export function get_admin_signup_passcode() {
   return process.env.ADMIN_SIGNUP_PASSCODE || '';
