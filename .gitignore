@@ -10,3 +10,5 @@ Coverage/
 .idea/
 .vscode/
 .claude/.private-uploads/
+.claude/settings.json
+.claude/settings.local.json
