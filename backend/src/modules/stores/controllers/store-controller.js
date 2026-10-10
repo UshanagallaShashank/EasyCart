@@ -1,4 +1,22 @@
-import { get_own_store, update_store_settings, set_store_published, get_public_store_by_slug, upload_store_image } from '../services/store-service.js';
+import { z } from 'zod';
+import { AppError } from '../../../platform/shared/app-error.js';
+import { get_own_store, update_store_settings, set_store_published, get_public_store_by_slug, list_nearby_stores, upload_store_image } from '../services/store-service.js';
+
+const nearby_query = z.object({
+  lat: z.coerce.number().min(-90).max(90),
+  lng: z.coerce.number().min(-180).max(180)
+});
+
+export async function handle_nearby_stores(req, res, next) {
+  try {
+    const parsed = nearby_query.safeParse(req.query);
+    if (!parsed.success) throw new AppError('Send your location as lat and lng', 400);
+    const stores = await list_nearby_stores(parsed.data.lat, parsed.data.lng);
+    res.status(200).json({ stores });
+  } catch (err) {
+    next(err);
+  }
+}
 
 export async function handle_get_own_store(req, res, next) {
   try {

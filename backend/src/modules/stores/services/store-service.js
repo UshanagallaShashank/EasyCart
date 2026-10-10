@@ -2,8 +2,9 @@
 import { randomUUID } from 'node:crypto';
 import { AppError } from '../../../platform/shared/app-error.js';
 import { validate_store_settings_input } from '../store-schemas.js';
-import { find_store_by_tenant_id, find_store_by_slug, save_store, update_store } from '../repositories/store-repository.js';
-import { find_tenant_by_id } from '../../tenants/repositories/tenant-repository.js';
+import { find_store_by_tenant_id, find_store_by_slug, find_published_stores, save_store, update_store } from '../repositories/store-repository.js';
+import { distance_km } from '../../../platform/shared/distance.js';
+import { find_tenant_by_id, find_all_tenants } from '../../tenants/repositories/tenant-repository.js';
 import { upload_store_asset_to_supabase } from './store-storage-service.js';
 import { read_request_details } from './store-request-document-service.js';
 
@@ -65,6 +66,35 @@ export async function set_store_published(tenant_id, is_published) {
     throw new AppError('Store not found', 404);
   }
   return update_store(tenant_id, { is_published });
+}
+
+// Live shops around a point on the map, nearest first. Shops that have not pinned their location are left out.
+export async function list_nearby_stores(lat, lng, limit = 30) {
+  const [stores, tenants] = await Promise.all([find_published_stores(), find_all_tenants()]);
+  const suspended = new Set(tenants.filter((tenant) => tenant.status === 'suspended').map((tenant) => tenant.id));
+
+  return stores
+    .filter((store) => !suspended.has(store.tenant_id))
+    .filter((store) => store.latitude !== null && store.latitude !== undefined && store.longitude !== null && store.longitude !== undefined)
+    .map((store) => {
+      const distance = distance_km(lat, lng, Number(store.latitude), Number(store.longitude));
+      const radius = store.max_delivery_radius_km ?? 5;
+      return {
+        name: store.name,
+        slug: store.slug,
+        logo_url: store.logo_url ?? null,
+        banner_url: store.banner_url ?? null,
+        address: store.address ?? null,
+        delivery_fee: store.delivery_fee,
+        max_delivery_radius_km: radius,
+        latitude: Number(store.latitude),
+        longitude: Number(store.longitude),
+        distance_km: Math.round(distance * 10) / 10,
+        delivers_to_you: distance <= radius
+      };
+    })
+    .sort((a, b) => a.distance_km - b.distance_km)
+    .slice(0, limit);
 }
 
 export async function get_public_store_by_slug(slug) {

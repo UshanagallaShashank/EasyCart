@@ -68,6 +68,15 @@ export async function find_stores_by_tenant_ids(tenant_ids) {
   return Store.find({ tenant_id: { $in: tenant_ids } }).lean();
 }
 
+export async function find_published_stores() {
+  if (DB_PROVIDER === 'supabase') {
+    const { data, error } = await get_supabase().from('stores').select('*').eq('is_published', true);
+    if (error) throw error;
+    return (data || []).map(attach_fallback_fields);
+  }
+  return Store.find({ is_published: true }).lean();
+}
+
 export async function find_store_by_slug(slug) {
   if (DB_PROVIDER === 'supabase') {
     const { data, error } = await get_supabase().from('stores').select('*').eq('slug', slug).maybeSingle();
