@@ -4,6 +4,8 @@ import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
 import { useShop } from '@/features/shop/shop-context';
+import { useStore } from '@/features/shop/shop-api';
+import { BrandProvider } from '@/lib/brand';
 import { useT } from '@/lib/i18n';
 import { useOrderAlerts } from '@/features/shop/use-order-alerts';
 
@@ -30,12 +32,14 @@ const ACTIVE_FOR = {
 
 export default function ShopTabs() {
   const tabOptions = useTabOptions(ACTIVE_FOR);
-  const { lines } = useShop();
+  const { lines, slug } = useShop();
+  const store = useStore(slug);
   const t = useT();
   useOrderAlerts();
   const units = lines.reduce((sum, line) => sum + line.quantity, 0);
 
   return (
+    <BrandProvider themeId={store.data?.color_theme}>
     <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
       <Tabs.Screen name="index" options={{ title: t('Shop'), headerShown: false, tabBarIcon: tabIcon('home') }} />
       <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
@@ -50,5 +54,6 @@ export default function ShopTabs() {
       <Tabs.Screen name="addresses" options={hiddenPage(t('Delivery addresses'))} />
       <Tabs.Screen name="store-request" options={hiddenPage(t('Request a store'))} />
     </Tabs>
+    </BrandProvider>
   );
 }

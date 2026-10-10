@@ -19,6 +19,7 @@ export interface OwnerStore {
   latitude?: number | null;
   longitude?: number | null;
   promotion_banner_text: string | null;
+  color_theme?: string | null;
 }
 
 export const useOwnStore = () => useQuery({ queryKey: ['store'], queryFn: async () => (await api<{ store: OwnerStore }>('/stores/me')).store });
@@ -140,7 +141,9 @@ export const manageCalls = {
   createCategory: (name: string) => api('/categories', { method: 'POST', body: { name } }),
   deleteCategory: (id: string) => api(`/categories/${id}`, { method: 'DELETE' }),
   saveStore: (payload: Partial<{ name: string; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string; latitude: number; longitude: number }>) => api('/stores/me', { method: 'PATCH', body: payload }),
-  setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' })
+  setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' }),
+  // One of the colour themes the platform admin switched on (or null for the platform default).
+  setColorTheme: (color_theme: string | null) => api('/stores/me/color-theme', { method: 'PUT', body: { color_theme } })
 };
 
 // ---- Adding and editing products (same calls and fields as the website's product form) ----

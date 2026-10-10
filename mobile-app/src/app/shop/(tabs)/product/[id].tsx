@@ -6,6 +6,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
 import { useT, useContent } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
@@ -24,6 +25,7 @@ export default function ProductScreen() {
   const { slug, add, lines, subtotal, setQuantity: updateCartQuantity, markViewed } = useShop();
   const toast = useToast();
   const t = useT();
+  const brand = useBrand();
   const { data: product, isLoading } = useProduct(slug, id);
   const name = useContent(product?.name);
   const productRating = useProductRatings(slug).data?.[id];
@@ -254,7 +256,7 @@ export default function ProductScreen() {
             <Text style={styles.ratingText}>{t('{average} out of 5 · {count} ratings', { average: productRating.average.toFixed(1), count: productRating.count })}</Text>
           </View>
         ) : null}
-        <Text style={styles.price}>{price(unitPrice)}</Text>
+        <Text style={[styles.price, { color: brand.primaryDark }]}>{price(unitPrice)}</Text>
         {product.description ? <Text style={styles.description}>{description}</Text> : null}
       </FadeIn>
       <View style={styles.divider} />

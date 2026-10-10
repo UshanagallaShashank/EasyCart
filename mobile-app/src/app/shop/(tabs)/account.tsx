@@ -15,11 +15,13 @@ import { useConfirmedSignOut } from '@/components/confirm';
 import { accents, colors, radius, space, text } from '@/theme/theme';
 import { LanguagePicker } from '@/components/language-picker';
 import { useT } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 
 export default function AccountScreen() {
   const { user } = useSession();
   const logout = useConfirmedSignOut();
   const t = useT();
+  const brand = useBrand();
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
   const { data: orders } = useMyOrders();
@@ -36,7 +38,7 @@ export default function AccountScreen() {
   return (
     <Screen>
       <FadeIn>
-        <LinearGradient colors={['#0369a1', '#0284c7', '#0ea5e9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profile}>
+        <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profile}>
           <View style={styles.circle} />
           <Avatar name={user?.username ?? '?'} size={60} />
           <View style={{ flex: 1, gap: 2 }}>

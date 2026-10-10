@@ -15,6 +15,7 @@ import { useShop, type CartLine } from './shop-context';
 import { useProductRatings, type StarSummary } from './shop-api';
 import { useToast } from '@/components/toast';
 import { useT, useContent } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;
@@ -51,6 +52,7 @@ export function useCardActions(): CardActions {
 
 function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSetQuantity }: { product: Product; width: number; index?: number; line?: CartLine; rating?: StarSummary; onAdd(product: Product): void; onSetQuantity(productId: string, quantity: number): void }) {
   const t = useT();
+  const brand = useBrand();
   const name = useContent(product.name);
   const image = fileUrl(product.images[0]);
   const stock = productStock(product);
@@ -94,7 +96,7 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
           {stock <= 0 ? (
             <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
           ) : inCart ? (
-            <View style={[styles.action, styles.stepper]}>
+            <View style={[styles.action, styles.stepper, { backgroundColor: brand.primary }]}>
               <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity - 1)} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
                 <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={colors.white} strokeWidth={2.5} />
               </PressScale>
@@ -104,9 +106,9 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
               </PressScale>
             </View>
           ) : (
-            <PressScale onPress={quickAdd} style={[styles.action, styles.add]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
-              <Text style={styles.addText}>{t('ADD')}</Text>
-              <Icon name="plus" size={14} color={colors.primary} strokeWidth={3} />
+            <PressScale onPress={quickAdd} style={[styles.action, styles.add, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
+              <Text style={[styles.addText, { color: brand.primary }]}>{t('ADD')}</Text>
+              <Icon name="plus" size={14} color={brand.primary} strokeWidth={3} />
             </PressScale>
           )}
         </View>

@@ -8,6 +8,7 @@ const ACTIVE_FOR = {
   'store/[id]': 'stores',
   earnings: 'more',
   refunds: 'more',
+  themes: 'more',
   users: 'more',
   sales: 'more',
   growth: 'more'
@@ -30,6 +31,7 @@ export default function AdminTabs() {
       <Tabs.Screen name="store/[id]" options={hiddenPage('Store')} />
       <Tabs.Screen name="earnings" options={hiddenPage('Earnings')} />
       <Tabs.Screen name="refunds" options={hiddenPage('Refunds')} />
+      <Tabs.Screen name="themes" options={hiddenPage('Shop themes')} />
       <Tabs.Screen name="users" options={hiddenPage('Users')} />
       <Tabs.Screen name="sales" options={hiddenPage('Sales')} />
       <Tabs.Screen name="growth" options={hiddenPage('Growth')} />

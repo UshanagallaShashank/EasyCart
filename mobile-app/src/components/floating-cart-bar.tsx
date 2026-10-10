@@ -7,9 +7,11 @@ import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
+import { useBrand } from '@/lib/brand';
 
 export function FloatingCartBar() {
   const { lines } = useShop();
+  const brand = useBrand();
 
   const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
 
@@ -42,6 +44,7 @@ export function FloatingCartBar() {
       <Pressable
         style={({ pressed }) => [
           styles.pill,
+          { backgroundColor: brand.primary },
           pressed && styles.pillPressed
         ]}
         onPress={() => router.navigate('/shop/cart')}

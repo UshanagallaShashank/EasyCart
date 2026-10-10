@@ -11,6 +11,7 @@ export interface PublicStore {
   latitude?: number | null;
   longitude?: number | null;
   promotion_banner_text?: string | null;
+  color_theme?: string | null;
 }
 
 export interface ProductVariant {

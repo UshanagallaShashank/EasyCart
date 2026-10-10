@@ -9,6 +9,8 @@ import { PressScale, Skeleton } from '@/components/motion';
 import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { ShopSwitcher } from '@/features/shop/shop-switcher';
 import { useT } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
+import { withAlpha } from '@/theme/brands';
 import { estimateDelivery } from '@/lib/eta';
 import { ProfileMenu } from '@/components/profile-menu';
 import { NotificationButton } from '@/components/notification-button';
@@ -61,6 +63,7 @@ export default function ShopHome() {
   const { data: pastOrders } = useMyOrders();
   const cardActions = useCardActions();
   const t = useT();
+  const brand = useBrand();
   const [search, setSearch] = useState('');
   const [view, setView] = useState<View_>('all');
   const [category, setCategory] = useState('');
@@ -162,7 +165,7 @@ export default function ShopHome() {
           <View style={styles.hero}>
             {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
             <LinearGradient
-              colors={banner ? ['rgba(3,105,161,0.95)', 'rgba(2,132,199,0.88)'] : ['#0369a1', '#0284c7', '#0ea5e9']}
+              colors={banner ? [withAlpha(brand.gradient[0], 0.95), withAlpha(brand.gradient[1], 0.88)] : brand.gradient}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -179,8 +182,8 @@ export default function ShopHome() {
               </View>
             ) : null}
             <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">
-              <Text style={styles.shopNowText}>{t('Shop now')}</Text>
-              <Icon name="arrow-right" size={14} color={colors.primaryDark} />
+              <Text style={[styles.shopNowText, { color: brand.primaryDark }]}>{t('Shop now')}</Text>
+              <Icon name="arrow-right" size={14} color={brand.primaryDark} />
             </PressScale>
           </View>
 
@@ -203,12 +206,12 @@ export default function ShopHome() {
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>{t('Categories')}</Text>
             <Pressable onPress={() => setCategory('')}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><Text style={styles.seeAllText}>{t('See all')}</Text><Icon name="chevron-right" size={16} color={colors.primary} /></View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><Text style={[styles.seeAllText, { color: brand.primary }]}>{t('See all')}</Text><Icon name="chevron-right" size={16} color={brand.primary} /></View>
             </Pressable>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.categoryList}>
-            <CategoryTile label={t('All')} icon="grid" accent={accents.sky} active={category === ''} onPress={() => setCategory('')} />
+            <CategoryTile label={t('All')} icon="grid" accent={{ fg: brand.primary, bg: brand.primaryTint }} active={category === ''} onPress={() => setCategory('')} />
             {(categories.data ?? []).map((cat, index) => (
               <CategoryTile
                 key={cat.id}

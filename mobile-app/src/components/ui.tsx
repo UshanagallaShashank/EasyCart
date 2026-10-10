@@ -9,6 +9,7 @@ import { fileUrl } from '@/lib/api';
 import { useScreen } from '@/lib/responsive';
 import { useKeyboardTop } from '@/lib/keyboard';
 import { useT } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
@@ -98,7 +99,10 @@ export function Card({ children, style, title, icon, right }: { children: ReactN
 type ButtonVariant = 'primary' | 'dark' | 'outline' | 'danger' | 'ghost' | 'success';
 
 export function Button({ label, onPress, variant = 'primary', icon, loading, disabled, small }: { label: string; onPress(): void; variant?: ButtonVariant; icon?: IconName; loading?: boolean; disabled?: boolean; small?: boolean }) {
-  const look = BUTTONS[variant];
+  const brand = useBrand();
+  // Main and plain-text buttons take the shop's colour; the others keep their meaning (danger is red, and so on).
+  const base = BUTTONS[variant];
+  const look = variant === 'primary' ? { bg: brand.primary, fg: colors.white, border: brand.primary } : variant === 'ghost' ? { ...base, fg: brand.primary } : base;
   const inactive = disabled || loading;
   return (
     <PressScale
@@ -273,8 +277,9 @@ export function Avatar({ name, photoUrl, size = 48 }: { name: string; photoUrl?:
 
 // A coloured banner at the top of a page: a greeting or title, a line below it, and an optional icon.
 export function HeroHeader({ title, subtitle, icon }: { title: string; subtitle?: string; icon?: IconName }) {
+  const brand = useBrand();
   return (
-    <LinearGradient colors={['#0369a1', '#0284c7', '#0ea5e9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+    <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
       <View style={styles.heroCircle} />
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>

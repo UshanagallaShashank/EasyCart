@@ -7,12 +7,14 @@ import * as Haptics from 'expo-haptics';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { Text } from './text';
 import { colors, radius, shadow } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 // Which visible tab to light up while a hidden page is open, e.g. { 'product/[id]': 'index' }.
 export type ActiveFor = Record<string, string>;
 
-function TabButton({ label, icon, badge, active, onPress, onLongPress }: {
+function TabButton({ label, icon, badge, active, activeColor, onPress, onLongPress }: {
   label: string;
+  activeColor: string;
   icon: React.ReactNode;
   badge?: number | string;
   active: boolean;
@@ -35,13 +37,14 @@ function TabButton({ label, icon, badge, active, onPress, onLongPress }: {
           <View style={styles.badge}><Text style={styles.badgeText}>{badge}</Text></View>
         )}
       </Animated.View>
-      <Text style={[styles.label, active && styles.labelActive]} numberOfLines={1}>{label}</Text>
+      <Text style={[styles.label, active && styles.labelActive, active && { color: activeColor }]} numberOfLines={1}>{label}</Text>
     </Pressable>
   );
 }
 
 export function AppTabBar({ state, descriptors, navigation, insets, activeFor }: BottomTabBarProps & { activeFor?: ActiveFor }) {
   const [width, setWidth] = useState(0);
+  const brand = useBrand();
   const slide = useSharedValue(0);
 
   // Hidden pages are tabs styled with display:none; they get no button.
@@ -67,19 +70,20 @@ export function AppTabBar({ state, descriptors, navigation, insets, activeFor }:
     <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]} onLayout={(event: LayoutChangeEvent) => setWidth(event.nativeEvent.layout.width)}>
       {activeIndex >= 0 && itemWidth > 0 && (
         <Animated.View style={[styles.highlight, { width: itemWidth }, highlightStyle]}>
-          <View style={styles.highlightPill} />
+          <View style={[styles.highlightPill, { backgroundColor: brand.primaryTint }]} />
         </Animated.View>
       )}
       {visible.map((route) => {
         const { options } = descriptors[route.key];
         const active = route.name === activeName;
         const label = typeof options.tabBarLabel === 'string' ? options.tabBarLabel : options.title ?? route.name;
-        const color = active ? colors.primary : colors.textMuted;
+        const color = active ? brand.primary : colors.textMuted;
         return (
           <TabButton
             key={route.key}
             label={label}
             active={active}
+            activeColor={brand.primary}
             badge={options.tabBarBadge}
             icon={options.tabBarIcon?.({ focused: active, color, size: 22 })}
             onPress={() => press(route)}

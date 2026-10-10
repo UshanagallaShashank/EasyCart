@@ -7,6 +7,7 @@ import { useToast } from '@/components/toast';
 import { manageCalls, useOwnStore, useRefreshingAction } from '@/features/owner/owner-api';
 import { errorMessage } from '@/lib/api';
 import { MapPicker } from '@/components/map-picker';
+import { ThemePicker } from '@/features/owner/theme-picker';
 import { describePlace, readCurrentPosition, type Coords } from '@/lib/location';
 import { colors, space, text } from '@/theme/theme';
 
@@ -112,6 +113,8 @@ export default function OwnerStoreSettings() {
           </View>
         ) : null}
       </Card>
+
+      <ThemePicker current={store.color_theme} />
 
       <Card title="Delivery and announcement" icon="truck">
         <Field label="Standard delivery fee (Rs.)" value={form.delivery_fee} onChangeText={set('delivery_fee')} keyboardType="decimal-pad" placeholder="0" />

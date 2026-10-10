@@ -16,6 +16,7 @@ import { api, errorMessage } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 import { estimateDelivery } from '@/lib/eta';
 import type { Order } from '@/types/order';
 
@@ -26,6 +27,8 @@ export default function CheckoutScreen() {
   const { data: store } = useStore(slug);
   const toast = useToast();
   const t = useT();
+  const brand = useBrand();
+  const chosen = { borderColor: brand.primary, backgroundColor: brand.primarySoft };
   const [method, setMethod] = useState<Method>('delivery');
   const config = useAppConfig();
   const [payWith, setPayWith] = useState<'cash_on_delivery' | 'online'>('cash_on_delivery');
@@ -79,7 +82,7 @@ export default function CheckoutScreen() {
       <Card title={t('How do you want it?')}>
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
-            <PressScale key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && styles.methodActive]} accessibilityState={{ selected: method === option }}>
+            <PressScale key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && chosen]} accessibilityState={{ selected: method === option }}>
               <View style={[styles.methodIcon, method === option && { backgroundColor: colors.primaryTint }]}>
                 <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? colors.primary : colors.textMuted} />
               </View>
@@ -135,7 +138,7 @@ export default function CheckoutScreen() {
         <Card title={t('How will you pay?')}>
           <View style={styles.methods}>
             {(['cash_on_delivery', 'online'] as const).map((option) => (
-              <PressScale key={option} onPress={() => setPayWith(option)} style={[styles.method, paymentChoice === option && styles.methodActive]} accessibilityState={{ selected: paymentChoice === option }}>
+              <PressScale key={option} onPress={() => setPayWith(option)} style={[styles.method, paymentChoice === option && chosen]} accessibilityState={{ selected: paymentChoice === option }}>
                 <View style={[styles.methodIcon, paymentChoice === option && { backgroundColor: colors.primaryTint }]}>
                   <Icon name={option === 'online' ? 'credit-card' : 'wallet'} size={20} color={paymentChoice === option ? colors.primary : colors.textMuted} />
                 </View>
