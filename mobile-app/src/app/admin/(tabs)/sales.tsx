@@ -47,6 +47,6 @@ export default function AdminSales() {
 }
 
 const styles = StyleSheet.create({
-  range: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.md },
+  range: { flexDirection: 'row', alignItems: 'center', gap: space.sm, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.md },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md }
 });

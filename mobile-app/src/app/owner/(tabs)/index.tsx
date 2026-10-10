@@ -4,13 +4,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
-import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatCard } from '@/components/ui';
-import { useCustomerCount, useOrders, useOwnStore, useOwnerProducts } from '@/features/owner/owner-api';
+import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatCard, StatStrip } from '@/components/ui';
+import { useCustomerCount, useOrders, useOwnStore, useOwnerProducts, useRatingsSummary } from '@/features/owner/owner-api';
+import { StarRating } from '@/components/star-rating';
 import { OrderRow } from '@/features/owner/order-row';
-import { getGreeting, getLowStock, getPendingCount, getRevenue } from '@/features/owner/overview-stats';
+import { SetupChecklist, ShareShopCard } from '@/features/owner/setup-checklist';
+import { getBestSellers, getBusiestHour, getGreeting, getLowStock, getPendingCount, getRepeatRate, getRevenue, getToday } from '@/features/owner/overview-stats';
 import { useSession } from '@/lib/session';
 import { price } from '@/lib/format';
-import { colors, radius, space } from '@/theme/theme';
+import { accentAt, colors, radius, space } from '@/theme/theme';
 
 export default function OwnerOverview() {
   const { user } = useSession();
@@ -18,11 +20,16 @@ export default function OwnerOverview() {
   const orders = useOrders();
   const products = useOwnerProducts();
   const customers = useCustomerCount();
+  const ratings = useRatingsSummary();
   if (orders.isLoading) return <Loading />;
 
   const list = [...(orders.data ?? [])].sort((a, b) => b.created_at.localeCompare(a.created_at));
   const needsYou = list.filter((o) => o.status === 'pending' || (o.status === 'confirmed' && o.fulfillment_status === 'not_started'));
   const lowStock = getLowStock(products.data ?? []);
+  const today = getToday(list);
+  const bestSellers = getBestSellers(list);
+  const busiestHour = getBusiestHour(list);
+  const repeatRate = getRepeatRate(list);
 
   return (
     <Screen onRefresh={() => { void orders.refetch(); void products.refetch(); void customers.refetch(); }} refreshing={orders.isRefetching}>
@@ -39,6 +46,8 @@ export default function OwnerOverview() {
       {store.data && !store.data.is_published && <Notice tone="warning" icon="eye-off">Your store is not published, so customers cannot see it. Publish it from the website's Store settings.</Notice>}
       {store.data && store.data.latitude == null && <Notice icon="map-pin">Pin your store location in Store settings on the website so deliveries go to the nearest rider.</Notice>}
 
+      {store.data && <SetupChecklist store={store.data} productCount={products.data?.length ?? 0} />}
+
       <View style={styles.grid}>
         <StatCard label="Revenue" value={price(getRevenue(list)).replace('.00', '')} icon="dollar-sign" fg="#059669" bg="#d1fae5" hint="Excludes cancelled" />
         <StatCard label="Total orders" value={String(list.length)} icon="shopping-bag" fg="#0284c7" bg="#e0f2fe" />
@@ -46,15 +55,64 @@ export default function OwnerOverview() {
         <StatCard label="Customers" value={customers.data === undefined ? '…' : String(customers.data)} icon="users" fg="#7c3aed" bg="#ede9fe" />
       </View>
 
+      <SectionTitle>Today</SectionTitle>
+      <StatStrip items={[
+        { label: 'Orders today', value: String(today.orders) },
+        { label: 'Earned today', value: price(today.revenue).replace('.00', '') },
+        { label: 'Busiest hour', value: busiestHour ?? '-' }
+      ]} />
+
+      {bestSellers.length > 0 && (
+        <Card title="Best sellers" icon="award" right={repeatRate === null ? undefined : <Text style={styles.repeat}>{repeatRate}% come back</Text>}>
+          {bestSellers.map((item, index) => (
+            <View key={item.name} style={styles.sellerRow}>
+              <View style={[styles.rank, { backgroundColor: accentAt(index).bg }]}><Text style={[styles.rankText, { color: accentAt(index).fg }]}>{index + 1}</Text></View>
+              <View style={{ flex: 1, gap: 5 }}>
+                <Text style={styles.sellerName} numberOfLines={1}>{item.name}</Text>
+                <View style={styles.barTrack}><View style={[styles.barFill, { width: `${Math.max(8, (item.quantity / bestSellers[0].quantity) * 100)}%`, backgroundColor: accentAt(index).fg }]} /></View>
+              </View>
+              <Text style={styles.sellerQty}>{item.quantity} sold</Text>
+            </View>
+          ))}
+        </Card>
+      )}
+
+      {ratings.data && ratings.data.count > 0 && (
+        <Card title="Customer ratings" icon="star" right={<Text style={styles.repeat}>{ratings.data.count} {ratings.data.count === 1 ? 'rating' : 'ratings'}</Text>}>
+          <View style={styles.ratingTop}>
+            <View style={styles.ratingBox}>
+              <Text style={styles.ratingNumber}>{ratings.data.average_store?.toFixed(1)}</Text>
+              <StarRating value={Math.round(ratings.data.average_store ?? 0)} size={16} />
+              <Text style={styles.ratingLabel}>Store</Text>
+            </View>
+            {ratings.data.average_delivery !== null && (
+              <View style={styles.ratingBox}>
+                <Text style={styles.ratingNumber}>{ratings.data.average_delivery.toFixed(1)}</Text>
+                <StarRating value={Math.round(ratings.data.average_delivery)} size={16} />
+                <Text style={styles.ratingLabel}>Delivery</Text>
+              </View>
+            )}
+          </View>
+          {ratings.data.recent.map((item, index) => (
+            <View key={index} style={styles.comment}>
+              <StarRating value={item.store_stars} size={13} />
+              <Text style={styles.commentText}>{item.comment}</Text>
+            </View>
+          ))}
+        </Card>
+      )}
+
       <SectionTitle right={<Button small variant="ghost" label="All orders" onPress={() => router.navigate('/owner/orders')} />}>Needs your attention</SectionTitle>
       {needsYou.length === 0 ? <EmptyState icon="check-circle" message="You are all caught up." /> : needsYou.slice(0, 5).map((order) => <OrderRow key={order.id} order={order} />)}
 
       <SectionTitle>Recent orders</SectionTitle>
       {list.length === 0 ? <EmptyState icon="shopping-bag" message="Orders will show up here as customers check out." /> : list.slice(0, 5).map((order) => <OrderRow key={order.id} order={order} />)}
 
+      {store.data && <ShareShopCard store={store.data} />}
+
       <Card title="Low stock" icon="alert-triangle">
         {lowStock.length === 0 ? (
-          <View style={styles.allGood}><Icon name="check-circle" size={22} color="#10b981" /><Text style={{ color: colors.textMuted, fontSize: 13 }}>All products are well stocked.</Text></View>
+          <View style={styles.allGood}><Icon name="check-circle" size={24} color="#10b981" /><Text style={{ color: colors.textMuted, fontSize: 13 }}>All products are well stocked.</Text></View>
         ) : lowStock.slice(0, 5).map((product) => (
           <View key={product.id} style={styles.lowRow}>
             <Text style={{ flex: 1, color: colors.textSoft, fontSize: 14 }} numberOfLines={1}>{product.name}</Text>
@@ -83,6 +141,20 @@ const styles = StyleSheet.create({
   chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#bae6fd', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
   chipText: { color: '#0284c7', fontSize: 12, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
+  ratingTop: { flexDirection: 'row', gap: space.md },
+  ratingBox: { flex: 1, alignItems: 'center', gap: 4, backgroundColor: '#fffbeb', borderRadius: radius.md, paddingVertical: space.md },
+  ratingNumber: { fontSize: 28, fontWeight: '900', color: colors.text, letterSpacing: -0.5 },
+  ratingLabel: { fontSize: 12, fontWeight: '700', color: colors.textMuted },
+  comment: { gap: 4, backgroundColor: colors.bg, borderRadius: radius.md, padding: space.md },
+  commentText: { fontSize: 13, color: colors.textSoft },
+  repeat: { fontSize: 12, fontWeight: '700', color: '#059669' },
+  sellerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  rank: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  rankText: { fontSize: 14, fontWeight: '800' },
+  sellerName: { fontSize: 14, fontWeight: '600', color: colors.text },
+  sellerQty: { fontSize: 12, fontWeight: '700', color: colors.textMuted, fontVariant: ['tabular-nums'] },
+  barTrack: { height: 6, borderRadius: 3, backgroundColor: colors.borderSoft, overflow: 'hidden' },
+  barFill: { height: 6, borderRadius: 3 },
   allGood: { alignItems: 'center', gap: 6, paddingVertical: space.md },
   lowRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.warningSoft, borderRadius: radius.sm, paddingHorizontal: space.md, paddingVertical: 10 },
   lowCount: { color: '#d97706', fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] }

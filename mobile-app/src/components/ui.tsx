@@ -1,6 +1,7 @@
 // Building blocks every screen uses, in the website's look: white rounded cards on slate, sky buttons, soft badges.
 import { useState, type ReactNode } from 'react';
 import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View, type TextInputProps, type ViewStyle } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from './text';
 import { Icon } from './icon';
 import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
@@ -229,6 +230,20 @@ export function Avatar({ name, photoUrl, size = 48 }: { name: string; photoUrl?:
   );
 }
 
+// A coloured banner at the top of a page: a greeting or title, a line below it, and an optional icon.
+export function HeroHeader({ title, subtitle, icon }: { title: string; subtitle?: string; icon?: IconName }) {
+  return (
+    <LinearGradient colors={['#0369a1', '#0284c7', '#0ea5e9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+      <View style={styles.heroCircle} />
+      <View style={{ flex: 1, gap: 4 }}>
+        <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>
+        {subtitle ? <Text style={styles.heroSubtitle}>{subtitle}</Text> : null}
+      </View>
+      {icon ? <View style={styles.heroIcon}><Icon name={icon} size={24} color={colors.white} /></View> : null}
+    </LinearGradient>
+  );
+}
+
 // Big page title like the website's ("My Orders" over a grey subtitle).
 export function PageHeader({ title, subtitle, right }: { title: string; subtitle?: string; right?: ReactNode }) {
   return (
@@ -266,13 +281,18 @@ export function MenuRow({ icon, title, subtitle, onPress, fg = colors.primary, b
 }
 
 export const styles = StyleSheet.create({
+  hero: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderRadius: radius.xl, padding: space.xl, overflow: 'hidden' },
+  heroCircle: { position: 'absolute', right: -30, top: -30, width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroTitle: { fontSize: 24, fontWeight: '900', color: colors.white, letterSpacing: -0.6 },
+  heroSubtitle: { fontSize: 13, color: '#e0f2fe' },
+  heroIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   menuIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1, backgroundColor: colors.bg },
   screenContent: { padding: space.lg, paddingTop: space.xl, paddingBottom: space.xxl * 2 },
   column: { width: '100%', maxWidth: 720, alignSelf: 'center', gap: space.lg },
   footer: { borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.card, padding: space.md },
-  card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, gap: space.md, ...shadow },
+  card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, gap: space.md, ...shadow },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
@@ -286,7 +306,7 @@ export const styles = StyleSheet.create({
   badge: { alignSelf: 'flex-start', overflow: 'hidden', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, fontSize: 12, fontWeight: '700' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md, paddingVertical: 2 },
   notice: { flexDirection: 'row', gap: space.sm, borderRadius: radius.md, padding: space.md, paddingHorizontal: space.lg },
-  empty: { alignItems: 'center', gap: space.md, padding: space.xxl * 1.5, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', backgroundColor: colors.card },
+  empty: { alignItems: 'center', gap: space.md, padding: space.xxl * 1.5, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, backgroundColor: colors.card },
   loading: { padding: space.xxl * 2, alignItems: 'center' },
   pill: { height: 38, paddingHorizontal: 16, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, justifyContent: 'center' },
   pillActive: { backgroundColor: colors.text, borderColor: colors.text },

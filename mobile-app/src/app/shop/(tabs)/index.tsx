@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
-import { Animated, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Image, Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon, type IconName } from '@/components/icon';
-import { PressScale } from '@/components/motion';
+import { PressScale, Skeleton } from '@/components/motion';
 import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
 import { ShopSwitcher } from '@/features/shop/shop-switcher';
 import { ProfileMenu } from '@/components/profile-menu';
@@ -15,7 +15,7 @@ import { checkDeliveryRange } from '@/lib/delivery-radius';
 import { useShop } from '@/features/shop/shop-context';
 import { useCategories, useProducts, useStore } from '@/features/shop/shop-api';
 import { ProductCard } from '@/features/shop/product-card';
-import { ApiError, errorMessage } from '@/lib/api';
+import { ApiError, errorMessage, fileUrl } from '@/lib/api';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { accentAt, accents, colors, radius, space } from '@/theme/theme';
 
@@ -26,16 +26,35 @@ function CategoryTile({ label, icon, accent, active, onPress }: { label: string;
   return (
     <PressScale onPress={onPress} style={styles.tile} accessibilityRole="button" accessibilityState={{ selected: active }}>
       <View style={[styles.tileIcon, { backgroundColor: accent.bg }, active && { borderColor: accent.fg, borderWidth: 2 }]}>
-        <Icon name={icon} size={22} color={accent.fg} />
+        <Icon name={icon} size={24} color={accent.fg} />
       </View>
       <Text style={[styles.tileLabel, active && { color: accent.fg, fontWeight: '800' }]} numberOfLines={1}>{label}</Text>
     </PressScale>
   );
 }
 
+// Grey placeholder cards in the shape of real products, shown while the list loads.
+function ProductGridSkeleton({ width }: { width: number }) {
+  return (
+    <View style={styles.grid}>
+      {[0, 1, 2, 3, 4, 5].map((key) => (
+        <View key={key} style={[styles.skeletonCard, { width }]}>
+          <Skeleton height={width - 16} rounded={radius.md} />
+          <Skeleton width="85%" height={14} />
+          <Skeleton width="45%" height={16} />
+          <Skeleton height={38} rounded={radius.pill} />
+        </View>
+      ))}
+    </View>
+  );
+}
+
+type View_ = 'all' | 'favourites' | 'low' | 'high';
+
 export default function ShopHome() {
-  const { slug } = useShop();
+  const { slug, favourites } = useShop();
   const [search, setSearch] = useState('');
+  const [view, setView] = useState<View_>('all');
   const [category, setCategory] = useState('');
   const store = useStore(slug);
   const categories = useCategories(slug);
@@ -78,7 +97,13 @@ export default function ShopHome() {
     );
   }
 
-  const count = products.data?.length ?? 0;
+  // The list the customer actually sees: favourites only, or sorted by price, on top of search and category.
+  let shown = products.data ?? [];
+  if (view === 'favourites') shown = shown.filter((product) => favourites.includes(product.id));
+  if (view === 'low') shown = [...shown].sort((a, b) => a.price - b.price);
+  if (view === 'high') shown = [...shown].sort((a, b) => b.price - a.price);
+  const count = shown.length;
+  const banner = fileUrl(store.data.banner_url);
   const range = activeAddress ? checkDeliveryRange(store.data, activeAddress.zip) : null;
 
   return (
@@ -96,50 +121,62 @@ export default function ShopHome() {
         {/* Index 0: Top Header Logo + Hero Banner + Features (fades out smoothly on scroll down) */}
         <Animated.View style={{ opacity: heroOpacity, transform: [{ translateY: heroTranslateY }], gap: space.md }}>
           <View style={styles.topHeader}>
-            <ShopSwitcher name={store.data?.name ?? 'Shop'} />
+            <ShopSwitcher name={store.data?.name ?? 'Shop'} logoUrl={fileUrl(store.data?.logo_url)} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <NotificationButton />
               <ProfileMenu />
             </View>
           </View>
 
+          <PressScale style={styles.addressRow} onPress={() => router.push('/shop/addresses')} accessibilityRole="button" accessibilityLabel="Change delivery address">
+            <View style={styles.addressIcon}><Icon name="map-pin" size={16} color={accents.green.fg} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.addressLabel}>Deliver to</Text>
+              <Text style={styles.addressText} numberOfLines={1}>{activeAddress ? `${activeAddress.label} · ${activeAddress.zip}` : 'Add a delivery address'}</Text>
+            </View>
+            <Icon name="chevron-right" size={18} color={colors.textFaint} />
+          </PressScale>
+
           {range && !range.isEligible && <Notice tone="warning" icon="alert-triangle">{range.message}. Pickup is still available at checkout.</Notice>}
-          <LinearGradient colors={['#0369a1', '#0284c7', '#0ea5e9']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <View style={styles.hero}>
+            {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} resizeMode="cover" /> : null}
+            <LinearGradient
+              colors={banner ? ['rgba(3,105,161,0.92)', 'rgba(2,132,199,0.78)'] : ['#0369a1', '#0284c7', '#0ea5e9']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
             <View style={styles.heroCircleBig} />
             <View style={styles.heroCircleSmall} />
             <Text style={styles.heroTag}>{activeAddress ? `Delivering to ${activeAddress.zip}` : 'Local store, delivered'}</Text>
-            <Text style={styles.heroTitle}>Fresh picks,{'\n'}delivered to your door.</Text>
-            <Text style={styles.heroBody}>Fresh products from your neighbourhood store.</Text>
+            <Text style={styles.heroTitle} numberOfLines={2}>Welcome to{'\n'}{store.data.name}</Text>
+            <Text style={styles.heroBody} numberOfLines={2}>{store.data.address ? `${store.data.address}. Delivered to your door.` : 'Fresh products from your neighbourhood store.'}</Text>
             <PressScale style={styles.shopNowBtn} onPress={() => setCategory('')} accessibilityRole="button">
               <Text style={styles.shopNowText}>Shop now</Text>
               <Icon name="arrow-right" size={14} color={colors.primaryDark} />
             </PressScale>
-          </LinearGradient>
+          </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.featuresScroll}>
-            {FEATURES.map((f) => (
-              <View key={f.title} style={styles.feature}>
-                <View style={[styles.featureIcon, { backgroundColor: f.bg }]}><Icon name={f.icon} size={15} color={f.fg} /></View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.featureTitle} numberOfLines={1}>{f.title}</Text>
-                  <Text style={styles.featureText} numberOfLines={1}>{f.text}</Text>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+
+          {store.data.promotion_banner_text ? (
+            <View style={styles.promo}>
+              <View style={styles.promoIcon}><Icon name="gift" size={18} color={accents.amber.fg} /></View>
+              <Text style={styles.promoText} numberOfLines={2}>{store.data.promotion_banner_text}</Text>
+            </View>
+          ) : null}
         </Animated.View>
 
         {/* Index 1: Sticky Header with Search Bar + Categories */}
         <View style={styles.stickyCategoriesContainer}>
           <View style={styles.search}>
-            <Icon name="search" size={17} color={colors.textFaint} />
+            <Icon name="search" size={16} color={colors.textFaint} />
             <TextInput value={search} onChangeText={setSearch} placeholder="Search products" placeholderTextColor={colors.textFaint} style={styles.searchInput} returnKeyType="search" />
           </View>
 
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Categories</Text>
             <Pressable onPress={() => setCategory('')}>
-              <Text style={styles.seeAllText}>See all →</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}><Text style={styles.seeAllText}>See all</Text><Icon name="chevron-right" size={16} color={colors.primary} /></View>
             </Pressable>
           </View>
 
@@ -159,12 +196,22 @@ export default function ShopHome() {
         </View>
 
         {/* Index 2: Products Grid */}
-        <View style={{ marginTop: space.xs }}>
-          {products.isLoading ? <Loading /> : count === 0 ? (
-            <EmptyState icon="search" message={search ? `No products match "${search}".` : 'This shop has no products yet.'} />
+        <View style={{ marginTop: space.xs, gap: space.md }}>
+          <Pills<View_>
+            value={view}
+            onChange={setView}
+            options={[
+              { value: 'all', label: 'All' },
+              { value: 'favourites', label: 'Favourites', count: favourites.length },
+              { value: 'low', label: 'Price: low to high' },
+              { value: 'high', label: 'Price: high to low' }
+            ]}
+          />
+          {products.isLoading ? <ProductGridSkeleton width={cardWidth} /> : count === 0 ? (
+            <EmptyState icon={view === 'favourites' ? 'heart' : 'search'} message={view === 'favourites' ? 'Tap the heart on a product to save it here.' : search ? `No products match "${search}".` : 'This shop has no products yet.'} />
           ) : (
             <View style={styles.grid}>
-              {products.data!.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} />)}
+              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} />)}
             </View>
           )}
         </View>
@@ -175,14 +222,15 @@ export default function ShopHome() {
   );
 }
 
-// The website's three promises under the banner.
-const FEATURES: { icon: IconName; title: string; text: string; fg: string; bg: string }[] = [
-  { icon: 'truck', title: 'Fast delivery', text: 'Straight from store', fg: '#059669', bg: '#ecfdf5' },
-  { icon: 'shield-check', title: 'Safe checkout', text: 'Code-verified', fg: '#0284c7', bg: '#f0f9ff' },
-  { icon: 'award', title: 'Quality', text: 'Hand-picked', fg: '#9333ea', bg: '#faf5ff' }
-];
 
 const styles = StyleSheet.create({
+  addressRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.md },
+  addressIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: accents.green.bg, alignItems: 'center', justifyContent: 'center' },
+  addressLabel: { fontSize: 11, fontWeight: '700', color: colors.textFaint, letterSpacing: 0.5, textTransform: 'uppercase' },
+  addressText: { fontSize: 14, fontWeight: '700', color: colors.text },
+  promo: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: accents.amber.bg, borderRadius: radius.lg, padding: space.md },
+  promoIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  promoText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#92400e' },
   topHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: space.xs },
   hero: { borderRadius: radius.xl, padding: space.xl, gap: 8, overflow: 'hidden', minHeight: 170 },
   heroCircleBig: { position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.12)' },
@@ -192,11 +240,6 @@ const styles = StyleSheet.create({
   heroBody: { color: '#e0f2fe', fontSize: 13, lineHeight: 18 },
   shopNowBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, alignSelf: 'flex-start', backgroundColor: colors.white, borderRadius: radius.pill, paddingHorizontal: 18, paddingVertical: 10, marginTop: 6 },
   shopNowText: { color: colors.primaryDark, fontSize: 14, fontWeight: '800' },
-  featuresScroll: { flexDirection: 'row', gap: space.sm, paddingRight: space.xs },
-  feature: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.card, borderRadius: radius.md, borderWidth: 1, borderColor: '#e8edf3', paddingHorizontal: 12, paddingVertical: 10, minWidth: 135, flexShrink: 0 },
-  featureIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  featureTitle: { fontSize: 12, fontWeight: '700', color: colors.text },
-  featureText: { fontSize: 10, color: colors.textMuted },
   stickyCategoriesContainer: { backgroundColor: colors.bg, paddingVertical: 4, gap: space.xs, zIndex: 10 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
   sectionTitle: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.4 },
@@ -211,5 +254,6 @@ const styles = StyleSheet.create({
   categoryNameActive: { color: colors.white, fontWeight: '800' },
   search: { flexDirection: 'row', alignItems: 'center', gap: space.sm, height: 50, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: space.lg, marginVertical: 4 },
   searchInput: { flex: 1, fontSize: 15, color: colors.text, height: '100%' },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md }
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
+  skeletonCard: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: 8, gap: 10 }
 });

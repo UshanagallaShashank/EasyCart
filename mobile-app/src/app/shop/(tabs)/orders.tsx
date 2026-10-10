@@ -1,10 +1,10 @@
 // The customer's orders, newest first.
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { Badge, Button, EmptyState, Loading, Screen, StatStrip } from '@/components/ui';
-import { FadeIn } from '@/components/motion';
+import { FadeIn, PressScale } from '@/components/motion';
 import { ORDER_STATUS, useMyOrders } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
 import { date, price, shortId } from '@/lib/format';
@@ -36,7 +36,7 @@ export default function OrdersScreen() {
             const live = order.fulfillment_method === 'delivery' && order.delivery_code && order.status !== 'cancelled';
             return (
               <FadeIn key={order.id} index={index} style={styles.row}>
-                <Pressable onPress={() => router.push(`/shop/order/${order.id}`)} style={styles.rowTop}>
+                <PressScale onPress={() => router.push(`/shop/order/${order.id}`)} style={styles.rowTop}>
                   <View style={[styles.tile, { backgroundColor: toneColors[status.tone].bg }]}><Icon name={order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={toneColors[status.tone].fg} /></View>
                   <View style={{ flex: 1, gap: 6 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' }}>
@@ -48,7 +48,7 @@ export default function OrdersScreen() {
                   </View>
                   <Text style={styles.total}>{price(order.total)}</Text>
                   <Icon name="chevron-right" size={18} color={colors.textFaint} />
-                </Pressable>
+                </PressScale>
                 {order.status !== 'cancelled' && <Button label="Order again" icon="refresh-cw" variant="outline" small onPress={() => reorder(order)} />}
               </FadeIn>
             );
@@ -60,7 +60,7 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   rowTop: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   id: { fontSize: 16, fontWeight: '800', color: colors.text, letterSpacing: -0.2 },
   tile: { width: 46, height: 46, borderRadius: 14, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },

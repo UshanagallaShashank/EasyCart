@@ -1,5 +1,5 @@
 // Store, catalog and order calls for the customer side.
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import type { Category, Product, PublicStore } from '@/types/catalog';
 import type { Order } from '@/types/order';
@@ -34,6 +34,29 @@ export function useMyOrder(id: string) {
 
 export function useMyDelivery(id: string, enabled: boolean) {
   return useQuery({ queryKey: ['my-orders', id, 'delivery'], queryFn: async () => (await api<{ delivery: CustomerOrderDelivery }>(`/my-orders/${id}/delivery`)).delivery, enabled });
+}
+
+export interface OrderRating {
+  store_stars: number;
+  delivery_stars: number | null;
+  comment: string | null;
+}
+
+export function useOrderRating(orderId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['my-orders', orderId, 'rating'],
+    queryFn: async () => (await api<{ rating: OrderRating | null }>(`/my-orders/${orderId}/rating`)).rating,
+    enabled,
+    retry: false
+  });
+}
+
+export function useRateOrder(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (rating: { store_stars: number; delivery_stars?: number; comment?: string }) => api(`/my-orders/${orderId}/rating`, { method: 'POST', body: rating }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-orders', orderId, 'rating'] })
+  });
 }
 
 export function useMyStores() {

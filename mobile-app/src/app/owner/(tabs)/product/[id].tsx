@@ -185,7 +185,7 @@ function OwnerProduct() {
                       style={styles.deleteBtn}
                       accessibilityLabel="Remove photo"
                     >
-                      <Icon name="trash-2" size={13} color="#ffffff" />
+                      <Icon name="trash-2" size={14} color="#ffffff" />
                     </Pressable>
 
                     {!isCover && (

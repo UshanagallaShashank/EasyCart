@@ -74,7 +74,7 @@ export function AppTabBar({ state, descriptors, navigation, insets, activeFor }:
         const { options } = descriptors[route.key];
         const active = route.name === activeName;
         const label = typeof options.tabBarLabel === 'string' ? options.tabBarLabel : options.title ?? route.name;
-        const color = active ? colors.primary : colors.textFaint;
+        const color = active ? colors.primary : colors.textMuted;
         return (
           <TabButton
             key={route.key}
@@ -92,11 +92,11 @@ export function AppTabBar({ state, descriptors, navigation, insets, activeFor }:
 }
 
 const styles = StyleSheet.create({
-  bar: { flexDirection: 'row', backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingTop: 8, ...shadow, shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.08 },
+  bar: { flexDirection: 'row', backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingTop: 8, borderTopWidth: 1, borderTopColor: colors.borderSoft, ...shadow, shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.06 },
   item: { flex: 1, alignItems: 'center', gap: 3, paddingVertical: 6 },
   highlight: { position: 'absolute', top: 8, left: 0, bottom: 0, alignItems: 'center' },
-  highlightPill: { width: 62, height: 52, borderRadius: 18, backgroundColor: colors.primarySoft },
-  label: { fontSize: 11, fontWeight: '600', color: colors.textFaint },
+  highlightPill: { width: 64, height: 52, borderRadius: 18, backgroundColor: colors.primaryTint },
+  label: { fontSize: 11, fontWeight: '600', color: colors.textMuted },
   labelActive: { color: colors.primary, fontWeight: '800' },
   badge: { position: 'absolute', top: -6, right: -12, minWidth: 18, height: 18, paddingHorizontal: 5, borderRadius: 9, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.card },
   badgeText: { color: colors.white, fontSize: 10, fontWeight: '800' }

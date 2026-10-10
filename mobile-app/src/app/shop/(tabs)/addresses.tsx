@@ -125,7 +125,7 @@ export default function AddressesScreen() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   rowActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   icon: { width: 40, height: 40, borderRadius: 13, backgroundColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' }

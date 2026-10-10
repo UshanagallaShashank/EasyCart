@@ -4,6 +4,7 @@ import { Text } from '@/components/text';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
+import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
@@ -163,6 +164,8 @@ export default function ProductScreen() {
           </View>
         )}
 
+        <View style={styles.heart}><FavouriteButton productId={product.id} size={38} /></View>
+
         {/* Previous arrow button (Flipkart style) */}
         {images.length > 1 && photo > 0 && (
           <Pressable
@@ -267,15 +270,15 @@ export default function ProductScreen() {
       )}
 
       <View style={styles.trust}>
-        <View style={styles.trustRow}><Icon name="truck" size={15} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
-        <View style={styles.trustRow}><Icon name="shield-check" size={15} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
+        <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
+        <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
       </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  photo: { height: PHOTO_HEIGHT, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: '#e8edf3', position: 'relative' },
+  photo: { height: PHOTO_HEIGHT, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.cardBorder, position: 'relative' },
   navBtnLeft: {
     position: 'absolute',
     left: 8,
@@ -316,6 +319,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     zIndex: 10
   },
+  heart: { position: 'absolute', top: 10, right: 10, zIndex: 11 },
   counterBadge: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(15, 23, 42, 0.75)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill, zIndex: 10 },
   counterText: { fontSize: 11, fontWeight: '700', color: colors.white },
   dotsRow: { position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 5, alignItems: 'center' },

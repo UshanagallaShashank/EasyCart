@@ -26,6 +26,14 @@ export const useStoreDeliveries = () => useQuery({ queryKey: ['store-deliveries'
 export const useStoreSettlements = () => useQuery({ queryKey: ['store-settlements'], queryFn: () => api<StoreSettlementSummary>('/delivery/settlements') });
 export const useRidersNearby = () => useQuery({ queryKey: ['store-deliveries', 'riders'], queryFn: () => api<{ riders: NearbyRider[] }>('/delivery/riders-nearby') });
 export const useCustomerCount = () => useQuery({ queryKey: ['customers'], queryFn: async () => (await api<{ customers: unknown[] }>('/customers')).customers.length });
+export interface RatingsSummary {
+  count: number;
+  average_store: number | null;
+  average_delivery: number | null;
+  recent: { store_stars: number; delivery_stars: number | null; comment: string; created_at: string }[];
+}
+// retry is off so a server without the ratings tables just shows no card instead of retrying.
+export const useRatingsSummary = () => useQuery({ queryKey: ['ratings-summary'], queryFn: async () => (await api<{ summary: RatingsSummary }>('/ratings/summary')).summary, retry: false });
 export const useOwnerProducts = () => useQuery({ queryKey: ['products', 'own'], queryFn: async () => (await api<{ products: Product[] }>('/products')).products });
 
 // Any owner action refreshes orders, deliveries, settlements and products.

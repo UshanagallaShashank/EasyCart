@@ -46,11 +46,11 @@ function CartRow({ line }: { line: CartLine }) {
         <Text style={styles.lineTotal}>{price(line.price * line.quantity)}</Text>
         <View style={styles.stepper}>
           <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel={line.quantity === 1 ? 'Remove item' : 'Less'}>
-            <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={15} color={line.quantity === 1 ? colors.danger : colors.primaryDark} />
+            <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={line.quantity === 1 ? colors.danger : colors.primaryDark} />
           </PressScale>
           <Text style={styles.qty}>{line.quantity}</Text>
           <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={atMax} style={[styles.stepButton, atMax && { opacity: 0.3 }]} accessibilityLabel="More">
-            <Icon name="plus" size={15} color={colors.primaryDark} />
+            <Icon name="plus" size={16} color={colors.primaryDark} />
           </PressScale>
         </View>
         {atMax ? <Text style={styles.maxHint}>Max available</Text> : null}
@@ -89,7 +89,7 @@ export default function CartScreen() {
 const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   clear: { fontSize: 13, fontWeight: '700', color: colors.danger },
-  line: { flexDirection: 'row', gap: space.sm, alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.md, ...shadow },
+  line: { flexDirection: 'row', gap: space.sm, alignItems: 'center', justifyContent: 'space-between', backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.md, ...shadow },
   productPressable: { flex: 1, flexDirection: 'row', gap: space.md, alignItems: 'center' },
   thumb: { width: 64, height: 64, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
   variantBadge: { alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.sm, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },

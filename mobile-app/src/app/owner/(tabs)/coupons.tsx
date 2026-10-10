@@ -84,7 +84,7 @@ export default function OwnerCoupons() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: space.sm, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  row: { gap: space.sm, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
   code: { fontSize: 17, fontWeight: '800', color: colors.text, fontFamily: 'monospace', letterSpacing: 0.5 }
 });

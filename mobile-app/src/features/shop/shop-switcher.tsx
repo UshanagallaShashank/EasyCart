@@ -5,14 +5,13 @@ import Animated, { FadeIn as FadeInView, SlideInDown } from 'react-native-reanim
 import { router } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { PressScale } from '@/components/motion';
-import { BrandTitle } from '@/components/nav';
 import { Text } from '@/components/text';
 import { fileUrl } from '@/lib/api';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 import { useMyStores } from './shop-api';
 import { useShop } from './shop-context';
 
-export function ShopSwitcher({ name }: { name: string }) {
+export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
   const [open, setOpen] = useState(false);
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
@@ -30,7 +29,8 @@ export function ShopSwitcher({ name }: { name: string }) {
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={styles.trigger} accessibilityRole="button" accessibilityLabel="Switch shop">
-        <BrandTitle>{name}</BrandTitle>
+        <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={styles.headerLogo} resizeMode="cover" />
+        <Text style={styles.headerName} numberOfLines={1}>{name}</Text>
         <Icon name="chevron-down" size={18} color={colors.textMuted} />
       </Pressable>
 
@@ -69,7 +69,9 @@ export function ShopSwitcher({ name }: { name: string }) {
 }
 
 const styles = StyleSheet.create({
-  trigger: { flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 1 },
+  trigger: { flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1, height: 48 },
+  headerLogo: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primarySoft },
+  headerName: { fontSize: 19, fontWeight: '800', color: colors.text, letterSpacing: -0.4, flexShrink: 1 },
   backdrop: { flex: 1, backgroundColor: 'rgba(15,23,42,0.45)', justifyContent: 'flex-end' },
   sheet: { backgroundColor: colors.card, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, padding: space.xl, paddingBottom: space.xxl * 1.5, gap: space.md, ...shadow },
   handle: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: colors.border, marginBottom: space.xs },

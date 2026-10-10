@@ -9,10 +9,19 @@ import { useToast } from '@/components/toast';
 import { useConfirm } from '@/components/confirm';
 import { ORDER_STATUS, useMyDelivery, useMyOrder } from '@/features/shop/shop-api';
 import { useReorder } from '@/features/shop/reorder';
-import { DeliverySteps, ProofPhoto, RiderCard, openMap } from '@/features/delivery/delivery-parts';
+import { RateOrderCard } from '@/features/shop/rate-order-card';
+import { DeliverySteps, PICKUP_STEPS, ProgressTimeline, ProofPhoto, RiderCard, openMap } from '@/features/delivery/delivery-parts';
 import { api, errorMessage } from '@/lib/api';
 import { date, price, shortId } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
+
+// Which pickup step the order is on, from its status.
+function pickupStep(status: string, fulfilment: string) {
+  if (status === 'fulfilled' || fulfilment === 'picked_up') return 3;
+  if (fulfilment === 'ready_for_pickup') return 2;
+  if (status === 'confirmed') return 1;
+  return 0;
+}
 
 export default function CustomerOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -72,6 +81,12 @@ export default function CustomerOrderScreen() {
         </Card>
       )}
 
+      {order.fulfillment_method === 'pickup' && order.status !== 'cancelled' && (
+        <Card title="Order progress" icon="shopping-bag">
+          <ProgressTimeline steps={PICKUP_STEPS} current={pickupStep(order.status, order.fulfillment_status)} finished={order.status === 'fulfilled'} />
+        </Card>
+      )}
+
       {!isDelivery && (
         <Notice icon={order.status === 'cancelled' ? 'x-circle' : 'shopping-bag'} tone={order.status === 'cancelled' ? 'danger' : 'primary'}>
           {order.status === 'cancelled' ? 'This order was cancelled. Nothing to pay.' : 'Pick up at the store. Pay in cash when you collect it.'}
@@ -98,6 +113,8 @@ export default function CustomerOrderScreen() {
         <Text style={text.small}>Cash on delivery · {order.payment_status === 'paid' ? 'Paid' : order.status === 'cancelled' ? 'Nothing to pay' : 'Pay when you receive it'}</Text>
       </Card>
 
+      {order.status === 'fulfilled' && <RateOrderCard orderId={order.id} wasDelivery={order.fulfillment_method === 'delivery'} />}
+
       {order.status !== 'cancelled' && <Button variant="outline" icon="refresh-cw" label="Order again" onPress={() => reorder(order)} />}
       {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={cancel.isPending} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: 'The store has not started on it yet, so you can still cancel.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep my order', icon: 'x-circle' })) cancel.mutate(); }} />}
     </Screen>
@@ -105,7 +122,7 @@ export default function CustomerOrderScreen() {
 }
 
 const styles = StyleSheet.create({
-  hero: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.xl, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg },
+  hero: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.xl, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg },
   heroIcon: { width: 54, height: 54, borderRadius: 18, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
   heroId: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
   heroTotal: { fontSize: 20, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },

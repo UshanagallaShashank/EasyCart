@@ -35,8 +35,8 @@ function DocumentSlot({ kind, rider, editable }: { kind: DocumentKind; rider: Ri
   return (
     <View style={styles.doc}>
       <View style={[styles.docPreview, current && { borderColor: '#a7f3d0' }]}>
-        {upload.isPending ? <ActivityIndicator color={colors.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Icon name={current ? 'file' : 'camera'} size={22} color={current ? colors.success : colors.primary} />}
-        {current && <View style={styles.tick}><Icon name="check" size={12} color={colors.white} /></View>}
+        {upload.isPending ? <ActivityIndicator color={colors.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Icon name={current ? 'file' : 'camera'} size={24} color={current ? colors.success : colors.primary} />}
+        {current && <View style={styles.tick}><Icon name="check" size={14} color={colors.white} /></View>}
       </View>
       <Text style={styles.docTitle} numberOfLines={2}>{info.title}{info.required ? ' *' : ''}</Text>
       {editable && (

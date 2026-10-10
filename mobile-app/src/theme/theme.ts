@@ -3,6 +3,7 @@ export const colors = {
   bg: '#f8fafc', // slate-50
   card: '#ffffff',
   border: '#e2e8f0', // slate-200
+  cardBorder: '#e8edf3', // the thin edge around cards
   borderSoft: '#f1f5f9', // slate-100
   text: '#0f172a', // slate-900
   textSoft: '#334155', // slate-700
@@ -37,6 +38,9 @@ export const accents = {
 const ACCENT_LIST = Object.values(accents);
 export const accentAt = (index: number) => ACCENT_LIST[index % ACCENT_LIST.length];
 
+// Icons use these sizes only, so they look the same on every screen.
+export const iconSize = { xs: 14, sm: 16, md: 18, lg: 20, xl: 24 } as const;
+
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 } as const;
 export const radius = { sm: 10, md: 14, lg: 20, xl: 24, pill: 999 } as const;
 
@@ -51,10 +55,10 @@ export const text = {
 
 export const shadow = {
   shadowColor: '#0f172a',
-  shadowOpacity: 0.06,
-  shadowRadius: 14,
-  shadowOffset: { width: 0, height: 4 },
-  elevation: 2
+  shadowOpacity: 0.04,
+  shadowRadius: 8,
+  shadowOffset: { width: 0, height: 2 },
+  elevation: 1
 } as const;
 
 export type Tone = 'success' | 'warning' | 'danger' | 'neutral' | 'primary';

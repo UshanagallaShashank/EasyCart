@@ -58,7 +58,7 @@ export function ProfileMenu() {
                 router.navigate('/shop/account');
               }}
             >
-              <Icon name="user" size={17} color="#0ea5e9" />
+              <Icon name="user" size={16} color="#0ea5e9" />
               <Text style={styles.itemLabel}>View profile</Text>
             </Pressable>
 
@@ -70,7 +70,7 @@ export function ProfileMenu() {
                 router.navigate('/shop/orders');
               }}
             >
-              <Icon name="package" size={17} color="#0ea5e9" />
+              <Icon name="package" size={16} color="#0ea5e9" />
               <Text style={styles.itemLabel}>My orders</Text>
             </Pressable>
 
@@ -82,7 +82,7 @@ export function ProfileMenu() {
                 setSupportOpen(true);
               }}
             >
-              <Icon name="headphones" size={17} color="#0284c7" />
+              <Icon name="headphones" size={16} color="#0284c7" />
               <Text style={styles.itemLabel}>Customer support</Text>
             </Pressable>
 
@@ -94,7 +94,7 @@ export function ProfileMenu() {
                 router.push('/shop/store-request');
               }}
             >
-              <Icon name="store" size={17} color="#f59e0b" />
+              <Icon name="store" size={16} color="#f59e0b" />
               <Text style={styles.itemLabel}>Request to create a store</Text>
             </Pressable>
 
@@ -108,7 +108,7 @@ export function ProfileMenu() {
                 setTimeout(() => void logout(), 300);
               }}
             >
-              <Icon name="log-out" size={17} color="#ef4444" />
+              <Icon name="log-out" size={16} color="#ef4444" />
               <Text style={[styles.itemLabel, { color: '#ef4444', fontWeight: '600' }]}>Log out</Text>
             </Pressable>
           </View>
