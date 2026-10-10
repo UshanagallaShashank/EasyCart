@@ -1,0 +1,7 @@
+version: 2
+
+# Test files only contain made-up sample passwords (for example ValidPass123!)
+# used to check the signup validation rules. They are not real credentials.
+secret:
+  ignored_paths:
+    - "backend/tests/**"
