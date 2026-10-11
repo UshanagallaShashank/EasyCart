@@ -7,6 +7,7 @@ import { Avatar, Badge, Button, Card, InfoRow, Loading, Screen } from '@/compone
 import { useToast } from '@/components/toast';
 import { riderCalls, useMyRider, useRiderAction } from '@/features/rider/rider-api';
 import { ApplicationStatus } from '@/features/rider/application-status';
+import { EditDetailsCard } from '@/features/rider/edit-details-card';
 import { MapPicker } from '@/components/map-picker';
 import { LanguagePicker } from '@/components/language-picker';
 import { readCurrentPosition, type Coords } from '@/lib/location';
@@ -77,6 +78,8 @@ export default function RiderProfile() {
         <InfoRow label="Licence valid until" value={rider.license_expiry || '—'} />
         <InfoRow label="Area" value={[rider.area, rider.city, rider.pincode].filter(Boolean).join(', ') || '—'} />
       </Card>
+
+      {rider.status !== 'draft' && rider.status !== 'rejected' && <EditDetailsCard rider={rider} />}
 
       <Card title="Base location" icon="map-pin" right={<Badge tone={pinned ? 'success' : 'warning'} label={pinned ? 'Pinned' : 'Not pinned'} />}>
         <Text style={text.muted}>Delivery offers come from shops near this spot. Stand where you usually start and tap the button, or drop the pin on the map.</Text>
