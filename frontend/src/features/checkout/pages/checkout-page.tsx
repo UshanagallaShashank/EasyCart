@@ -22,6 +22,7 @@ import { useCheckout } from '../hooks/use-checkout';
 import { validateCoupon, type ValidatedCoupon } from '../api/checkout-api';
 import { ApiError } from '@/shared/api/api-error';
 import { usePublicStore } from '@/features/storefront/hooks/use-public-store';
+import { checkStoreDeliveryEligibility } from '@/features/storefront/lib/delivery-radius';
 
 export interface SavedAddress {
   id: string;
@@ -219,6 +220,10 @@ export function CheckoutPage() {
   }
 
   function handlePlaceOrder() {
+    if (isDeliveryOutOfRange) {
+      toast.error(deliveryCheck?.message || 'Address is outside the delivery range. Please choose Pickup or change address.');
+      return;
+    }
     checkoutMutation.mutate(
       {
         items: lines.map((l) => ({ product_id: l.product_id, variant_label: l.variant_label, quantity: l.quantity })),
@@ -239,11 +244,11 @@ export function CheckoutPage() {
     );
   }
 
-  if (isLoading) return <Skeleton className="h-64 w-full" />;
-  if (isError || !store) return <p className="p-6 text-muted-foreground">Store not found.</p>;
-  if (lines.length === 0) return <p className="p-6 text-muted-foreground">Your cart is empty.</p>;
-
-  const canPlaceOrder = fulfillmentMethod === 'pickup' || deliveryAddress.trim().length > 0;
+  const deliveryCheck = store && fulfillmentMethod === 'delivery'
+    ? checkStoreDeliveryEligibility(store, deliveryAddress)
+    : null;
+  const isDeliveryOutOfRange = Boolean(deliveryCheck && !deliveryCheck.isEligible);
+  const canPlaceOrder = fulfillmentMethod === 'pickup' || (deliveryAddress.trim().length > 0 && !isDeliveryOutOfRange);
 
   return (
     <div className="mx-auto flex max-w-lg flex-col gap-6 px-4 pt-4 sm:px-6 sm:pt-6 pb-12">
@@ -321,6 +326,16 @@ export function CheckoutPage() {
                 </div>
               );
             })()}
+
+            {deliveryCheck && (
+              <div className={`flex items-center gap-2 rounded-xl p-3 text-xs font-medium border ${
+                deliveryCheck.isEligible
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  : 'border-rose-200 bg-rose-50 text-rose-800'
+              }`}>
+                <span>{deliveryCheck.message}</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -406,7 +421,7 @@ export function CheckoutPage() {
         </div>
         <p className="text-muted-foreground text-sm">Payment method: Cash on delivery</p>
         <Button onClick={handlePlaceOrder} disabled={checkoutMutation.isPending || !canPlaceOrder}>
-          {checkoutMutation.isPending ? 'Placing order…' : 'Place order'}
+          {checkoutMutation.isPending ? 'Placing order…' : isDeliveryOutOfRange ? 'Outside delivery range' : 'Place order'}
         </Button>
       </div>
 

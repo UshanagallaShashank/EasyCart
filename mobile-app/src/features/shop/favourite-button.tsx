@@ -10,7 +10,8 @@ export function FavouriteButton({ productId, size = 32 }: { productId: string; s
   const { favourites, toggleFavourite } = useShop();
   const saved = favourites.includes(productId);
 
-  function press() {
+  function press(event?: any) {
+    event?.stopPropagation?.();
     void Haptics.selectionAsync().catch(() => undefined);
     toggleFavourite(productId);
   }

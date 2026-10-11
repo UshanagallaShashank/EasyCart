@@ -52,16 +52,21 @@ export default function CheckoutScreen() {
   });
 
   const placeOrder = useMutation({
-    mutationFn: () => api<{ order: Order }>(`/stores/${slug}/checkout`, {
-      method: 'POST',
-      body: {
-        items: lines.map((line) => ({ product_id: line.product_id, variant_label: line.variant_label, quantity: line.quantity })),
-        payment_method: paymentChoice,
-        fulfillment_method: method,
-        ...(method === 'delivery' && address ? { delivery_address: addressText(address) } : {}),
-        ...(discount ? { coupon_code: discount.code } : {})
+    mutationFn: () => {
+      if (isOutOfRange) {
+        throw new Error(range?.message ?? 'Selected address is outside the delivery range. Please choose Pick up or change your address.');
       }
-    }),
+      return api<{ order: Order }>(`/stores/${slug}/checkout`, {
+        method: 'POST',
+        body: {
+          items: lines.map((line) => ({ product_id: line.product_id, variant_label: line.variant_label, quantity: line.quantity })),
+          payment_method: paymentChoice,
+          fulfillment_method: method,
+          ...(method === 'delivery' && address ? { delivery_address: addressText(address) } : {}),
+          ...(discount ? { coupon_code: discount.code } : {})
+        }
+      });
+    },
     onSuccess: ({ order }) => {
       clear();
       toast('Order placed', 'success');
@@ -71,14 +76,44 @@ export default function CheckoutScreen() {
     onError: (err) => toast(errorMessage(err, 'Could not place the order'), 'error')
   });
 
-  const ready = lines.length > 0 && (method === 'pickup' || Boolean(address));
   const range = method === 'delivery' && address && store ? checkDeliveryRange(store, address.zip, address.latitude !== undefined && address.longitude !== undefined ? { latitude: address.latitude, longitude: address.longitude } : location?.coords) : null;
+  const isOutOfRange = method === 'delivery' && Boolean(range && !range.isEligible);
+  const ready = lines.length > 0 && (method === 'pickup' || (Boolean(address) && !isOutOfRange));
+
   if (lines.length === 0) {
     return <Screen><EmptyState icon="shopping-cart" message="Your cart is empty, so there is nothing to check out." action={<Button label="Browse products" variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
   }
 
+  const placeOrderLabel = isOutOfRange
+    ? t('Outside delivery range')
+    : `${t(paymentChoice === 'online' ? 'Place order & pay' : 'Place order')} · ${price(total)}`;
+
   return (
-    <Screen footer={<Button icon="check" label={`${t(paymentChoice === 'online' ? 'Place order & pay' : 'Place order')} · ${price(total)}`} onPress={() => placeOrder.mutate()} loading={placeOrder.isPending} disabled={!ready} />}>
+    <Screen
+      footer={
+        <View style={{ gap: space.xs }}>
+          {isOutOfRange && (
+            <Notice tone="danger" icon="alert-triangle">
+              {t('Cannot deliver to this location. Please choose Pick up or switch to an address within {km} km.', { km: range?.maxRadiusKm ?? 5 })}
+            </Notice>
+          )}
+          <Button
+            icon={isOutOfRange ? 'alert-triangle' : 'check'}
+            label={placeOrderLabel}
+            onPress={() => {
+              if (isOutOfRange) {
+                toast(range?.message ?? 'Address is outside delivery range. Switch to Pick up or change address.', 'error');
+                return;
+              }
+              placeOrder.mutate();
+            }}
+            loading={placeOrder.isPending}
+            disabled={!ready}
+            variant={isOutOfRange ? 'outline' : 'primary'}
+          />
+        </View>
+      }
+    >
       <Card title={t('How do you want it?')}>
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
@@ -109,7 +144,7 @@ export default function CheckoutScreen() {
                 <Button icon="plus" label={t('Add delivery address')} onPress={() => router.push('/shop/addresses')} />
               </>
             )}
-            {range && <Notice tone={range.isEligible ? 'success' : 'warning'} icon={range.isEligible ? 'truck' : 'alert-triangle'}>{range.message}</Notice>}
+            {range && <Notice tone={range.isEligible ? 'success' : 'danger'} icon={range.isEligible ? 'truck' : 'alert-triangle'}>{range.message}</Notice>}
             {range?.isEligible ? (() => {
               const eta = estimateDelivery(range.distanceKm);
               return <Notice tone="primary" icon={eta.fast ? 'zap' : 'clock'}>{t('Estimated delivery')}: {t('{low}–{high} min', { low: eta.low, high: eta.high })}</Notice>;

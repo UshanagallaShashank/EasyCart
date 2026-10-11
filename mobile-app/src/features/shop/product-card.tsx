@@ -62,14 +62,15 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
   const inCart = needsChoice ? undefined : line;
   const from = needsChoice ? Math.min(...product.variants.map((v) => v.price)) : product.price;
 
-  function quickAdd() {
+  function quickAdd(event?: any) {
+    event?.stopPropagation?.();
     if (needsChoice) return router.push(`/shop/product/${product.id}`);
     onAdd(product);
   }
 
   return (
     <FadeIn index={index} style={{ width }}>
-      <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} style={styles.card} accessibilityRole="button" accessibilityLabel={product.name}>
+      <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} style={styles.card} accessibilityLabel={product.name}>
         <View style={styles.imageWrap}>
           {image ? <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} cachePolicy="memory-disk" recyclingKey={product.id} /> : <Icon name="image" size={28} color={colors.textFaint} />}
           <View style={styles.heart}><FavouriteButton productId={product.id} size={30} /></View>
@@ -97,11 +98,11 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
             <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
           ) : inCart ? (
             <View style={[styles.action, styles.stepper, { backgroundColor: brand.primary }]}>
-              <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity - 1)} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
+              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity - 1); }} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
                 <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={colors.white} strokeWidth={2.5} />
               </PressScale>
               <Text style={styles.qty}>{inCart.quantity}</Text>
-              <PressScale onPress={() => onSetQuantity(product.id, inCart.quantity + 1)} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
+              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity + 1); }} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
                 <Icon name="plus" size={16} color={colors.white} strokeWidth={2.5} />
               </PressScale>
             </View>
