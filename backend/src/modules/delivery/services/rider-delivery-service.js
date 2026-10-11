@@ -12,7 +12,7 @@ import { MAX_ACTIVE_ORDERS } from '../lib/delivery-stages.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
-import { check_rider_can_take, find_open_orders_for, release_old_offers, store_point } from './dispatch-service.js';
+import { check_rider_can_take, find_open_orders_for, release_old_offers, rider_passed_on, store_point } from './dispatch-service.js';
 import { mark_rider_seen } from './rider-status-service.js';
 import { save_delivery_file, delivery_file_url } from './delivery-file-service.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
@@ -89,7 +89,9 @@ export async function get_rider_home(user_id) {
   const mine = orders.filter((order) => order.status !== 'cancelled' && ['rider_assigned', 'dispatched'].includes(order.fulfillment_status) && order.rider_offer_status !== 'offered');
   return {
     rider: await to_full_rider(rider),
-    offers: await Promise.all(open.map((order) => to_rider_order(order, rider))),
+    offers: await Promise.all(open.filter((order) => !rider_passed_on(rider, order)).map((order) => to_rider_order(order, rider))),
+    // Orders this rider passed on that nobody has taken yet. Shown in their own section; the rider can still take one.
+    passed: await Promise.all(open.filter((order) => rider_passed_on(rider, order)).map((order) => to_rider_order(order, rider))),
     active: await Promise.all(mine.map((order) => to_rider_order(order, rider))),
     // True when the rider carries as many orders as allowed, so new orders are hidden until they deliver one.
     at_order_limit: mine.length >= MAX_ACTIVE_ORDERS,

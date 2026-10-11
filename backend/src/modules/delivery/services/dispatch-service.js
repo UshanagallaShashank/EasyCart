@@ -19,22 +19,25 @@ async function count_my_active_orders(rider) {
 
 // Why this rider cannot take this order, in words for the rider, or null when they can.
 // A rider or store with no location yet is not turned away for distance.
+// Passing on an order does not stop the rider taking it later; it only moves it to their "passed on" list.
 export function why_rider_cannot_take(rider, order, active_count, origin, now = Date.now()) {
   if (!order || order.status === 'cancelled') return 'This order was cancelled';
   if (order.rider_id === rider.id) return 'You already accepted this order. Find it under your current deliveries.';
   if (order.fulfillment_status !== 'ready_for_delivery' || order.rider_id) return 'Another rider already took this order';
   if (!is_rider_available(rider, now)) return 'Go online to take orders';
   if (active_count >= MAX_ACTIVE_ORDERS) return `You already have ${MAX_ACTIVE_ORDERS} orders. Deliver one before taking another.`;
-  const declined = order.declined_rider_ids ?? [];
-  if (declined.includes(rider.id)) return 'You passed on this order';
   const km = haversine_km(origin, rider);
   if (km !== null && km > MAX_DISPATCH_KM) return 'This shop is too far from you';
   return null;
 }
 
-// True when this waiting order may be shown to this rider.
+export function rider_passed_on(rider, order) {
+  return (order.declined_rider_ids ?? []).includes(rider.id);
+}
+
+// True when this waiting order belongs in the rider's "new offers": they can take it and have not passed on it.
 export function can_see_order(rider, order, active_count, origin, now = Date.now()) {
-  return why_rider_cannot_take(rider, order, active_count, origin, now) === null;
+  return why_rider_cannot_take(rider, order, active_count, origin, now) === null && !rider_passed_on(rider, order);
 }
 
 // Every packed order no rider has taken yet.
@@ -43,7 +46,7 @@ async function find_waiting_orders() {
   return orders.filter((order) => !order.rider_id);
 }
 
-// The waiting orders this rider can see, oldest first so the order that has waited longest is on top.
+// The waiting orders this rider can take (including ones they passed on), oldest first so the order that has waited longest is on top.
 export async function find_open_orders_for(rider) {
   const waiting = await find_waiting_orders();
   if (waiting.length === 0) return [];
@@ -55,7 +58,7 @@ export async function find_open_orders_for(rider) {
     if (!stores.has(order.tenant_id)) stores.set(order.tenant_id, await find_store_by_tenant_id(order.tenant_id));
   }
 
-  const open = waiting.filter((order) => can_see_order(rider, order, active_count, store_point(stores.get(order.tenant_id))));
+  const open = waiting.filter((order) => why_rider_cannot_take(rider, order, active_count, store_point(stores.get(order.tenant_id))) === null);
   return open.sort((a, b) => new Date(a.ready_at ?? a.created_at) - new Date(b.ready_at ?? b.created_at));
 }
 

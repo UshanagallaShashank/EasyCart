@@ -111,6 +111,8 @@ export interface RiderHome {
   rider: Rider;
   offers: RiderOrder[];
   active: RiderOrder[];
+  // Orders this rider passed on that nobody has taken yet.
+  passed?: RiderOrder[];
   summary: RiderMoney;
   at_order_limit?: boolean;
   max_active_orders?: number;

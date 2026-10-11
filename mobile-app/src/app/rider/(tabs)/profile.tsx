@@ -5,6 +5,7 @@ import { Text } from '@/components/text';
 import { router } from 'expo-router';
 import { Avatar, Badge, Button, Card, InfoRow, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirmedSignOut } from '@/components/confirm';
 import { riderCalls, useMyRider, useRiderAction } from '@/features/rider/rider-api';
 import { ApplicationStatus } from '@/features/rider/application-status';
 import { EditDetailsCard } from '@/features/rider/edit-details-card';
@@ -20,6 +21,7 @@ export default function RiderProfile() {
   const { data: rider, isLoading } = useMyRider();
   const pin = useRiderAction(riderCalls.setBaseLocation);
   const toast = useToast();
+  const logout = useConfirmedSignOut();
   // Where the map opens, and the spot the rider has picked on it but not saved yet.
   const [mapStart, setMapStart] = useState<Coords | null>(null);
   const [picked, setPicked] = useState<Coords | null>(null);
@@ -111,6 +113,8 @@ export default function RiderProfile() {
         </View>
         {rider.documents.length === 0 && <Text style={text.small}>No documents yet.</Text>}
       </Card>
+
+      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
     </Screen>
   );
 }

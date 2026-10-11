@@ -71,7 +71,8 @@ export async function get_store_order_delivery(tenant_id, order_id) {
 }
 
 // The store says the order is packed: a pickup code is made and every free rider nearby sees the order.
-// The first to accept gets it. Calling it again while waiting shows it again to riders who declined before.
+// The first to accept gets it. Calling it again while waiting alerts riders again; riders who passed on it
+// keep seeing it in their own "passed on" section.
 export async function request_rider(tenant_id, order_id) {
   const order = await find_store_order(tenant_id, order_id);
   if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
@@ -84,7 +85,7 @@ export async function request_rider(tenant_id, order_id) {
     ready_at: order.ready_at ?? new Date().toISOString(),
     pickup_code: order.pickup_code ?? create_pickup_code(),
     pickup_code_attempts: 0,
-    declined_rider_ids: [],
+    declined_rider_ids: order.fulfillment_status === 'ready_for_delivery' ? (order.declined_rider_ids ?? []) : [],
     rider_id: null,
     rider_offer_status: null,
     rider_offer_expires_at: null,
@@ -93,13 +94,13 @@ export async function request_rider(tenant_id, order_id) {
   return get_store_order_delivery(tenant_id, order_id);
 }
 
-// Pull-to-refresh on the store's order screens: every order still waiting for a rider is shown again to
-// all nearby riders, including riders who passed on it. Their screens update and alert them at once.
+// Pull-to-refresh on the store's order screens: every order still waiting for a rider is sent to all nearby
+// riders again, so their screens update and alert them at once. Riders who passed on it see it in their "passed on" section.
 export async function request_riders_for_waiting_orders(tenant_id) {
   const orders = await find_orders_by_tenant(tenant_id);
   const waiting = orders.filter((order) => order.status !== 'cancelled' && order.fulfillment_status === 'ready_for_delivery' && !order.rider_id);
   for (const order of waiting) {
-    await update_order(order.id, tenant_id, { declined_rider_ids: [] });
+    await update_order(order.id, tenant_id, { ready_at: order.ready_at ?? new Date().toISOString() });
   }
   return { sent: waiting.length };
 }

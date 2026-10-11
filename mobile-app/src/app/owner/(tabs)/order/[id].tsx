@@ -68,7 +68,7 @@ function DeliveryCard({ order }: { order: Order }) {
         </>
       )}
       {searching && <Notice icon="loader">{delivery.stage === 'ready_for_delivery' ? 'Shown to every free rider nearby. The first to accept gets it.' : 'A rider is taking this order.'}</Notice>}
-      {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && <Notice tone="warning" icon="alert-circle">{delivery.declined_count} riders passed on or gave back this order. Pull down to refresh, or tap Search again, to offer it to everyone.</Notice>}
+      {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && <Notice tone="warning" icon="alert-circle">{delivery.declined_count} riders passed on or gave back this order. Others nearby can still take it. Pull down to refresh, or tap Search again, to alert every rider again.</Notice>}
       {delivery.rider && <RiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your rider'} />}
       {delivery.pickup_code && (
         <View style={styles.pickup}>

@@ -62,4 +62,10 @@ describe('why_rider_cannot_take', () => {
     expect(why_rider_cannot_take(rider('a', 17.386, 78.487, { is_online: false }), waiting, 0, store, now)).toMatch(/Go online/);
     expect(why_rider_cannot_take(rider('a', 18.5, 79.5), waiting, 0, store, now)).toMatch(/too far/);
   });
+
+  it('still lets a rider take an order they passed on (it only moves to their "passed on" list)', () => {
+    const passed = { ...waiting, declined_rider_ids: ['a'] };
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), passed, 0, store, now)).toBeNull();
+    expect(can_see_order(rider('a', 17.386, 78.487), passed, 0, store, now)).toBe(false);
+  });
 });

@@ -1,8 +1,8 @@
 // Rider home: application status until approved; then the online switch, new offers and current deliveries.
 import { router } from 'expo-router';
-import { Button, Card, EmptyState, HeroHeader, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
+import { Button, Card, EmptyState, HeroHeader, Loading, Notice, Screen, StatStrip } from '@/components/ui';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
-import { ActiveOrderRow, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
+import { ActiveOrderRow, ColorSectionTitle, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
 import { ApplicationStatus } from '@/features/rider/application-status';
 import { price } from '@/lib/format';
 
@@ -48,11 +48,17 @@ export default function RiderHome() {
               )}
               {(home.data?.offers.length ?? 0) > 0 && (
                 <>
-                  <SectionTitle>New offers</SectionTitle>
+                  <ColorSectionTitle kind="offer" title="New offers" count={home.data!.offers.length} caption="Waiting for a rider. The first to accept gets it." />
                   {home.data!.offers.map((order) => <OfferCard key={order.id} order={order} />)}
                 </>
               )}
-              <SectionTitle>Current deliveries</SectionTitle>
+              {(home.data?.passed?.length ?? 0) > 0 && (
+                <>
+                  <ColorSectionTitle kind="passed" title="You passed on" count={home.data!.passed!.length} caption="Nobody has taken these yet. You can still take one." />
+                  {home.data!.passed!.map((order) => <OfferCard key={order.id} order={order} passed />)}
+                </>
+              )}
+              <ColorSectionTitle kind="mine" title="Your deliveries" count={home.data?.active.length ?? 0} caption="Orders you accepted. Tap one to see the next step." />
               {(home.data?.active.length ?? 0) > 0
                 ? home.data!.active.map((order) => <ActiveOrderRow key={order.id} order={order} />)
                 : <EmptyState icon="navigation" message={home.data?.rider.is_online ? 'Waiting for orders near you. This screen updates by itself.' : 'You are offline. Go online to get orders.'} />}
