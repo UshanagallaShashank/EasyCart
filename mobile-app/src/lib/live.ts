@@ -2,17 +2,36 @@
 // the screens that show it refresh by themselves. Reconnects with a fresh ticket after a drop.
 import { useEffect } from 'react';
 import EventSource from 'react-native-sse';
-import { useQueryClient, type QueryKey } from '@tanstack/react-query';
+import { useQueryClient, type QueryClient, type QueryKey } from '@tanstack/react-query';
 import { api, apiUrl } from './api';
 
-type Topic = 'order' | 'rider' | 'settlement';
+type Topic = 'order' | 'rider' | 'settlement' | 'refund';
 
 // Every key starts with its area, so refreshing ['orders'] refreshes every order screen.
 const KEYS: Record<Topic, QueryKey[]> = {
   order: [['orders'], ['my-orders'], ['rider'], ['store-deliveries'], ['store-settlements'], ['admin'], ['products']],
   rider: [['rider'], ['admin']],
-  settlement: [['rider'], ['store-settlements'], ['admin']]
+  settlement: [['rider'], ['store-settlements'], ['admin']],
+  refund: [['refunds'], ['my-orders'], ['admin']]
 };
+
+// How long to wait before asking the server to confirm. Short, because the screen has already been updated.
+const CONFIRM_DELAY_MS = 150;
+
+// The small change that came with the message goes straight into the saved screens, so the order status,
+// payment and rider offer change at once, with no network wait. The server confirms a moment later.
+function applyOrderPatch(queryClient: QueryClient, id: string, patch: Record<string, unknown>) {
+  const patchOne = (order: unknown) => {
+    const row = order as { id?: string } | undefined;
+    return row && row.id === id ? { ...row, ...patch } : order;
+  };
+  const patchList = (list: unknown) => (Array.isArray(list) ? list.map(patchOne) : list);
+
+  queryClient.setQueryData(['my-orders'], patchList);
+  queryClient.setQueryData(['my-orders', id], patchOne);
+  queryClient.setQueryData(['orders'], patchList);
+  queryClient.setQueryData(['orders', id], patchOne);
+}
 
 export function useLiveUpdates(enabled: boolean) {
   const queryClient = useQueryClient();
@@ -52,11 +71,12 @@ export function useLiveUpdates(enabled: boolean) {
         });
         source.addEventListener('message', (event) => {
           try {
-            const { topic } = JSON.parse(event.data ?? '{}') as { topic: Topic };
+            const { topic, id, patch } = JSON.parse(event.data ?? '{}') as { topic: Topic; id?: string; patch?: Record<string, unknown> };
             if (!(topic in KEYS)) return;
+            if (topic === 'order' && id && patch) applyOrderPatch(queryClient, id, patch);
             pending.add(topic);
             clearTimeout(batchTimer);
-            batchTimer = setTimeout(flush, 400);
+            batchTimer = setTimeout(flush, CONFIRM_DELAY_MS);
           } catch {
             // Not one of our messages.
           }

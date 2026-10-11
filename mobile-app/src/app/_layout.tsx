@@ -9,6 +9,8 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/query';
 import { SessionProvider } from '@/lib/session';
 import { ToastProvider } from '@/components/toast';
+import { ConfirmProvider } from '@/components/confirm';
+import { LanguageProvider } from '@/lib/i18n';
 import { stackOptions } from '@/components/nav';
 
 void SplashScreen.preventAutoHideAsync();
@@ -23,14 +25,18 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
+      <LanguageProvider>
       <QueryClientProvider client={queryClient}>
         <SessionProvider>
           <ToastProvider>
-            <StatusBar style="dark" />
-            <Stack screenOptions={{ ...stackOptions, headerShown: false }} />
+            <ConfirmProvider>
+              <StatusBar style="dark" />
+              <Stack screenOptions={{ ...stackOptions, headerShown: false }} />
+            </ConfirmProvider>
           </ToastProvider>
         </SessionProvider>
       </QueryClientProvider>
+      </LanguageProvider>
     </SafeAreaProvider>
   );
 }

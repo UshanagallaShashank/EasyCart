@@ -1,13 +1,10 @@
 // Rider home: application status until approved; then the online switch, new offers and current deliveries.
-import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
+import { Button, Card, EmptyState, HeroHeader, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
 import { ActiveOrderRow, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
-import { useOfferAlert } from '@/features/rider/use-offer-alert';
 import { ApplicationStatus } from '@/features/rider/application-status';
 import { price } from '@/lib/format';
-import { text } from '@/theme/theme';
 
 const RULES = [
   "Never hand over an order without the customer's 6-digit code.",
@@ -20,13 +17,16 @@ export default function RiderHome() {
   const { data: rider, isLoading } = useMyRider();
   const approved = rider?.status === 'approved';
   const home = useRiderHome(approved);
-  useOfferAlert(home.data?.offers);
 
   if (isLoading || !rider) return <Loading />;
 
   return (
     <Screen onRefresh={() => void home.refetch()} refreshing={home.isRefetching}>
-      <Text style={text.title}>Hi, {rider.full_name.split(' ')[0]}</Text>
+      <HeroHeader
+        title={`Hi, ${rider.full_name.split(' ')[0]}`}
+        subtitle={!approved ? 'Finish your application to start delivering' : (home.data?.rider ?? rider).is_online ? 'You are online and getting orders' : 'You are offline. Go online to get orders'}
+        icon="bike"
+      />
       {!approved && (
         <>
           <ApplicationStatus rider={rider} />

@@ -122,13 +122,19 @@ export async function request_store_creation(customer_id, payload) {
     status: 'pending'
   });
 
+  const pin = payload.business_address?.pincode || (business_address.match(/\b\d{6}\b/)?.[0] ?? null);
+
   await save_store({
     id: randomUUID(),
     tenant_id: tenant.id,
     name: store_name,
     slug,
     is_published: false,
-    promotion_banner_text: null
+    promotion_banner_text: null,
+    business_address,
+    address_line: business_address,
+    address: business_address,
+    ...(pin ? { pincode: pin } : {})
   });
 
   const store_description = String(payload.store_description || payload.description || '').trim();

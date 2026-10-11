@@ -6,6 +6,7 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { Avatar } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { useConfirmedSignOut } from './confirm';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
@@ -13,7 +14,8 @@ import { CustomerSupportModal } from '@/components/customer-support-modal';
 export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const { user, signOut } = useSession();
+  const { user } = useSession();
+  const logout = useConfirmedSignOut();
   const { count } = useShop();
   const insets = useSafeAreaInsets();
 
@@ -56,7 +58,7 @@ export function ProfileMenu() {
                 router.navigate('/shop/account');
               }}
             >
-              <Icon name="user" size={17} color="#0ea5e9" />
+              <Icon name="user" size={16} color="#0ea5e9" />
               <Text style={styles.itemLabel}>View profile</Text>
             </Pressable>
 
@@ -68,7 +70,7 @@ export function ProfileMenu() {
                 router.navigate('/shop/orders');
               }}
             >
-              <Icon name="package" size={17} color="#0ea5e9" />
+              <Icon name="package" size={16} color="#0ea5e9" />
               <Text style={styles.itemLabel}>My orders</Text>
             </Pressable>
 
@@ -80,7 +82,7 @@ export function ProfileMenu() {
                 setSupportOpen(true);
               }}
             >
-              <Icon name="headphones" size={17} color="#0284c7" />
+              <Icon name="headphones" size={16} color="#0284c7" />
               <Text style={styles.itemLabel}>Customer support</Text>
             </Pressable>
 
@@ -92,7 +94,7 @@ export function ProfileMenu() {
                 router.push('/shop/store-request');
               }}
             >
-              <Icon name="store" size={17} color="#f59e0b" />
+              <Icon name="store" size={16} color="#f59e0b" />
               <Text style={styles.itemLabel}>Request to create a store</Text>
             </Pressable>
 
@@ -103,10 +105,10 @@ export function ProfileMenu() {
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                void signOut();
+                setTimeout(() => void logout(), 300);
               }}
             >
-              <Icon name="log-out" size={17} color="#ef4444" />
+              <Icon name="log-out" size={16} color="#ef4444" />
               <Text style={[styles.itemLabel, { color: '#ef4444', fontWeight: '600' }]}>Log out</Text>
             </Pressable>
           </View>

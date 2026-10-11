@@ -1,9 +1,11 @@
 // Store, catalog and order calls for the customer side.
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { findInCachedLists } from '@/lib/instant';
 import type { Category, Product, PublicStore } from '@/types/catalog';
 import type { Order } from '@/types/order';
 import type { CustomerOrderDelivery } from '@/types/delivery';
+import type { Refund, RefundReason } from '@/types/refund';
 
 export function useStore(slug: string) {
   return useQuery({ queryKey: ['storefront', slug], queryFn: async () => (await api<{ store: PublicStore }>(`/stores/${slug}`)).store, retry: false });
@@ -17,7 +19,13 @@ export function useProducts(slug: string, search: string, categoryId: string) {
 }
 
 export function useProduct(slug: string, id: string) {
-  return useQuery({ queryKey: ['products', 'public', slug, id], queryFn: async () => (await api<{ product: Product }>(`/stores/${slug}/products/${id}`)).product });
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ['products', 'public', slug, id],
+    queryFn: async () => (await api<{ product: Product }>(`/stores/${slug}/products/${id}`)).product,
+    // Shown at once from the product list already on the phone; the full product replaces it when it arrives.
+    placeholderData: () => findInCachedLists<Product>(queryClient, ['products', 'public', slug], id)
+  });
 }
 
 export function useCategories(slug: string) {
@@ -29,11 +37,116 @@ export function useMyOrders() {
 }
 
 export function useMyOrder(id: string) {
-  return useQuery({ queryKey: ['my-orders', id], queryFn: async () => (await api<{ order: Order }>(`/my-orders/${id}`)).order });
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ['my-orders', id],
+    queryFn: async () => (await api<{ order: Order }>(`/my-orders/${id}`)).order,
+    placeholderData: () => findInCachedLists<Order>(queryClient, ['my-orders'], id)
+  });
 }
 
 export function useMyDelivery(id: string, enabled: boolean) {
   return useQuery({ queryKey: ['my-orders', id, 'delivery'], queryFn: async () => (await api<{ delivery: CustomerOrderDelivery }>(`/my-orders/${id}/delivery`)).delivery, enabled });
+}
+
+// What the server says about optional features, such as online payment. The server decides; no address or build setting does.
+export interface AppConfig {
+  online_payments: boolean;
+  payment_provider: 'mock' | 'razorpay' | null;
+  razorpay_key_id: string | null;
+}
+
+export function useAppConfig() {
+  return useQuery({ queryKey: ['config'], queryFn: () => api<AppConfig>('/config'), staleTime: 5 * 60_000, refetchInterval: false });
+}
+
+// What the server hands back when a payment is started.
+export type StartedPayment =
+  | { provider: 'mock'; amount: number; currency: string; reference: string }
+  | { provider: 'razorpay'; key_id: string; razorpay_order_id: string; amount: number; currency: string };
+
+export interface OrderRating {
+  store_stars: number;
+  delivery_stars: number | null;
+  comment: string | null;
+  photo_urls?: string[];
+  item_stars?: Record<string, number>;
+}
+
+export function useOrderRating(orderId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: ['my-orders', orderId, 'rating'],
+    queryFn: async () => (await api<{ rating: OrderRating | null }>(`/my-orders/${orderId}/rating`)).rating,
+    enabled,
+    retry: false
+  });
+}
+
+export function useRateOrder(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (rating: { store_stars: number; delivery_stars?: number; comment?: string; photo_urls?: string[]; item_stars?: Record<string, number> }) =>
+      api<{ rating: OrderRating & { extras_saved?: boolean } }>(`/my-orders/${orderId}/rating`, { method: 'POST', body: rating }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-orders', orderId, 'rating'] })
+  });
+}
+
+export interface NearbyShop {
+  name: string;
+  slug: string;
+  logo_url: string | null;
+  banner_url: string | null;
+  address: string | null;
+  delivery_fee: number;
+  max_delivery_radius_km: number;
+  latitude: number;
+  longitude: number;
+  distance_km: number;
+  delivers_to_you: boolean;
+  rating_average: number | null;
+  rating_count: number;
+}
+
+export function useNearbyShops(point: { latitude: number; longitude: number } | null) {
+  return useQuery({
+    queryKey: ['nearby-shops', point?.latitude.toFixed(3), point?.longitude.toFixed(3)],
+    queryFn: async () => (await api<{ stores: NearbyShop[] }>(`/stores/nearby?lat=${point!.latitude}&lng=${point!.longitude}`)).stores,
+    enabled: point !== null
+  });
+}
+
+// Adds a photo to one of the customer's orders (for a rating or a refund). Returns its public link.
+export async function uploadOrderPhoto(orderId: string, purpose: 'review' | 'refund', file: string): Promise<string> {
+  const { url } = await api<{ url: string }>(`/my-orders/${orderId}/photos`, { method: 'POST', body: { purpose, file } });
+  return url;
+}
+
+export interface StarSummary { average: number | null; count: number }
+
+export interface StoreReviews extends StarSummary {
+  recent: { store_stars: number; comment: string | null; photo_urls: string[]; created_at: string }[];
+}
+
+export function useStoreReviews(slug: string) {
+  return useQuery({ queryKey: ['storefront', slug, 'reviews'], queryFn: async () => (await api<{ reviews: StoreReviews }>(`/stores/${slug}/reviews`)).reviews, staleTime: 5 * 60_000 });
+}
+
+// { "product id": { average, count } } for the shop's rated products.
+export function useProductRatings(slug: string) {
+  return useQuery({ queryKey: ['storefront', slug, 'product-ratings'], queryFn: async () => (await api<{ ratings: Record<string, StarSummary> }>(`/stores/${slug}/product-ratings`)).ratings, staleTime: 5 * 60_000 });
+}
+
+// Refunds for one order. Empty when refunds are not set up on the server yet.
+export function useOrderRefunds(orderId: string, enabled: boolean) {
+  return useQuery({ queryKey: ['my-orders', orderId, 'refunds'], queryFn: async () => (await api<{ refunds: Refund[] }>(`/my-orders/${orderId}/refunds`)).refunds, enabled, retry: false });
+}
+
+export function useRequestRefund(orderId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: { amount: number; reason: RefundReason; details?: string; photo_urls?: string[] }) => api<{ refund: Refund }>(`/my-orders/${orderId}/refunds`, { method: 'POST', body: request }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-orders', orderId, 'refunds'] })
+  });
 }
 
 export function useMyStores() {

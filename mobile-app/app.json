@@ -61,7 +61,8 @@
         {
           "locationWhenInUsePermission": "EasyCart uses your location to match nearby deliveries."
         }
-      ]
+      ],
+      "expo-image"
     ],
     "experiments": {
       "typedRoutes": false

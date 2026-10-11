@@ -5,9 +5,12 @@ import { Text } from '@/components/text';
 import { Icon, type IconName } from '@/components/icon';
 import { Avatar, Button, Screen, SectionTitle } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { useConfirmedSignOut } from '@/components/confirm';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 
-const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
+const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/earnings' | '/owner/refunds' | '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
+  { icon: 'wallet', title: 'Earnings', subtitle: 'What you keep after the platform fee', href: '/owner/earnings', fg: '#059669', bg: '#d1fae5' },
+  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests from customers', href: '/owner/refunds', fg: '#e11d48', bg: '#ffe4e6' },
   { icon: 'users', title: 'Customers', subtitle: 'Who has ordered, and how much', href: '/owner/customers', fg: '#7c3aed', bg: '#ede9fe' },
   { icon: 'ticket', title: 'Coupons', subtitle: 'Discount codes for your shoppers', href: '/owner/coupons', fg: '#d97706', bg: '#fef3c7' },
   { icon: 'tags', title: 'Categories', subtitle: 'Group your products', href: '/owner/categories', fg: '#0284c7', bg: '#e0f2fe' },
@@ -15,7 +18,8 @@ const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/cu
 ];
 
 export default function OwnerMore() {
-  const { user, signOut } = useSession();
+  const { user } = useSession();
+  const logout = useConfirmedSignOut();
   return (
     <Screen>
       <View style={styles.account}>
@@ -38,14 +42,14 @@ export default function OwnerMore() {
         </Pressable>
       ))}
 
-      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void signOut()} />
+      <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  account: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  account: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 16, fontWeight: '700', color: colors.text }
 });

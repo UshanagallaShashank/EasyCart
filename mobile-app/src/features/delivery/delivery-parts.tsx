@@ -1,7 +1,9 @@
 // Delivery pieces shared by the customer, store and rider screens: progress steps, rider card, proof photo.
+import { useEffect } from 'react';
 import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
 import { Text } from '@/components/text';
-import { Icon } from '@/components/icon';
+import { Icon, type IconName } from '@/components/icon';
 import { Avatar } from '@/components/ui';
 import { fileUrl } from '@/lib/api';
 import { dateTime, price } from '@/lib/format';
@@ -9,7 +11,22 @@ import { VEHICLE_LABELS } from '@/lib/delivery-labels';
 import { colors, radius, space, text } from '@/theme/theme';
 import type { DeliveryStage, DeliveryTimeline, HandoverRider } from '@/types/delivery';
 
-const STEPS = ['Packing', 'Finding rider', 'Rider picking up', 'Out for delivery', 'Delivered'];
+interface Step { title: string; hint: string; icon: IconName }
+
+const DELIVERY_STEPS: Step[] = [
+  { title: 'Packing', hint: 'The store is getting your order ready', icon: 'package' },
+  { title: 'Finding a rider', hint: 'Looking for the nearest delivery partner', icon: 'search' },
+  { title: 'Rider picking up', hint: 'Your rider is heading to the store', icon: 'bike' },
+  { title: 'Out for delivery', hint: 'Your order is on its way to you', icon: 'truck' },
+  { title: 'Delivered', hint: 'Enjoy your order', icon: 'check-circle' }
+];
+
+export const PICKUP_STEPS: Step[] = [
+  { title: 'Order placed', hint: 'Waiting for the store to confirm', icon: 'clipboard' },
+  { title: 'Being packed', hint: 'The store is getting your order ready', icon: 'package' },
+  { title: 'Ready for pickup', hint: 'Go to the store and show your order', icon: 'shopping-bag' },
+  { title: 'Collected', hint: 'Enjoy your order', icon: 'check-circle' }
+];
 
 function stepIndex(stage: DeliveryStage, offer: 'offered' | 'accepted' | null) {
   if (stage === 'delivered') return 4;
@@ -19,24 +36,46 @@ function stepIndex(stage: DeliveryStage, offer: 'offered' | 'accepted' | null) {
   return 0;
 }
 
-export function DeliverySteps({ stage, offer }: { stage: DeliveryStage; offer: 'offered' | 'accepted' | null }) {
-  const current = stepIndex(stage, offer);
+// The dot of the step that is happening now: a soft ring that pulses.
+function PulseRing() {
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    scale.value = withRepeat(withTiming(1.5, { duration: 1100 }), -1, true);
+  }, [scale]);
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: 1.6 - scale.value }));
+  return <Animated.View style={[styles.pulse, style]} />;
+}
+
+// A vertical list of steps: finished ones in green, the current one highlighted with its hint, the rest greyed.
+export function ProgressTimeline({ steps, current, finished }: { steps: Step[]; current: number; finished: boolean }) {
   return (
-    <View style={styles.steps}>
-      {STEPS.map((step, index) => {
-        const done = index < current || stage === 'delivered';
-        const active = index === current && stage !== 'delivered';
+    <View>
+      {steps.map((step, index) => {
+        const done = finished || index < current;
+        const active = !finished && index === current;
+        const last = index === steps.length - 1;
         return (
-          <View key={step} style={styles.step}>
-            <View style={[styles.dot, done && styles.dotDone, active && styles.dotActive]}>
-              {done ? <Icon name="check" size={12} color={colors.white} /> : <Text style={[styles.dotText, active && { color: colors.primary }]}>{index + 1}</Text>}
+          <View key={step.title} style={styles.stepRow}>
+            <View style={styles.rail}>
+              <View style={[styles.dot, done && styles.dotDone, active && styles.dotActive]}>
+                {active && <PulseRing />}
+                <Icon name={done ? 'check' : step.icon} size={done ? 14 : 15} color={done ? colors.white : active ? colors.primary : colors.textFaint} strokeWidth={2.4} />
+              </View>
+              {!last && <View style={[styles.line, done && styles.lineDone]} />}
             </View>
-            <Text style={[styles.stepText, (done || active) && { color: colors.text }]} numberOfLines={2}>{step}</Text>
+            <View style={styles.stepBody}>
+              <Text style={[styles.stepTitle, (done || active) && { color: colors.text }, active && { fontWeight: '800' }]}>{step.title}</Text>
+              {active && <Text style={styles.stepHint}>{step.hint}</Text>}
+            </View>
           </View>
         );
       })}
     </View>
   );
+}
+
+export function DeliverySteps({ stage, offer }: { stage: DeliveryStage; offer: 'offered' | 'accepted' | null }) {
+  return <ProgressTimeline steps={DELIVERY_STEPS} current={stepIndex(stage, offer)} finished={stage === 'delivered'} />;
 }
 
 export function RiderCard({ rider, caption }: { rider: HandoverRider; caption: string }) {
@@ -90,13 +129,17 @@ export function openMap(point: { latitude: number | null; longitude: number | nu
 }
 
 const styles = StyleSheet.create({
-  steps: { flexDirection: 'row', justifyContent: 'space-between' },
-  step: { flex: 1, alignItems: 'center', gap: 6 },
-  dot: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
-  dotDone: { backgroundColor: colors.primary, borderColor: colors.primary },
+  stepRow: { flexDirection: 'row', gap: space.md },
+  rail: { alignItems: 'center', width: 32 },
+  dot: { width: 32, height: 32, borderRadius: 16, borderWidth: 2, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
+  dotDone: { backgroundColor: colors.success, borderColor: colors.success },
   dotActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  dotText: { fontSize: 11, fontWeight: '700', color: colors.textFaint },
-  stepText: { fontSize: 10.5, color: colors.textFaint, textAlign: 'center', fontWeight: '600' },
+  pulse: { position: 'absolute', width: 32, height: 32, borderRadius: 16, backgroundColor: colors.primaryTint },
+  line: { width: 2, flex: 1, minHeight: 22, backgroundColor: colors.border, marginVertical: 2 },
+  lineDone: { backgroundColor: colors.success },
+  stepBody: { flex: 1, paddingTop: 5, paddingBottom: space.md, gap: 2 },
+  stepTitle: { fontSize: 14, fontWeight: '600', color: colors.textFaint },
+  stepHint: { fontSize: 12, color: colors.textMuted },
   rider: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.bg, padding: space.md },
   call: { width: 40, height: 40, borderRadius: 20, backgroundColor: colors.successSoft, alignItems: 'center', justifyContent: 'center' },
   proof: { width: '100%', height: 200, borderRadius: radius.md, backgroundColor: colors.borderSoft }

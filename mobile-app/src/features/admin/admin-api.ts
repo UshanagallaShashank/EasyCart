@@ -1,6 +1,8 @@
 // Platform admin data and actions.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import type { Refund } from '@/types/refund';
+import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { AdminDeliveryRow, AdminRiderDetail, AdminRiderList } from '@/types/delivery';
 
 export interface PlatformTotals { stores: number; active_stores: number; owners: number; customers: number; admins?: number; orders: number; pending_orders: number; gmv: number }
@@ -8,6 +10,19 @@ export interface DailyRevenue { date: string; revenue: number; orders: number }
 export interface AdminTenant { id: string; name: string; slug: string; status: 'active' | 'suspended' | 'pending' | 'rejected'; is_published: boolean; owner_email: string | null; owner_username?: string | null; customer_count?: number; revenue?: number; created_at: string }
 
 export const useStats = () => useQuery({ queryKey: ['admin', 'stats'], queryFn: () => api<{ totals: PlatformTotals; daily_revenue?: DailyRevenue[]; top_stores: { tenant_id: string; name: string; revenue: number; orders: number }[] }>('/admin/stats') });
+export interface PlatformEarnings {
+  commission_percent: number;
+  rider_share_percent: number;
+  all_time: EarningsTotals;
+  last_7_days: EarningsTotals;
+  by_day: EarningsDay[];
+  per_store: (EarningsTotals & { tenant_id: string; name: string; slug: string })[];
+}
+export const usePlatformEarnings = () => useQuery({ queryKey: ['admin', 'earnings'], queryFn: async () => (await api<{ earnings: PlatformEarnings }>('/admin/earnings')).earnings });
+
+// Every refund on the platform (newest first). retry is off so a server without refunds just shows none.
+export const useAllRefunds = () => useQuery({ queryKey: ['admin', 'refunds'], queryFn: async () => (await api<{ refunds: Refund[] }>('/admin/refunds')).refunds, retry: false });
+
 export const useTenants = () => useQuery({ queryKey: ['admin', 'tenants'], queryFn: async () => (await api<{ tenants: AdminTenant[] }>('/admin/tenants')).tenants });
 export const useRiders = () => useQuery({ queryKey: ['admin', 'riders'], queryFn: () => api<AdminRiderList>('/admin/riders') });
 export const useRider = (id: string) => useQuery({ queryKey: ['admin', 'rider', id], queryFn: () => api<AdminRiderDetail>(`/admin/riders/${id}`) });

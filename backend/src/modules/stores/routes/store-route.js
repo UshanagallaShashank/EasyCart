@@ -8,6 +8,7 @@ import {
   handle_publish_store,
   handle_unpublish_store,
   handle_get_public_store,
+  handle_nearby_stores,
   handle_upload_store_image
 } from '../controllers/store-controller.js';
 
@@ -20,4 +21,5 @@ store_router.patch('/stores/me', owner_only, handle_update_store_settings);
 store_router.post('/stores/me/upload-image', owner_only, handle_upload_store_image);
 store_router.post('/stores/me/publish', owner_only, handle_publish_store);
 store_router.post('/stores/me/unpublish', owner_only, handle_unpublish_store);
+store_router.get('/stores/nearby', handle_nearby_stores);
 store_router.get('/stores/:slug', handle_get_public_store);

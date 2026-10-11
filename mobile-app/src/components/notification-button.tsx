@@ -31,7 +31,7 @@ export function NotificationButton() {
           <View style={[styles.card, { top: insets.top + 48 }]}>
             <View style={styles.header}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Icon name="bell" size={17} color={colors.primary} />
+                <Icon name="bell" size={16} color={colors.primary} />
                 <Text style={styles.title}>Notifications</Text>
               </View>
               <Pressable onPress={() => setOpen(false)} hitSlop={10}>
