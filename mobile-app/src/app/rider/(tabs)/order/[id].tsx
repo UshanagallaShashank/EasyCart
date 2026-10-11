@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '@/components/text';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, router, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { Badge, Button, Card, CodeInput, EmptyState, Field, InfoRow, Loading, Notice, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
+import { useConfirm } from '@/components/confirm';
 import { riderCalls, useRiderAction, useRiderOrder } from '@/features/rider/rider-api';
 import { OfferCard } from '@/features/rider/rider-cards';
 import { ProofPhoto, openMap } from '@/features/delivery/delivery-parts';
@@ -29,6 +30,24 @@ function PickupStep({ order }: { order: RiderOrder }) {
         onPress={() => pickup.mutate({ id: order.id, code }, { onSuccess: () => toast('Picked up. Head to the customer.', 'success'), onError: (e) => { setCode(''); toast(errorMessage(e), 'error'); } })} />
     </Card>
   );
+}
+
+// Before collecting it, the rider can give the order back. Every other nearby rider sees it again at once.
+function GiveBackButton({ order }: { order: RiderOrder }) {
+  const toast = useToast();
+  const askConfirm = useConfirm();
+  const drop = useRiderAction(riderCalls.drop);
+
+  async function giveBack() {
+    const yes = await askConfirm({ title: 'Give this order back?', message: 'Other riders nearby will see it again. Only do this if you cannot reach the store.', confirmLabel: 'Yes, give it back', cancelLabel: 'Keep it', icon: 'x-circle' });
+    if (!yes) return;
+    drop.mutate(order.id, {
+      onSuccess: () => { toast('Order given back to other riders', 'success'); router.replace('/rider'); },
+      onError: (e) => toast(errorMessage(e), 'error')
+    });
+  }
+
+  return <Button variant="outline" icon="x-circle" label="Give this order back" loading={drop.isPending} onPress={() => void giveBack()} />;
 }
 
 function DeliverStep({ order }: { order: RiderOrder }) {
@@ -72,7 +91,7 @@ function RiderOrderScreen() {
   const { data: order, isLoading, refetch, isRefetching } = useRiderOrder(id);
 
   if (isLoading) return <Loading />;
-  if (!order) return <Screen><EmptyState message="This order is no longer yours. The store may have taken it back." /></Screen>;
+  if (!order) return <Screen><EmptyState message="This order is no longer available. Another rider may have taken it, or the store took it back." /></Screen>;
   const stage = RIDER_ORDER_STAGE[order.stage];
 
   return (
@@ -111,6 +130,7 @@ function RiderOrderScreen() {
       )}
 
       {order.stage === 'to_pickup' && <PickupStep order={order} />}
+      {order.stage === 'to_pickup' && <GiveBackButton order={order} />}
       {order.stage === 'to_customer' && <DeliverStep order={order} />}
 
       <Card title={`Items and bill · ${order.item_count} items`} icon="file-text">

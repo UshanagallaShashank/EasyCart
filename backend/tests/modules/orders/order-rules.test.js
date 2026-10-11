@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { status_change_problem, merge_cart_lines, plan_stock_change } from '../../../src/modules/orders/lib/order-rules.js';
-import { choose_rider } from '../../../src/modules/delivery/services/dispatch-service.js';
+import { can_see_order } from '../../../src/modules/delivery/services/dispatch-service.js';
 import { licence_problem } from '../../../src/modules/delivery/lib/delivery-stages.js';
 
 const order = (status, fulfillment_status = 'not_started') => ({ status, fulfillment_status });
@@ -68,8 +68,8 @@ describe('dispatch radius and licence', () => {
   const store = { latitude: 17.385, longitude: 78.4867 };
 
   it('does not offer orders to riders too far away, but still tries riders with no location', () => {
-    expect(choose_rider([rider('far', 18.5, 79.5)], new Map(), [], store, now)).toBeNull();
-    expect(choose_rider([rider('far', 18.5, 79.5), rider('unknown', null, null)], new Map(), [], store, now).id).toBe('unknown');
+    expect(can_see_order(rider('far', 18.5, 79.5), { fulfillment_status: 'ready_for_delivery', declined_rider_ids: [] }, 0, store, now)).toBe(false);
+    expect(can_see_order(rider('unknown', null, null), { fulfillment_status: 'ready_for_delivery', declined_rider_ids: [] }, 0, store, now)).toBe(true);
   });
 
   it('blocks going online with an expired licence, except on a bicycle', () => {

@@ -63,6 +63,7 @@ export function useRiderOrderMutation<T, R>(run: (input: T) => Promise<R>) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: run,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['rider'] })
+    // Refreshes after a failure too, so an order another rider just took disappears at once.
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ['rider'] })
   });
 }

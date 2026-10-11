@@ -51,6 +51,8 @@ export const channel = {
   tenant: (id) => (id ? `tenant:${id}` : null),
   customer: (id) => (id ? `customer:${id}` : null),
   rider: (id) => (id ? `rider:${id}` : null),
+  // Every rider listens here, so a packed order shows up for all of them and disappears once someone takes it.
+  riders: 'riders',
   admins: 'admins'
 };
 
@@ -66,9 +68,11 @@ export function order_patch(order) {
 }
 
 // Everyone who can see an order: its store, its customer, its rider (and the rider it just left), and admins.
+// While an order is waiting for a rider or has just been taken, all riders are told too, so their open-orders list stays right.
 export function publish_order_change(order, previous_rider_id = null) {
   if (!order) return;
-  publish([channel.tenant(order.tenant_id), channel.customer(order.customer_id), channel.rider(order.rider_id), channel.rider(previous_rider_id), channel.admins], 'order', order.id, order_patch(order));
+  const for_all_riders = ['ready_for_delivery', 'rider_assigned'].includes(order.fulfillment_status) ? channel.riders : null;
+  publish([channel.tenant(order.tenant_id), channel.customer(order.customer_id), channel.rider(order.rider_id), channel.rider(previous_rider_id), for_all_riders, channel.admins], 'order', order.id, order_patch(order));
 }
 
 // A refund changed: the store, its customer and admins refresh their refund screens.

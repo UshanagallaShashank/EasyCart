@@ -1,10 +1,9 @@
-// A map the customer can tap or drag a pin on. It is an OpenStreetMap (Leaflet) page inside a WebView,
-// so it needs no map account, API key or billing. Nearby shops show as blue dots.
-import { useMemo } from 'react';
+// A map the customer can tap or drag a pin on. It is an OpenStreetMap (Leaflet) page inside a WebView
+// (or an iframe when the app runs in a web browser), so it needs no map account, API key or billing. Nearby shops show as blue dots.
+import { createElement, useEffect, useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { WebView, type WebViewMessageEvent } from 'react-native-webview';
-import { Text } from './text';
-import { colors, radius, text } from '@/theme/theme';
+import { colors, radius } from '@/theme/theme';
 import type { Coords } from '@/lib/location';
 import { forScript } from '@/lib/script-safe';
 
@@ -29,7 +28,9 @@ shops.forEach(function (shop) {
 });
 var pin = L.marker(center, { draggable: true }).addTo(map);
 function tell(point) {
-  window.ReactNativeWebView.postMessage(JSON.stringify({ latitude: point.lat, longitude: point.lng }));
+  var message = JSON.stringify({ latitude: point.lat, longitude: point.lng });
+  if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(message);
+  else window.parent.postMessage(message, '*');
 }
 pin.on('dragend', function () { tell(pin.getLatLng()); });
 map.on('click', function (event) { pin.setLatLng(event.latlng); tell(event.latlng); });
@@ -51,7 +52,7 @@ export function MapPicker({ center, shops = [], onPick, height = 280 }: { center
   }
 
   if (Platform.OS === 'web') {
-    return <View style={[styles.box, styles.fallback, { height }]}><Text style={text.muted}>The map works in the phone app.</Text></View>;
+    return <WebMap html={html} onPick={onPick} height={height} />;
   }
 
   return (
@@ -61,8 +62,30 @@ export function MapPicker({ center, shops = [], onPick, height = 280 }: { center
   );
 }
 
+// In a web browser there is no WebView, so the same map page runs in an iframe and sends the pin back with postMessage.
+function WebMap({ html, onPick, height }: { html: string; onPick(coords: Coords): void; height: number }) {
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      if (typeof event.data !== 'string') return;
+      try {
+        const point = JSON.parse(event.data) as Coords;
+        if (typeof point.latitude === 'number' && typeof point.longitude === 'number') onPick(point);
+      } catch {
+        // Not a message from our map page: ignore it.
+      }
+    }
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
+  }, [onPick]);
+
+  return (
+    <View style={[styles.box, { height }]}>
+      {createElement('iframe', { srcDoc: html, title: 'Map', style: { border: 0, width: '100%', height: '100%' } })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   box: { borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.borderSoft },
-  web: { flex: 1, backgroundColor: colors.borderSoft },
-  fallback: { alignItems: 'center', justifyContent: 'center' }
+  web: { flex: 1, backgroundColor: colors.borderSoft }
 });

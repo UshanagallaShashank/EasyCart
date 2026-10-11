@@ -43,6 +43,9 @@ export default function RiderHome() {
           ]} />
           {home.isLoading ? <Loading /> : (
             <>
+              {home.data?.at_order_limit && (
+                <Notice tone="warning" icon="package">You are carrying {home.data.max_active_orders ?? 2} orders, the most at one time. New orders show here again once you deliver one.</Notice>
+              )}
               {(home.data?.offers.length ?? 0) > 0 && (
                 <>
                   <SectionTitle>New offers</SectionTitle>

@@ -15,7 +15,7 @@ interface Step { title: string; hint: string; icon: IconName }
 
 const DELIVERY_STEPS: Step[] = [
   { title: 'Packing', hint: 'The store is getting your order ready', icon: 'package' },
-  { title: 'Finding a rider', hint: 'Looking for the nearest delivery partner', icon: 'search' },
+  { title: 'Finding a rider', hint: 'Waiting for a nearby delivery partner to accept', icon: 'search' },
   { title: 'Rider picking up', hint: 'Your rider is heading to the store', icon: 'bike' },
   { title: 'Out for delivery', hint: 'Your order is on its way to you', icon: 'truck' },
   { title: 'Delivered', hint: 'Enjoy your order', icon: 'check-circle' }

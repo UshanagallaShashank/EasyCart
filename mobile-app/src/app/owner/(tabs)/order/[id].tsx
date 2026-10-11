@@ -1,5 +1,7 @@
 // One order for the store: the next step, the delivery (request a rider, pickup code, proof), items and bill.
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import { Text } from '@/components/text';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { Badge, Button, Card, EmptyState, InfoRow, Loading, Notice, Screen } from '@/components/ui';
@@ -27,7 +29,9 @@ function NextStep({ order }: { order: Order }) {
   const canConfirm = order.status === 'pending' && !waitingForPayment;
   const canReady = pickup && order.status === 'confirmed' && order.fulfillment_status === 'not_started';
   const canComplete = pickup && order.fulfillment_status === 'ready_for_pickup';
-  const canCancel = order.status !== 'cancelled' && order.status !== 'fulfilled' && order.fulfillment_status === 'not_started';
+  // The order can be cancelled until a rider picks it up from the shop (the server checks this too).
+  const beforePickup = ['not_started', 'ready_for_delivery', 'rider_assigned'].includes(order.fulfillment_status);
+  const canCancel = order.status !== 'cancelled' && order.status !== 'fulfilled' && beforePickup;
   // Nothing for the owner to press (for example, a rider has it): no empty card.
   if (!canConfirm && !canReady && !canComplete && !canCancel) return null;
 
@@ -37,7 +41,7 @@ function NextStep({ order }: { order: Order }) {
       {canConfirm && <Button icon="check" label="Confirm order" loading={busy} onPress={() => run(status, { id: order.id, status: 'confirmed' as const }, 'Order confirmed')} />}
       {canReady && <Button icon="package" label="Ready for pickup" loading={busy} onPress={() => run(fulfil, { id: order.id, fulfillment_status: 'ready_for_pickup' }, 'Customer can collect it')} />}
       {canComplete && <Button variant="success" icon="check-circle" label="Customer collected it" loading={busy} onPress={() => run(status, { id: order.id, status: 'fulfilled' as const }, 'Order completed')} />}
-      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={busy} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: 'The items go back in stock and the customer is told it was cancelled.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep order', icon: 'x-circle' })) run(status, { id: order.id, status: 'cancelled' as const }, 'Order cancelled, items back in stock'); }} />}
+      {canCancel && <Button variant="danger" icon="x-circle" label="Cancel order" loading={busy} onPress={async () => { if (await askConfirm({ title: 'Cancel this order?', message: order.fulfillment_status === 'not_started' ? 'The items go back in stock and the customer is told it was cancelled.' : 'Riders stop seeing it, any rider on the way is told, the items go back in stock and the customer is told.', confirmLabel: 'Yes, cancel order', cancelLabel: 'Keep order', icon: 'x-circle' })) run(status, { id: order.id, status: 'cancelled' as const }, 'Order cancelled, items back in stock'); }} />}
     </Card>
   );
 }
@@ -59,12 +63,12 @@ function DeliveryCard({ order }: { order: Order }) {
       {!delivery.store_has_location && delivery.stage !== 'delivered' && <Notice tone="warning" icon="map-pin">Your store has no pickup location, so any online rider may get this order.</Notice>}
       {delivery.stage === 'not_started' && order.status !== 'cancelled' && (
         <>
-          <Text style={text.muted}>When the order is packed, send it for delivery. The nearest free rider gets it automatically.</Text>
-          <Button icon="send" label="Packed, send for delivery" loading={action.isPending} onPress={() => doAction('request-rider', 'Looking for the nearest rider')} />
+          <Text style={text.muted}>When the order is packed, send it for delivery. Every free rider nearby sees it, and the first to accept gets it.</Text>
+          <Button icon="send" label="Packed, send for delivery" loading={action.isPending} onPress={() => doAction('request-rider', 'Sent to nearby riders')} />
         </>
       )}
-      {searching && <Notice icon="loader">{delivery.stage === 'ready_for_delivery' ? 'No rider free right now. We keep trying as riders come online.' : 'Offered to the nearest rider. Waiting for them to accept.'}</Notice>}
-      {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && <Notice tone="warning" icon="alert-circle">{delivery.declined_count} riders passed on this order. Search again to offer it to everyone.</Notice>}
+      {searching && <Notice icon="loader">{delivery.stage === 'ready_for_delivery' ? 'Shown to every free rider nearby. The first to accept gets it.' : 'A rider is taking this order.'}</Notice>}
+      {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && <Notice tone="warning" icon="alert-circle">{delivery.declined_count} riders passed on or gave back this order. Pull down to refresh, or tap Search again, to offer it to everyone.</Notice>}
       {delivery.rider && <RiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your rider'} />}
       {delivery.pickup_code && (
         <View style={styles.pickup}>
@@ -95,15 +99,38 @@ function DeliveryCard({ order }: { order: Order }) {
 
 export default function OwnerOrderScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: order, isLoading, refetch, isRefetching } = useOrder(id);
+  const { data: order, isLoading } = useOrder(id);
   const { data: store } = useOwnStore();
+  const queryClient = useQueryClient();
+  const searchAgain = useOwnerAction(ownerCalls.delivery);
+  const toast = useToast();
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Pulling down reloads the order and its delivery card. An order still waiting for a rider
+  // is also sent to every nearby rider again (riders who passed on it see it too).
+  async function refresh() {
+    setRefreshing(true);
+    try {
+      const waitingForRider = order?.status !== 'cancelled' && order?.fulfillment_status === 'ready_for_delivery';
+      if (waitingForRider) {
+        await searchAgain.mutateAsync({ id, action: 'request-rider' });
+        toast('Sent to nearby riders again', 'success');
+      }
+    } catch (err) {
+      toast(errorMessage(err), 'error');
+    } finally {
+      await queryClient.invalidateQueries({ queryKey: ['orders', id] });
+      setRefreshing(false);
+    }
+  }
+
   if (isLoading) return <Loading />;
   if (!order) return <Screen><EmptyState message="Order not found." /></Screen>;
   const stage = orderStage(order);
   const subtotal = order.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <Screen onRefresh={refetch} refreshing={isRefetching}>
+    <Screen onRefresh={() => void refresh()} refreshing={refreshing}>
       <Stack.Screen options={{ title: `Order ${shortId(order.id)}` }} />
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
         <Text style={text.muted}>{dateTime(order.created_at)} · {order.fulfillment_method === 'delivery' ? 'Delivery' : 'Pickup'}</Text>

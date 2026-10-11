@@ -84,6 +84,7 @@ export interface RiderOrder {
   id: string;
   stage: RiderOrderStage;
   created_at: string;
+  ready_at: string | null;
   offer_expires_at: string | null;
   store: { name: string; address: string | null; latitude: number | null; longitude: number | null; distance_km: number | null };
   customer: { name: string; phone_number: string | null } | null;
@@ -111,6 +112,8 @@ export interface RiderHome {
   offers: RiderOrder[];
   active: RiderOrder[];
   summary: RiderMoney;
+  at_order_limit?: boolean;
+  max_active_orders?: number;
 }
 
 export interface HandoverRider {

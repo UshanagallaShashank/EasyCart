@@ -20,7 +20,7 @@ async function channels_for(user) {
   if (user.role === 'customer') return [channel.customer(user.id)];
   if (user.role === 'delivery_partner') {
     const rider = await find_rider_by_user_id(user.id);
-    return rider ? [channel.rider(rider.id)] : [];
+    return rider ? [channel.rider(rider.id), channel.riders] : [];
   }
   return [];
 }

@@ -14,7 +14,8 @@ export function useOfferAlert(offers: RiderOrder[] | undefined) {
 
   useEffect(() => {
     const fresh = (offers ?? []).filter((offer) => !seen.current.has(offer.id));
-    fresh.forEach((offer) => seen.current.add(offer.id));
+    // Only what is on screen now is remembered, so an order that leaves and comes back (sent again by the store) alerts again.
+    seen.current = new Set((offers ?? []).map((offer) => offer.id));
     if (fresh.length === 0) return;
     // The banner says what matters most to a rider first: that there is an order and what it pays.
     toast(t('New order · you earn {amount}', { amount: price(fresh[0].earning) }), 'info');

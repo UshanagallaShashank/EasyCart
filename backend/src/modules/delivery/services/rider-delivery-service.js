@@ -1,4 +1,4 @@
-// The rider's side of a delivery: accept or pass on an offer, prove pickup with the store's code,
+// The rider's side of a delivery: see the open orders nearby and take one (first come, first served), or pass on it, prove pickup with the store's code,
 // and prove the handover with the customer's code, a photo and the cash collected.
 import { AppError } from '../../../platform/shared/app-error.js';
 import { find_store_by_tenant_id } from '../../stores/repositories/store-repository.js';
@@ -8,11 +8,12 @@ import { find_order_by_id_any_store, find_orders_by_rider, update_order_if } fro
 import { pickup_schema, deliver_schema, issues_message } from '../delivery-schemas.js';
 import { MAX_CODE_ATTEMPTS, code_matches } from '../lib/delivery-codes.js';
 import { haversine_km } from '../lib/haversine-km.js';
-import { is_offer_expired } from '../lib/delivery-stages.js';
+import { MAX_ACTIVE_ORDERS } from '../lib/delivery-stages.js';
 import { summarize_rider_money, rider_daily_series } from '../lib/summarize-rider-money.js';
 import { to_full_rider } from '../lib/rider-views.js';
 import { get_rider_for_user } from './rider-application-service.js';
-import { pass_offer_on, store_point } from './dispatch-service.js';
+import { check_rider_can_take, find_open_orders_for, release_old_offers, store_point } from './dispatch-service.js';
+import { mark_rider_seen } from './rider-status-service.js';
 import { save_delivery_file, delivery_file_url } from './delivery-file-service.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
 
@@ -22,6 +23,8 @@ function item_count(order) {
 
 function stage_of(order) {
   if (order.status === 'cancelled') return 'cancelled';
+  // Packed and not taken by anyone yet: an open order any nearby rider can accept.
+  if (order.fulfillment_status === 'ready_for_delivery' && !order.rider_id) return 'offered';
   if (order.fulfillment_status === 'rider_assigned') return order.rider_offer_status === 'offered' ? 'offered' : 'to_pickup';
   if (order.fulfillment_status === 'dispatched') return 'to_customer';
   return order.fulfillment_status;
@@ -40,6 +43,8 @@ async function to_rider_order(order, rider) {
     id: order.id,
     stage: stage_of(order),
     created_at: order.created_at,
+    // When the store packed it. Open orders show this so a rider can tell them apart.
+    ready_at: order.ready_at ?? null,
     offer_expires_at: order.rider_offer_status === 'offered' ? order.rider_offer_expires_at : null,
     store: {
       name: store?.name ?? 'Store',
@@ -76,21 +81,31 @@ async function find_my_order(rider, order_id) {
 }
 
 export async function get_rider_home(user_id) {
-  const rider = await get_rider_for_user(user_id);
-  const [orders, settlements] = await Promise.all([find_orders_by_rider(rider.id), find_settlements_by_rider(rider.id)]);
-  const live = orders.filter((order) => order.status !== 'cancelled' && ['rider_assigned', 'dispatched'].includes(order.fulfillment_status) && !is_offer_expired(order));
-  const views = await Promise.all(live.map((order) => to_rider_order(order, rider)));
+  const rider = await mark_rider_seen(await get_rider_for_user(user_id));
+  // No order is ever held for just one rider: any such order goes back to the list every rider sees, before reading it.
+  await release_old_offers();
+  const [orders, settlements, open] = await Promise.all([find_orders_by_rider(rider.id), find_settlements_by_rider(rider.id), find_open_orders_for(rider)]);
+  // Orders this rider accepted and has not finished.
+  const mine = orders.filter((order) => order.status !== 'cancelled' && ['rider_assigned', 'dispatched'].includes(order.fulfillment_status) && order.rider_offer_status !== 'offered');
   return {
     rider: await to_full_rider(rider),
-    offers: views.filter((order) => order.stage === 'offered'),
-    active: views.filter((order) => order.stage !== 'offered'),
+    offers: await Promise.all(open.map((order) => to_rider_order(order, rider))),
+    active: await Promise.all(mine.map((order) => to_rider_order(order, rider))),
+    // True when the rider carries as many orders as allowed, so new orders are hidden until they deliver one.
+    at_order_limit: mine.length >= MAX_ACTIVE_ORDERS,
+    max_active_orders: MAX_ACTIVE_ORDERS,
     summary: summarize_rider_money(orders, settlements)
   };
 }
 
+// An order the rider has taken, or an open order they could still take.
 export async function get_rider_order(user_id, order_id) {
   const rider = await get_rider_for_user(user_id);
-  return to_rider_order(await find_my_order(rider, order_id), rider);
+  const order = await find_order_by_id_any_store(order_id);
+  if (order && order.rider_id === rider.id) return to_rider_order(order, rider);
+  const problem = await check_rider_can_take(rider, order);
+  if (problem === null) return to_rider_order(order, rider);
+  throw new AppError('Order not found', 404);
 }
 
 export async function list_rider_history(user_id) {
@@ -110,23 +125,75 @@ function assert_can_take_work(rider) {
   if (rider.status !== 'approved') throw new AppError('Your account cannot take orders right now', 403);
 }
 
+// First come, first served: the update only succeeds while nobody has the order yet,
+// so when two riders press Accept at the same moment, exactly one of them gets it.
 export async function accept_offer(user_id, order_id) {
   const rider = await get_rider_for_user(user_id);
   assert_can_take_work(rider);
-  const order = await find_my_order(rider, order_id);
-  if (order.rider_offer_status !== 'offered' || is_offer_expired(order)) throw new AppError('This offer has expired', 409);
+  const order = await find_order_by_id_any_store(order_id);
+  // Already this rider's (a double tap, or an order offered to just them): accepting again simply confirms it.
+  if (order && order.rider_id === rider.id && order.status !== 'cancelled') return accept_my_order(order, rider);
+  const problem = await check_rider_can_take(rider, order);
+  if (problem) throw new AppError(problem, 409);
+  const taken = await update_order_if(order.id, { fulfillment_status: 'ready_for_delivery', rider_id: null }, {
+    fulfillment_status: 'rider_assigned',
+    rider_id: rider.id,
+    rider_offer_status: 'accepted',
+    rider_offer_expires_at: null,
+    accepted_at: new Date().toISOString()
+  });
+  if (!taken) throw new AppError('Another rider already took this order', 409);
+  return to_rider_order(taken, rider);
+}
+
+async function accept_my_order(order, rider) {
+  if (order.rider_offer_status !== 'offered') return to_rider_order(order, rider);
   const accepted = await update_order_if(order.id, { rider_id: rider.id, rider_offer_status: 'offered' }, {
     rider_offer_status: 'accepted', rider_offer_expires_at: null, accepted_at: new Date().toISOString()
   });
-  if (!accepted) throw new AppError('This offer is no longer available', 409);
-  return to_rider_order(accepted, rider);
+  return to_rider_order(accepted ?? order, rider);
 }
 
+// Hides an open order from this rider. Other riders still see it.
 export async function decline_offer(user_id, order_id) {
   const rider = await get_rider_for_user(user_id);
+  const order = await find_order_by_id_any_store(order_id);
+  const declined = order?.declined_rider_ids ?? [];
+  // An order offered to just this rider goes back to every nearby rider, minus this one.
+  if (order && order.rider_id === rider.id && order.rider_offer_status === 'offered') {
+    await update_order_if(order.id, { rider_id: rider.id, rider_offer_status: 'offered' }, {
+      fulfillment_status: 'ready_for_delivery', rider_id: null, rider_offer_status: null, rider_offer_expires_at: null,
+      declined_rider_ids: declined.includes(rider.id) ? declined : [...declined, rider.id]
+    });
+    return { ok: true };
+  }
+  if (!order || order.fulfillment_status !== 'ready_for_delivery' || order.rider_id) {
+    throw new AppError('Only new orders can be declined. Ask the store to cancel an accepted delivery.', 400);
+  }
+  if (!declined.includes(rider.id)) {
+    await update_order_if(order.id, { fulfillment_status: 'ready_for_delivery', rider_id: null }, { declined_rider_ids: [...declined, rider.id] });
+  }
+  return { ok: true };
+}
+
+// A rider who accepted can give the order back before collecting it. It goes straight back to every
+// nearby rider (not this one again), so the store does not have to do anything.
+export async function drop_delivery(user_id, order_id) {
+  const rider = await get_rider_for_user(user_id);
   const order = await find_my_order(rider, order_id);
-  if (order.rider_offer_status !== 'offered') throw new AppError('Only new offers can be declined. Ask the store to cancel an accepted delivery.', 400);
-  await pass_offer_on(order);
+  if (order.fulfillment_status !== 'rider_assigned' || order.rider_offer_status !== 'accepted') {
+    throw new AppError('You can only give back an order before you pick it up from the store', 400);
+  }
+  const declined = order.declined_rider_ids ?? [];
+  const released = await update_order_if(order.id, { rider_id: rider.id, fulfillment_status: 'rider_assigned' }, {
+    fulfillment_status: 'ready_for_delivery',
+    rider_id: null,
+    rider_offer_status: null,
+    rider_offer_expires_at: null,
+    accepted_at: null,
+    declined_rider_ids: declined.includes(rider.id) ? declined : [...declined, rider.id]
+  });
+  if (!released) throw new AppError('This order changed. Refresh and try again.', 409);
   return { ok: true };
 }
 

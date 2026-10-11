@@ -37,7 +37,7 @@ export function OnlineToggleCard({ rider }: { rider: Rider }) {
           <p className={cn('text-2xl font-bold tracking-tight', rider.is_online ? 'text-white' : 'text-slate-900')}>{rider.is_online ? 'You are online' : 'You are offline'}</p>
           <p className={cn('mt-0.5 flex items-center gap-1 text-xs', rider.is_online ? 'text-emerald-50' : 'text-slate-500')}>
             <MapPin className="size-3.5" />
-            {rider.is_online ? 'Nearby orders are offered to you first' : 'Go online to start getting orders'}
+            {rider.is_online ? 'Nearby orders show here. The first rider to accept gets them.' : 'Go online to start getting orders'}
           </p>
         </div>
         <button type="button" role="switch" aria-checked={rider.is_online} aria-label={rider.is_online ? 'Go offline' : 'Go online'} onClick={handleToggle} disabled={toggle.isPending}

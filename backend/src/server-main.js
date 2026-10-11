@@ -80,7 +80,7 @@ export async function start_server_main() {
   if (IS_PRODUCTION) assert_production_env();
   await connect_db();
 
-  // Hands waiting deliveries to riders and moves unanswered offers on, every few seconds.
+  // Moves any old one-rider delivery offers back to the open list that every nearby rider sees.
   start_dispatch_loop();
 
   const server = app.listen(PORT, () => {

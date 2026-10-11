@@ -14,7 +14,7 @@ export function SetupChecklist({ store, productCount }: { store: OwnerStore; pro
   const steps: Step[] = [
     { label: 'Add your first products', hint: 'Customers need something to buy', done: productCount > 0, href: '/owner/products' },
     { label: 'Add your shop address', hint: 'Shown to customers and used for pickup', done: Boolean(store.address), href: '/owner/store-settings' },
-    { label: 'Pin your shop location', hint: 'So deliveries go to the nearest rider', done: store.latitude != null, href: '/owner/store-settings' },
+    { label: 'Pin your shop location', hint: 'So riders near your shop see your deliveries', done: store.latitude != null, href: '/owner/store-settings' },
     { label: 'Publish your shop', hint: 'Open it to customers', done: store.is_published, href: '/owner/store-settings' }
   ];
   const finished = steps.filter((step) => step.done).length;

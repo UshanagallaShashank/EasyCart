@@ -3,6 +3,7 @@ import { View } from 'react-native';
 import { Text } from '@/components/text';
 import { Badge, Card, EmptyState, InfoRow, Loading, Screen } from '@/components/ui';
 import { useRidersNearby, useStoreDeliveries, useStoreSettlements } from '@/features/owner/owner-api';
+import { useRefreshAndSearch } from '@/features/owner/use-refresh-and-search';
 import { distance, price, shortId } from '@/lib/format';
 import { VEHICLE_LABELS, deliveryStageLabel } from '@/lib/delivery-labels';
 import { colors, space, text } from '@/theme/theme';
@@ -15,12 +16,14 @@ export default function OwnerDelivery() {
   const deliveries = useStoreDeliveries();
   const settlements = useStoreSettlements();
   const riders = useRidersNearby();
+  // Pulling down also sends every order still waiting for a rider to all nearby riders again.
+  const { refresh, refreshing } = useRefreshAndSearch(() => Promise.all([deliveries.refetch(), settlements.refetch(), riders.refetch()]));
   if (deliveries.isLoading) return <Loading />;
   const active = (deliveries.data ?? []).filter((row) => ACTIVE.includes(row.stage));
   const open = (settlements.data?.orders ?? []).filter((row) => !row.is_settled && row.net_to_store > 0);
 
   return (
-    <Screen onRefresh={() => { void deliveries.refetch(); void settlements.refetch(); void riders.refetch(); }} refreshing={deliveries.isRefetching}>
+    <Screen onRefresh={refresh} refreshing={refreshing}>
       <Card title="On the way" icon="truck" right={<Badge tone="primary" label={String(active.length)} />}>
         {active.length === 0 ? <Text style={text.small}>No deliveries in progress.</Text> : active.map((row) => {
           const stage = deliveryStageLabel(row.stage, row.rider_offer_status);

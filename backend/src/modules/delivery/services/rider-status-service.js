@@ -6,7 +6,7 @@ import { online_schema, location_schema, issues_message } from '../delivery-sche
 import { to_full_rider } from '../lib/rider-views.js';
 import { licence_problem } from '../lib/delivery-stages.js';
 import { get_rider_for_user } from './rider-application-service.js';
-import { pass_offer_on, refresh_dispatch } from './dispatch-service.js';
+import { release_offer } from './dispatch-service.js';
 
 export async function set_my_online(user_id, payload) {
   const parsed = online_schema.safeParse(payload);
@@ -23,11 +23,7 @@ export async function set_my_online(user_id, payload) {
   }
   const updated = await update_rider(rider.id, updates);
 
-  if (parsed.data.is_online) {
-    await refresh_dispatch();
-  } else {
-    await release_offers(rider.id);
-  }
+  if (!parsed.data.is_online) await release_offers(rider.id);
   return to_full_rider(updated);
 }
 
@@ -40,8 +36,15 @@ export async function update_my_location(user_id, payload) {
   return { ok: true };
 }
 
-// Offers a rider has not answered go straight to the next nearest rider (when they go offline or are suspended).
+// Any old one-rider offer still waiting on this rider goes back to the open list (when they go offline or are suspended).
 export async function release_offers(rider_id) {
   const offers = (await find_orders_by_rider(rider_id)).filter((order) => order.rider_offer_status === 'offered' && order.fulfillment_status === 'rider_assigned');
-  for (const order of offers) await pass_offer_on(order);
+  for (const order of offers) await release_offer(order);
+}
+
+// The rider's app checks for orders every 30 seconds on any screen. While they are online, each check counts
+// as "still here", so a rider whose GPS fails or who is on another screen keeps seeing new orders.
+export async function mark_rider_seen(rider) {
+  if (!rider.is_online) return rider;
+  return update_rider(rider.id, { last_seen_at: new Date().toISOString() }, { silent: true });
 }
