@@ -226,6 +226,20 @@ export default function StoreRequestScreen() {
 
   return (
     <Screen>
+      <Pressable
+        onPress={() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.navigate('/shop');
+          }
+        }}
+        style={styles.backBtn}
+      >
+        <Icon name="arrow-left" size={16} color={colors.text} />
+        <Text style={styles.backBtnText}>Back to Shop</Text>
+      </Pressable>
+
       <View style={styles.formContainer}>
         {/* ROW 1: Store Name & Store Type */}
         <View style={styles.row}>
@@ -869,5 +883,23 @@ const styles = StyleSheet.create({
   modalOptionTextSelected: {
     fontWeight: '700',
     color: '#0284c7'
+  },
+  backBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: colors.white,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: radius.pill,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    marginBottom: space.md
+  },
+  backBtnText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text
   }
 });
