@@ -5,10 +5,12 @@ import {
   Clock, CloudUpload, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
   MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
   ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, Upload, User, Users, WifiOff, X, Zap,
-  Headphones, LayoutGrid, Pencil, Settings, Sparkles, Star, Tags, Ticket, Wallet, type LucideIcon
+  Headphones, LayoutGrid, Pencil, Settings, Sparkles, Star, Tags, Ticket, Wallet, Filter, SlidersHorizontal, type LucideIcon
 } from 'lucide-react-native';
 
 const ICONS = {
+  filter: Filter,
+  sliders: SlidersHorizontal,
   'alert-circle': CircleAlert,
   'alert-triangle': TriangleAlert,
   'arrow-left': ArrowLeft,

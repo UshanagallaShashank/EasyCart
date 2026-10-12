@@ -2,7 +2,7 @@ import { View } from 'react-native';
 import { Tabs } from 'expo-router';
 import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
-import { NotificationButton } from '@/components/notification-button';
+import { FavouritesButton } from '@/components/favourites-button';
 import { useShop } from '@/features/shop/shop-context';
 import { useStore } from '@/features/shop/shop-api';
 import { BrandProvider } from '@/lib/brand';
@@ -12,7 +12,7 @@ import { useOrderAlerts } from '@/features/shop/use-order-alerts';
 function HeaderRightActions() {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: 16 }}>
-      <NotificationButton />
+      <FavouritesButton />
       <ProfileMenu />
     </View>
   );
@@ -27,7 +27,8 @@ const ACTIVE_FOR = {
   pay: 'orders',
   nearby: 'index',
   addresses: 'account',
-  'store-request': 'account'
+  'store-request': 'account',
+  favourites: 'index'
 };
 
 export default function ShopTabs() {
@@ -53,6 +54,7 @@ export default function ShopTabs() {
       <Tabs.Screen name="order-placed" options={{ title: t('Order placed'), href: null, headerShown: false }} />
       <Tabs.Screen name="addresses" options={hiddenPage(t('Delivery addresses'))} />
       <Tabs.Screen name="store-request" options={hiddenPage(t('Request a store'))} />
+      <Tabs.Screen name="favourites" options={hiddenPage(t('Favourites'))} />
     </Tabs>
     </BrandProvider>
   );

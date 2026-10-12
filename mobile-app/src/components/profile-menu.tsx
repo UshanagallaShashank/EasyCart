@@ -10,10 +10,12 @@ import { useConfirmedSignOut } from './confirm';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
+import { NotificationModal } from '@/components/notification-button';
 
 export function ProfileMenu() {
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const { user } = useSession();
   const logout = useConfirmedSignOut();
   const { count } = useShop();
@@ -62,16 +64,17 @@ export function ProfileMenu() {
               <Text style={styles.itemLabel}>View profile</Text>
             </Pressable>
 
-            {/* My orders */}
+            {/* Notifications */}
             <Pressable
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                router.navigate('/shop/orders');
+                setNotificationOpen(true);
               }}
             >
-              <Icon name="package" size={16} color="#0ea5e9" />
-              <Text style={styles.itemLabel}>My orders</Text>
+              <Icon name="bell" size={16} color="#0ea5e9" />
+              <Text style={styles.itemLabel}>Notifications</Text>
+              <View style={styles.notificationDot} />
             </Pressable>
 
             {/* Customer support */}
@@ -116,6 +119,7 @@ export function ProfileMenu() {
       </Modal>
 
       <CustomerSupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
+      <NotificationModal visible={notificationOpen} onClose={() => setNotificationOpen(false)} />
     </>
   );
 }
@@ -193,5 +197,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#92400e'
+  },
+  notificationDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#0284c7'
   }
 });

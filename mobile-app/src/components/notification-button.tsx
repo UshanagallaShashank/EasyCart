@@ -5,9 +5,61 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { colors, radius, shadow, space } from '@/theme/theme';
 
+export function NotificationModal({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.backdrop} onPress={onClose}>
+        <View style={[styles.card, { top: insets.top + 48 }]}>
+          <View style={styles.header}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <Icon name="bell" size={16} color={colors.primary} />
+              <Text style={styles.title}>Notifications</Text>
+            </View>
+            <Pressable onPress={onClose} hitSlop={10}>
+              <Icon name="x" size={18} color="#64748b" />
+            </Pressable>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.item}>
+            <View style={styles.iconCircle}>
+              <Icon name="sparkles" size={16} color={colors.primary} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.itemTitle}>Welcome to EasyCart!</Text>
+              <Text style={styles.itemBody}>
+                Explore fresh groceries and products from your local store with instant delivery.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.item}>
+            <View style={[styles.iconCircle, { backgroundColor: '#f0fdf4' }]}>
+              <Icon name="check-circle" size={16} color="#16a34a" />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <Text style={styles.itemTitle}>All caught up!</Text>
+              <Text style={styles.itemBody}>
+                You have no pending order alerts.
+              </Text>
+            </View>
+          </View>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+}
+
 export function NotificationButton() {
   const [open, setOpen] = useState(false);
-  const insets = useSafeAreaInsets();
 
   return (
     <>
@@ -21,52 +73,7 @@ export function NotificationButton() {
         <View style={styles.badgeDot} />
       </Pressable>
 
-      <Modal
-        visible={open}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setOpen(false)}
-      >
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <View style={[styles.card, { top: insets.top + 48 }]}>
-            <View style={styles.header}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Icon name="bell" size={16} color={colors.primary} />
-                <Text style={styles.title}>Notifications</Text>
-              </View>
-              <Pressable onPress={() => setOpen(false)} hitSlop={10}>
-                <Icon name="x" size={18} color="#64748b" />
-              </Pressable>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.item}>
-              <View style={styles.iconCircle}>
-                <Icon name="sparkles" size={16} color={colors.primary} />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={styles.itemTitle}>Welcome to EasyCart!</Text>
-                <Text style={styles.itemBody}>
-                  Explore fresh groceries and products from your local store with instant delivery.
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.item}>
-              <View style={[styles.iconCircle, { backgroundColor: '#f0fdf4' }]}>
-                <Icon name="check-circle" size={16} color="#16a34a" />
-              </View>
-              <View style={{ flex: 1, gap: 2 }}>
-                <Text style={styles.itemTitle}>All caught up!</Text>
-                <Text style={styles.itemBody}>
-                  You have no pending order alerts.
-                </Text>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-      </Modal>
+      <NotificationModal visible={open} onClose={() => setOpen(false)} />
     </>
   );
 }
