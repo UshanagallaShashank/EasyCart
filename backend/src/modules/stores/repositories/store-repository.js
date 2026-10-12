@@ -7,13 +7,15 @@ import { AppError } from '../../../platform/shared/app-error.js';
 
 const SUPABASE_IN_CHUNK_SIZE = 100;
 
-// In-memory fallback if the migration adding promotion_banner_text, max_delivery_radius_km, pincode, address, latitude, longitude has not been run on Supabase yet
+// In-memory fallback if the migration adding promotion_banner_text, max_delivery_radius_km, pincode, address, latitude, longitude
+// (or free_delivery_above, migration 012) has not been run on Supabase yet
 const promotion_banner_fallback = new Map();
 const radius_fallback = new Map();
 const pincode_fallback = new Map();
 const address_fallback = new Map();
 const lat_fallback = new Map();
 const lng_fallback = new Map();
+const free_delivery_fallback = new Map();
 
 function attach_fallback_fields(store) {
   if (!store) return store;
@@ -40,6 +42,9 @@ function attach_fallback_fields(store) {
   }
   if ((result.longitude === undefined || result.longitude === null) && lng_fallback.has(tenant_id)) {
     result.longitude = lng_fallback.get(tenant_id);
+  }
+  if (result.free_delivery_above === undefined && free_delivery_fallback.has(tenant_id)) {
+    result.free_delivery_above = free_delivery_fallback.get(tenant_id);
   }
   return result;
 }
@@ -160,13 +165,16 @@ export async function update_store(tenant_id, updates) {
   if (updates.longitude !== undefined) {
     lng_fallback.set(tenant_id, updates.longitude);
   }
+  if (updates.free_delivery_above !== undefined) {
+    free_delivery_fallback.set(tenant_id, updates.free_delivery_above);
+  }
 
   if (DB_PROVIDER === 'supabase') {
     let result = null;
     const { data, error } = await get_supabase().from('stores').update(payload).eq('tenant_id', tenant_id).select().single();
     if (error) {
       if (error.code === 'PGRST204') {
-        const { promotion_banner_text, max_delivery_radius_km, pincode, address, ...fallbackPayload } = payload;
+        const { promotion_banner_text, max_delivery_radius_km, pincode, address, free_delivery_above, ...fallbackPayload } = payload;
         const { data: retryData, error: retryError } = await get_supabase()
           .from('stores')
           .update(fallbackPayload)

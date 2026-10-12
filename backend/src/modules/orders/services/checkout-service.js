@@ -6,6 +6,7 @@ import { resolve_active_coupon, apply_coupon_discount } from '../../coupons/serv
 import { create_order } from './order-service.js';
 import { merge_cart_lines } from '../lib/order-rules.js';
 import { assert_payment_method_available } from '../../payments/payment-config.js';
+import { delivery_fee_for } from '../lib/delivery-fee.js';
 
 function resolve_unit_price_and_stock(product, variant_label) {
   if (!variant_label) {
@@ -52,7 +53,7 @@ export async function checkout(tenant_id, customer_id, payload) {
   let delivery_fee = 0;
   if (fulfillment_method === 'delivery') {
     const store = await get_own_store(tenant_id);
-    delivery_fee = store.delivery_fee ?? 0;
+    delivery_fee = delivery_fee_for({ fee: store.delivery_fee, free_above: store.free_delivery_above, order_value: subtotal - discount_amount });
   }
 
   const total = subtotal - discount_amount + delivery_fee;

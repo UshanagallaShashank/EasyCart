@@ -13,6 +13,7 @@ const store_schema = new mongoose.Schema(
     // The shop's brand colours in the app (sky, emerald, sunset, violet, rose or teal); separate from the website's light or dark theme.
     color_theme: { type: String, default: null },
     delivery_fee: { type: Number, default: 0 },
+    free_delivery_above: { type: Number, default: null },
     max_delivery_radius_km: { type: Number, default: 5 },
     pincode: { type: String, default: null },
     address: { type: String, default: null },

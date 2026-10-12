@@ -8,6 +8,8 @@ export const store_settings_schema = z
     banner_url: z.union([z.string(), z.null()]).optional(),
     theme: z.enum(['default', 'light', 'dark']).optional(),
     delivery_fee: z.number().min(0).optional(),
+    // Orders worth at least this much (after coupons) get free delivery; null switches it off.
+    free_delivery_above: z.number().min(0).max(100000).nullable().optional(),
     promotion_banner_text: z.string().trim().max(200).nullable().optional(),
     max_delivery_radius_km: z.number().min(0).max(100).optional(),
     pincode: z.string().trim().max(10).nullable().optional(),
