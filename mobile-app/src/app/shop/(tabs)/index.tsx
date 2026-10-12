@@ -4,7 +4,7 @@ import { Text, TextInput } from '@/components/text';
 import { router } from 'expo-router';
 import { Icon, type IconName } from '@/components/icon';
 import { PressScale, Skeleton } from '@/components/motion';
-import { Button, EmptyState, Loading, Notice, Pills, Screen } from '@/components/ui';
+import { Button, EmptyState, Loading, Notice, Screen } from '@/components/ui';
 import { ShopSwitcher } from '@/features/shop/shop-switcher';
 import { useT } from '@/lib/i18n';
 import { useBrand } from '@/lib/brand';
@@ -64,6 +64,16 @@ export default function ShopHome() {
   const [category, setCategory] = useState('');
   const [inStockOnly, setInStockOnly] = useState(false);
   const [filterModalOpen, setFilterModalOpen] = useState(false);
+  const [pendingView, setPendingView] = useState<View_>('all');
+  const [pendingCategory, setPendingCategory] = useState('');
+  const [pendingInStockOnly, setPendingInStockOnly] = useState(false);
+
+  function openFilterModal() {
+    setPendingCategory(category);
+    setPendingView(view);
+    setPendingInStockOnly(inStockOnly);
+    setFilterModalOpen(true);
+  }
   const store = useStore(slug);
   const reviews = useStoreReviews(slug);
   const categories = useCategories(slug);
@@ -209,7 +219,7 @@ export default function ShopHome() {
             </View>
 
             <Pressable
-              onPress={() => setFilterModalOpen(true)}
+              onPress={openFilterModal}
               style={[
                 styles.filterIconButton,
                 activeFilterCount > 0 && styles.filterIconButtonActive
@@ -236,21 +246,11 @@ export default function ShopHome() {
           {showRails && (
             <>
               <ProductRail actions={cardActions} title={t('Almost gone')} subtitle={t('Grab them before they sell out')} icon="zap" accent={accents.orange} products={almostGone} />
-              <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} compact />
+              <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} compact boxed />
               <ReviewsStrip reviews={reviews.data} />
             </>
           )}
           {showRails && <Text style={styles.sectionTitle}>{t('All products')}</Text>}
-          <Pills<View_>
-            value={view}
-            onChange={setView}
-            options={[
-              { value: 'all', label: t('All') },
-              { value: 'rating', label: t('Top rated') },
-              { value: 'low', label: t('Price: low to high') },
-              { value: 'high', label: t('Price: high to low') }
-            ]}
-          />
           {products.isLoading ? <ProductGridSkeleton width={cardWidth} /> : count === 0 ? (
             <EmptyState icon="search" message={search ? t('No products match "{search}".', { search }) : t('This shop has no products yet.')} />
           ) : (
@@ -288,19 +288,19 @@ export default function ShopHome() {
                 <Text style={styles.modalSectionTitle}>{t('Categories')}</Text>
                 <View style={styles.modalOptionsWrap}>
                   <Pressable
-                    onPress={() => setCategory('')}
-                    style={[styles.modalOptionChip, category === '' && styles.modalOptionChipActive]}
+                    onPress={() => setPendingCategory('')}
+                    style={[styles.modalOptionChip, pendingCategory === '' && styles.modalOptionChipActive]}
                   >
-                    <Text style={[styles.modalOptionText, category === '' && styles.modalOptionTextActive]}>
+                    <Text style={[styles.modalOptionText, pendingCategory === '' && styles.modalOptionTextActive]}>
                       {t('All')}
                     </Text>
                   </Pressable>
                   {(categories.data ?? []).map((cat) => {
-                    const isSelected = category === cat.id;
+                    const isSelected = pendingCategory === cat.id;
                     return (
                       <Pressable
                         key={cat.id}
-                        onPress={() => setCategory(isSelected ? '' : cat.id)}
+                        onPress={() => setPendingCategory(isSelected ? '' : cat.id)}
                         style={[styles.modalOptionChip, isSelected && styles.modalOptionChipActive]}
                       >
                         <Text style={[styles.modalOptionText, isSelected && styles.modalOptionTextActive]}>
@@ -322,11 +322,11 @@ export default function ShopHome() {
                     { value: 'low', label: t('Price: Low to high') },
                     { value: 'high', label: t('Price: High to low') }
                   ].map((opt) => {
-                    const isSelected = view === opt.value;
+                    const isSelected = pendingView === opt.value;
                     return (
                       <Pressable
                         key={opt.value}
-                        onPress={() => setView(opt.value as View_)}
+                        onPress={() => setPendingView(opt.value as View_)}
                         style={[styles.modalOptionChip, isSelected && styles.modalOptionChipActive]}
                       >
                         <Text style={[styles.modalOptionText, isSelected && styles.modalOptionTextActive]}>
@@ -343,10 +343,10 @@ export default function ShopHome() {
                 <Text style={styles.modalSectionTitle}>{t('Availability')}</Text>
                 <View style={styles.modalOptionsWrap}>
                   <Pressable
-                    onPress={() => setInStockOnly((v) => !v)}
-                    style={[styles.modalOptionChip, inStockOnly && styles.modalOptionChipActive]}
+                    onPress={() => setPendingInStockOnly((v) => !v)}
+                    style={[styles.modalOptionChip, pendingInStockOnly && styles.modalOptionChipActive]}
                   >
-                    <Text style={[styles.modalOptionText, inStockOnly && styles.modalOptionTextActive]}>
+                    <Text style={[styles.modalOptionText, pendingInStockOnly && styles.modalOptionTextActive]}>
                       {t('In stock only')}
                     </Text>
                   </Pressable>
@@ -360,9 +360,9 @@ export default function ShopHome() {
                   variant="outline"
                   label={t('Reset all')}
                   onPress={() => {
-                    setCategory('');
-                    setView('all');
-                    setInStockOnly(false);
+                    setPendingCategory('');
+                    setPendingView('all');
+                    setPendingInStockOnly(false);
                   }}
                 />
               </View>
@@ -370,7 +370,12 @@ export default function ShopHome() {
                 <Button
                   variant="primary"
                   label={t('Apply')}
-                  onPress={() => setFilterModalOpen(false)}
+                  onPress={() => {
+                    setCategory(pendingCategory);
+                    setView(pendingView);
+                    setInStockOnly(pendingInStockOnly);
+                    setFilterModalOpen(false);
+                  }}
                 />
               </View>
             </View>

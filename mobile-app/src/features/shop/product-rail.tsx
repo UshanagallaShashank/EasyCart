@@ -8,6 +8,8 @@ import { Text } from '@/components/text';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { useContent } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
+import { withAlpha } from '@/theme/brands';
 import { colors, radius, shadow, space } from '@/theme/theme';
 import type { Product } from '@/types/catalog';
 import { ProductCard, type CardActions } from './product-card';
@@ -54,7 +56,7 @@ function CompactProductCard({ product, width }: { product: Product; width: numbe
   );
 }
 
-export function ProductRail({ title, subtitle, icon, accent, products, actions, compact = false }: {
+export function ProductRail({ title, subtitle, icon, accent, products, actions, compact = false, boxed = false }: {
   actions: CardActions;
   title: string;
   subtitle?: string;
@@ -62,19 +64,32 @@ export function ProductRail({ title, subtitle, icon, accent, products, actions, 
   accent: { fg: string; bg: string };
   products: Product[];
   compact?: boolean;
+  boxed?: boolean;
 }) {
+  const brand = useBrand();
   if (products.length === 0) return null;
 
+  const bubbleBg = boxed ? '#ffffff' : accent.bg;
+  const iconColor = boxed ? (brand.primary || accent.fg) : accent.fg;
+
   return (
-    <View style={styles.rail}>
-      <View style={styles.header}>
-        <View style={[styles.bubble, { backgroundColor: accent.bg }]}><Icon name={icon} size={18} color={accent.fg} /></View>
+    <View
+      style={boxed ? [
+        styles.boxedRail,
+        {
+          backgroundColor: brand.primaryTint || colors.primaryTint,
+          borderColor: withAlpha(brand.primary, 0.22)
+        }
+      ] : styles.rail}
+    >
+      <View style={[styles.header, boxed && styles.boxedHeader]}>
+        <View style={[styles.bubble, { backgroundColor: bubbleBg }]}><Icon name={icon} size={18} color={iconColor} /></View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{title}</Text>
+          <Text style={[styles.title, boxed && styles.boxedTitle]}>{title}</Text>
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={[styles.row, boxed && styles.boxedRow]}>
         {products.map((product, index) =>
           compact ? (
             <CompactProductCard key={product.id} product={product} width={COMPACT_CARD_WIDTH} />
@@ -103,6 +118,23 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: '800', color: colors.text, letterSpacing: -0.4 },
   subtitle: { fontSize: 12, color: colors.textMuted },
   row: { flexDirection: 'row', gap: space.md, paddingRight: space.lg, paddingBottom: 4 },
+  boxedRail: {
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    gap: space.sm
+  },
+  boxedHeader: {
+    marginBottom: space.xs
+  },
+  boxedTitle: {
+    fontSize: 16,
+    letterSpacing: -0.3
+  },
+  boxedRow: {
+    paddingRight: space.xs,
+    paddingBottom: 2
+  },
   compactCard: {
     backgroundColor: colors.card,
     borderRadius: radius.md,
