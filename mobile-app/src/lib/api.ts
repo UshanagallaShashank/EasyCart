@@ -1,4 +1,6 @@
 // The one HTTP client: every call goes to the same backend as the website, with the signed-in token attached.
+import { reportServerReachable, reportServerUnreachable } from './connection';
+import { remoteLog } from './remote-log';
 const API_URL = (process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:5000').replace(/\/+$/, '');
 export const BASE_URL = `${API_URL}/api`;
 const REQUEST_TIMEOUT_MS = 15_000;
@@ -59,12 +61,20 @@ export async function api<T>(path: string, options: { method?: string; body?: un
   } catch (err) {
     const reason = controller.signal.aborted ? `no answer after ${REQUEST_TIMEOUT_MS / 1000}s` : String(err);
     log(`${method} ${path} FAILED to connect (${reason})`);
+    reportServerUnreachable();
+    remoteLog('warn', 'Server unreachable', { method, path, reason });
     throw new ApiError(`Cannot reach the server at ${API_URL}. Check your connection and that the phone is on the same Wi-Fi as the computer.`, 0);
   } finally {
     clearTimeout(giveUpTimer);
   }
   const data = await res.json().catch(() => ({}));
-  log(`${method} ${path} -> ${res.status} (${Date.now() - startedAt}ms)${res.ok ? '' : ` ${data.error ?? ''}`}`);
+  const tookMs = Date.now() - startedAt;
+  log(`${method} ${path} -> ${res.status} (${tookMs}ms)${res.ok ? '' : ` ${data.error ?? ''}`}`);
+  // A host whose app is down answers 502, 503 or 504 by itself, so those count as the server being away too.
+  const serverAway = res.status >= 502 && res.status <= 504;
+  if (serverAway) reportServerUnreachable();
+  else reportServerReachable();
+  if (res.status >= 500) remoteLog('error', 'Server error', { method, path, status: res.status, tookMs });
   if (!res.ok) {
     if (res.status === 401 && token) onUnauthorized?.();
     throw new ApiError(data.error ?? 'Something went wrong', res.status);

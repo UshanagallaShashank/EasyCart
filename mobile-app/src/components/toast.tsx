@@ -27,12 +27,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   // A small coloured dot with an icon says what kind of message it is; the card itself stays calm and dark.
   const accent = toast?.kind === 'error' ? colors.danger : toast?.kind === 'success' ? colors.success : colors.primary;
   const icon: IconName = toast?.kind === 'error' ? 'x' : toast?.kind === 'success' ? 'check' : 'info';
-  const rise = opacity.interpolate({ inputRange: [0, 1], outputRange: [14, 0] });
+  const rise = opacity.interpolate({ inputRange: [0, 1], outputRange: [-14, 0] });
   return (
     <ToastContext.Provider value={show}>
       {children}
       {toast && (
-        <Animated.View pointerEvents="none" style={[styles.wrap, { opacity, bottom: insets.bottom + 84, transform: [{ translateY: rise }] }]}>
+        <Animated.View pointerEvents="none" style={[styles.wrap, { opacity, top: insets.top + 68, transform: [{ translateY: rise }] }]}>
           <View style={styles.toast}>
             <View style={[styles.icon, { backgroundColor: accent }]}><Icon name={icon} size={14} color={colors.white} strokeWidth={3} /></View>
             <Text style={styles.text} numberOfLines={3}>{toast.message}</Text>
