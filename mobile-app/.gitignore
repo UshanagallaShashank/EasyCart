@@ -44,3 +44,9 @@ yarn-error.*
 .env
 /ios
 /android
+
+# Playwright build, results and report
+e2e/.web-build/
+e2e/.results/
+e2e/.report/
+e2e/.screens/
