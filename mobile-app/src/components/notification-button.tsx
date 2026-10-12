@@ -4,8 +4,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { colors, radius, shadow, space } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 export function NotificationButton() {
+  const brand = useBrand();
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
 
@@ -31,7 +33,7 @@ export function NotificationButton() {
           <View style={[styles.card, { top: insets.top + 48 }]}>
             <View style={styles.header}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <Icon name="bell" size={16} color={colors.primary} />
+                <Icon name="bell" size={16} color={brand.primary} />
                 <Text style={styles.title}>Notifications</Text>
               </View>
               <Pressable onPress={() => setOpen(false)} hitSlop={10}>
@@ -43,7 +45,7 @@ export function NotificationButton() {
 
             <View style={styles.item}>
               <View style={styles.iconCircle}>
-                <Icon name="sparkles" size={16} color={colors.primary} />
+                <Icon name="sparkles" size={16} color={brand.primary} />
               </View>
               <View style={{ flex: 1, gap: 2 }}>
                 <Text style={styles.itemTitle}>Welcome to EasyCart!</Text>
@@ -73,12 +75,10 @@ export function NotificationButton() {
 
 const styles = StyleSheet.create({
   bellButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#ffffff',
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#f5f6fa',
     alignItems: 'center',
     justifyContent: 'center',
     position: 'relative'
@@ -90,9 +90,9 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 3.5,
-    backgroundColor: '#0284c7',
-    borderWidth: 1,
-    borderColor: '#ffffff'
+    backgroundColor: '#e11d48',
+    borderWidth: 1.5,
+    borderColor: '#f5f6fa'
   },
   backdrop: {
     flex: 1,

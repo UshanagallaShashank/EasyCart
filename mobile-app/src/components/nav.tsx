@@ -1,6 +1,6 @@
-// Shared navigation styling (white header with the EasyCart logo, teal accents) and the guard that keeps each role in its own area.
+// Shared navigation styling (a clean white header that blends into the page, the floating tab bar) and the guard that keeps each role in its own area.
 import { type ReactNode } from 'react';
-import { Image, Pressable, View, type ColorValue } from 'react-native';
+import { Pressable, View, type ColorValue } from 'react-native';
 import { Redirect, router } from 'expo-router';
 import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { colors } from '@/theme/theme';
@@ -14,20 +14,19 @@ import { Text } from './text';
 import { Loading } from './ui';
 
 export const stackOptions = {
-  headerStyle: { backgroundColor: colors.card },
+  headerStyle: { backgroundColor: colors.bg },
   headerShadowVisible: false,
   headerTintColor: colors.text,
-  headerTitleStyle: { color: colors.text, fontFamily: 'Inter_700Bold', fontSize: 17 },
+  headerTitleStyle: { color: colors.text, fontFamily: 'PlusJakartaSans_700Bold', fontSize: 17 },
   contentStyle: { backgroundColor: colors.bg },
   headerBackButtonDisplayMode: 'minimal' as const
 };
 
-// Logo + page name, matching specs: Logo 30px, Brand text 20px.
+// The page name, big and plain: the page itself carries the colour, so the header stays quiet.
 export function BrandTitle({ children }: { children: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, flexShrink: 1 }}>
-      <Image source={require('../../assets/logo-mark.png')} style={{ width: 30, height: 30 }} resizeMode="contain" />
-      <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.4, flexShrink: 1 }} numberOfLines={1}>{children}</Text>
+    <View style={{ flexDirection: 'row', alignItems: 'center', height: 48, flexShrink: 1 }}>
+      <Text style={{ fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.6, flexShrink: 1 }} numberOfLines={1}>{children}</Text>
     </View>
   );
 }
@@ -41,7 +40,8 @@ export function useTabOptions(activeFor?: ActiveFor) {
     headerTitleContainerStyle: { maxWidth: '50%' as const },
     headerTitle: ({ children }: { children: string }) => <BrandTitle>{children}</BrandTitle>,
     // No fixed height here: the header grows by itself to clear the status bar and notch.
-    headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
+    headerStyle: { backgroundColor: colors.bg },
+    headerShadowVisible: false,
     tabBar: (props: BottomTabBarProps) => <AppTabBar {...props} activeFor={activeFor} />,
     sceneStyle: { backgroundColor: colors.bg }
   };
@@ -54,7 +54,7 @@ export function tabIcon(name: IconName) {
 
 function BackButton() {
   return (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={12} accessibilityLabel="Go back" style={{ marginLeft: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={12} accessibilityLabel="Go back" style={{ marginLeft: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="arrow-left" size={20} color={colors.text} />
     </Pressable>
   );
@@ -68,7 +68,7 @@ export function hiddenPage(title: string) {
 export function SignOutButton() {
   const logout = useConfirmedSignOut();
   return (
-    <Pressable onPress={() => void logout()} accessibilityLabel="Log out" hitSlop={10} style={{ marginRight: 16, width: 38, height: 38, borderRadius: 19, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable onPress={() => void logout()} accessibilityLabel="Log out" hitSlop={10} style={{ marginRight: 16, width: 40, height: 40, borderRadius: 20, backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="log-out" size={17} color={colors.textMuted} />
     </Pressable>
   );

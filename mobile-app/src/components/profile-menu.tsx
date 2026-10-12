@@ -10,8 +10,10 @@ import { useConfirmedSignOut } from './confirm';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
+import { useBrand } from '@/lib/brand';
 
 export function ProfileMenu() {
+  const brand = useBrand();
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const { user } = useSession();
@@ -82,7 +84,7 @@ export function ProfileMenu() {
                 setSupportOpen(true);
               }}
             >
-              <Icon name="headphones" size={16} color="#0284c7" />
+              <Icon name="headphones" size={16} color={brand.primary} />
               <Text style={styles.itemLabel}>Customer support</Text>
             </Pressable>
 
@@ -123,8 +125,6 @@ export function ProfileMenu() {
 const styles = StyleSheet.create({
   trigger: {
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: '#e2e8f0',
     overflow: 'hidden'
   },
   backdrop: {

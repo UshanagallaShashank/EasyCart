@@ -8,6 +8,9 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
 import { useBrand } from '@/lib/brand';
+import { LinearGradient } from 'expo-linear-gradient';
+import { glow } from '@/theme/theme';
+import { ProductPlaceholder } from '@/components/product-placeholder';
 
 export function FloatingCartBar() {
   const { lines } = useShop();
@@ -44,12 +47,14 @@ export function FloatingCartBar() {
       <Pressable
         style={({ pressed }) => [
           styles.pill,
-          { backgroundColor: brand.primary },
+          { backgroundColor: brand.primary, overflow: 'hidden' },
+          glow(brand.glow),
           pressed && styles.pillPressed
         ]}
         onPress={() => router.navigate('/shop/cart')}
         accessibilityLabel={`View cart, ${totalItems} items`}
       >
+        <LinearGradient colors={[brand.mesh[0], brand.mesh[1], brand.mesh[2]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={StyleSheet.absoluteFill} />
         {/* Overlapping circular product thumbnails */}
         <View style={styles.thumbnailsWrap}>
           {previewItems.map((item, index) => (
@@ -68,7 +73,7 @@ export function FloatingCartBar() {
                 />
               ) : (
                 <View style={styles.thumbnailPlaceholder}>
-                  <Icon name="shopping-bag" size={16} color="#0284c7" />
+                  <ProductPlaceholder name={item.name} size="sm" />
                 </View>
               )}
             </View>

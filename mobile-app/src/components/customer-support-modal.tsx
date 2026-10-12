@@ -3,6 +3,7 @@ import { Linking, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-n
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { colors, radius, shadow, space } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 interface CustomerSupportModalProps {
   visible: boolean;
@@ -25,6 +26,7 @@ const FAQS = [
 ];
 
 export function CustomerSupportModal({ visible, onClose }: CustomerSupportModalProps) {
+  const brand = useBrand();
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   function handleCall() {
@@ -49,7 +51,7 @@ export function CustomerSupportModal({ visible, onClose }: CustomerSupportModalP
             {/* Title Section */}
             <View style={styles.header}>
               <View style={styles.iconCircle}>
-                <Icon name="headphones" size={26} color="#0284c7" />
+                <Icon name="headphones" size={26} color={brand.primary} />
               </View>
               <Text style={styles.title}>Customer Support</Text>
               <Text style={styles.subtitle}>
@@ -83,7 +85,7 @@ export function CustomerSupportModal({ visible, onClose }: CustomerSupportModalP
                 style={({ pressed }) => [styles.contactCard, pressed && styles.cardPressed]}
               >
                 <View style={[styles.contactIconWrap, { backgroundColor: '#e0f2fe' }]}>
-                  <Icon name="mail" size={20} color="#0284c7" />
+                  <Icon name="mail" size={20} color={brand.primary} />
                 </View>
                 <View style={styles.contactInfo}>
                   <Text style={styles.contactLabel}>Email Us</Text>

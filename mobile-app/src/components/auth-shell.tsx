@@ -1,43 +1,54 @@
-// The website's sign-in look: a floating white card on a soft sky background.
+// The sign-in look: a colourful gradient top with the logo and title, and a white panel rising over it with the form.
 import { type ReactNode } from 'react';
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
-import { Text } from './text';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, radius, space } from '@/theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Text } from './text';
+import { colors, space } from '@/theme/theme';
 import { LanguagePicker } from './language-picker';
+import { SoftFields } from './ui';
+
+const AURORA = ['#312e81', '#4f46e5', '#0284c7', '#06b6d4'] as const;
 
 export function AuthShell({ title, subtitle, children, footer }: { title: string; subtitle: string; children: ReactNode; footer?: ReactNode }) {
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.blobTop} />
-          <View style={styles.blobBottom} />
-          <View style={styles.card}>
-            <View style={styles.logoTile}><Image source={require('../../assets/easy-cart-icon.png')} style={styles.logo} resizeMode="contain" /></View>
-            <Text style={styles.title}>{title}</Text>
-            <Text style={styles.subtitle}>{subtitle}</Text>
-            <View style={{ gap: space.md, marginTop: space.sm }}>{children}</View>
-          </View>
-          <View style={styles.language}><LanguagePicker /></View>
-          {footer && <View style={{ marginTop: space.lg, alignItems: 'center', gap: space.sm }}>{footer}</View>}
-          <Text style={styles.copy}>EasyCart © 2026</Text>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <View style={styles.root}>
+      <LinearGradient colors={AURORA} locations={[0, 0.35, 0.7, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.top} />
+      <View style={styles.glow} />
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+            <View style={styles.head}>
+              <View style={styles.logoTile}><Image source={require('../../assets/easy-cart-icon.png')} style={styles.logo} resizeMode="contain" /></View>
+              <Text style={styles.title}>{title}</Text>
+              <Text style={styles.subtitle}>{subtitle}</Text>
+              <View style={{ marginTop: space.lg }}><LanguagePicker compact /></View>
+            </View>
+            <View style={styles.sheet}>
+              <View style={styles.column}>
+                <SoftFields><View style={{ gap: space.md }}>{children}</View></SoftFields>
+                {footer && <View style={{ alignItems: 'center', gap: space.sm }}>{footer}</View>}
+                <Text style={styles.copy}>EasyCart © 2026</Text>
+              </View>
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#eef7fd' },
-  scroll: { flexGrow: 1, justifyContent: 'center', padding: space.xl, overflow: 'hidden' },
-  blobTop: { position: 'absolute', top: -80, right: -60, width: 240, height: 240, borderRadius: 120, backgroundColor: '#bae6fd', opacity: 0.45 },
-  blobBottom: { position: 'absolute', bottom: -60, left: -80, width: 260, height: 260, borderRadius: 130, backgroundColor: '#e0f2fe', opacity: 0.8 },
-  card: { width: '100%', maxWidth: 400, alignSelf: 'center', backgroundColor: 'rgba(255,255,255,0.92)', borderRadius: 24, borderWidth: 1, borderColor: colors.white, padding: space.xxl, shadowColor: '#0284c7', shadowOpacity: 0.15, shadowRadius: 30, shadowOffset: { width: 0, height: 16 }, elevation: 4 },
-  logoTile: { width: 104, height: 92, alignSelf: 'center', marginBottom: space.md, borderRadius: 22, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', shadowColor: '#0284c7', shadowOpacity: 0.12, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 2 },
-  language: { width: '100%', maxWidth: 400, alignSelf: 'center', marginTop: space.lg },
-  logo: { width: 90, height: 74 },
-  title: { fontSize: 22, fontWeight: '800', letterSpacing: -0.4, color: colors.text, textAlign: 'center' },
-  subtitle: { fontSize: 13, color: colors.textMuted, textAlign: 'center', marginTop: 4 },
-  copy: { textAlign: 'center', fontSize: 11, color: colors.textFaint, marginTop: space.xl, borderRadius: radius.sm }
+  root: { flex: 1, backgroundColor: colors.bg, overflow: 'hidden' },
+  top: { position: 'absolute', top: 0, left: 0, right: 0, height: 420 },
+  glow: { position: 'absolute', top: -80, right: -60, width: 260, height: 260, borderRadius: 130, backgroundColor: 'rgba(255,255,255,0.12)' },
+  scroll: { flexGrow: 1 },
+  head: { alignItems: 'center', gap: 6, paddingHorizontal: space.xl, paddingTop: space.xxl, paddingBottom: space.xxl * 1.5 },
+  logoTile: { width: 84, height: 84, borderRadius: 26, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center', marginBottom: space.md, shadowColor: '#000', shadowOpacity: 0.18, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 6 },
+  logo: { width: 70, height: 60 },
+  title: { fontSize: 26, fontWeight: '800', letterSpacing: -0.6, color: colors.white, textAlign: 'center' },
+  subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', textAlign: 'center' },
+  sheet: { flexGrow: 1, backgroundColor: colors.bg, borderTopLeftRadius: 32, borderTopRightRadius: 32, paddingHorizontal: space.xl, paddingTop: space.xxl, paddingBottom: space.xxl },
+  column: { width: '100%', maxWidth: 440, alignSelf: 'center', gap: space.xl },
+  copy: { textAlign: 'center', fontSize: 11, color: colors.textFaint }
 });

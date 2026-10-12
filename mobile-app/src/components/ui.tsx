@@ -1,10 +1,12 @@
-// Building blocks every screen uses, in the website's look: white rounded cards on slate, sky buttons, soft badges.
+// Building blocks every screen uses: soft grey-filled cards on a white page, pill-shaped gradient buttons, soft badges.
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Image, Pressable, RefreshControl, ScrollView, StyleSheet, View, type TextInputProps, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, TextInput } from './text';
 import { Icon } from './icon';
-import { colors, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
+import { colors, glow, radius, shadow, space, text, toneColors, type Tone } from '@/theme/theme';
+import { withAlpha } from '@/theme/brands';
+import { tapFeedback, selectFeedback } from '@/lib/feedback';
 import { fileUrl } from '@/lib/api';
 import { useScreen } from '@/lib/responsive';
 import { useKeyboardTop } from '@/lib/keyboard';
@@ -14,6 +16,13 @@ import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
 import type { IconName } from './icon';
+
+// Forms on a plain white surface (the sign-in screens) use soft grey-filled fields instead of outlined ones.
+const SoftFieldsContext = createContext(false);
+
+export function SoftFields({ children }: { children: ReactNode }) {
+  return <SoftFieldsContext.Provider value={true}>{children}</SoftFieldsContext.Provider>;
+}
 
 // Lets a Field ask its page to scroll it into view when the keyboard opens.
 const ScrollToInputContext = createContext<((input: View) => void) | null>(null);
@@ -37,6 +46,7 @@ export function Screen({
   stickyHeaderIndices?: number[];
 }) {
   const { pagePadding } = useScreen();
+  const brand = useBrand();
   const rootRef = useRef<View>(null);
   const scrollRef = useRef<ScrollView>(null);
   const keyboardTop = useKeyboardTop();
@@ -69,7 +79,7 @@ export function Screen({
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
         stickyHeaderIndices={stickyHeaderIndices}
-        refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} /> : undefined}
+        refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={brand.primary} colors={[brand.primary]} /> : undefined}
       >
         {stickyHeaderIndices ? children : <View style={styles.column}>{children}</View>}
       </ScrollView>
@@ -80,12 +90,13 @@ export function Screen({
 }
 
 export function Card({ children, style, title, icon, right }: { children: ReactNode; style?: ViewStyle; title?: string; icon?: IconName; right?: ReactNode }) {
+  const brand = useBrand();
   return (
     <View style={[styles.card, style]}>
       {(title || right) && (
         <View style={styles.cardHeader}>
           <View style={styles.rowCenter}>
-            {icon && <View style={styles.iconBubble}><Icon name={icon} size={18} color={colors.primary} /></View>}
+            {icon && <View style={[styles.iconBubble, { backgroundColor: colors.white }]}><Icon name={icon} size={18} color={brand.primary} /></View>}
             {title && <Text style={text.heading}>{title}</Text>}
           </View>
           {right}
@@ -104,19 +115,31 @@ export function Button({ label, onPress, variant = 'primary', icon, loading, dis
   const base = BUTTONS[variant];
   const look = variant === 'primary' ? { bg: brand.primary, fg: colors.white, border: brand.primary } : variant === 'ghost' ? { ...base, fg: brand.primary } : base;
   const inactive = disabled || loading;
+  // Main and success buttons are filled with a gradient and glow softly in their colour.
+  // A filled button that cannot be pressed yet turns plain grey, so it clearly reads as "not yet".
+  const fill = inactive ? null : variant === 'primary' ? brand.gradient : variant === 'success' ? GREEN_FILL : null;
+  const lit = fill ? glow(fill[1]) : null;
+  const waiting = inactive && (variant === 'primary' || variant === 'success' || variant === 'dark');
+  function press() {
+    tapFeedback();
+    onPress();
+  }
   return (
     <PressScale
       accessibilityRole="button"
       accessibilityState={{ disabled: inactive }}
-      onPress={onPress}
+      onPress={press}
       disabled={inactive}
-      style={[styles.button, small && styles.buttonSmall, { backgroundColor: look.bg, borderColor: look.border }, inactive && { opacity: 0.5 }]}
+      style={[styles.button, small && styles.buttonSmall, { backgroundColor: look.bg, borderColor: look.border }, lit, waiting && styles.buttonWaiting, inactive && !waiting && { opacity: 0.5 }]}
     >
-      {loading ? <ActivityIndicator color={look.fg} size="small" /> : icon && <Icon name={icon} size={small ? 14 : 16} color={look.fg} />}
-      <Text style={[styles.buttonText, small && { fontSize: 13 }, { color: look.fg }]}>{label}</Text>
+      {fill && <LinearGradient colors={fill} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
+      {loading ? <ActivityIndicator color={waiting && !loading ? colors.textFaint : look.fg} size="small" /> : icon && <Icon name={icon} size={small ? 14 : 16} color={waiting ? colors.textFaint : look.fg} />}
+      <Text style={[styles.buttonText, small && { fontSize: 13 }, { color: waiting && !loading ? colors.textFaint : look.fg }]}>{label}</Text>
     </PressScale>
   );
 }
+
+const GREEN_FILL: [string, string, string] = ['#047857', '#059669', '#14b8a6'];
 
 const BUTTONS: Record<ButtonVariant, { bg: string; fg: string; border: string }> = {
   primary: { bg: colors.primary, fg: colors.white, border: colors.primary },
@@ -130,18 +153,26 @@ const BUTTONS: Record<ButtonVariant, { bg: string; fg: string; border: string }>
 // Input like the website's: optional leading icon, and an eye button on password fields.
 export function Field({ label, hint, error, icon, ...props }: TextInputProps & { label?: string; hint?: string; error?: string; icon?: IconName }) {
   const [hidden, setHidden] = useState(true);
+  const [focused, setFocused] = useState(false);
+  const soft = useContext(SoftFieldsContext);
+  const brand = useBrand();
   const secret = Boolean(props.secureTextEntry);
   const wrapRef = useRef<View>(null);
   const scrollToInput = useContext(ScrollToInputContext);
   return (
     <View style={{ gap: 6 }}>
       {label ? <Text style={styles.fieldLabel}>{label}</Text> : null}
-      <View ref={wrapRef} style={[styles.inputWrap, props.multiline && { alignItems: 'flex-start', paddingTop: 12 }, error ? { borderColor: '#fda4af' } : null]}>
+      <View ref={wrapRef} style={[styles.inputWrap, soft && styles.inputSoft, props.multiline && { alignItems: 'flex-start', paddingTop: 12 }, focused && { borderColor: brand.primary, backgroundColor: colors.white }, error ? { borderColor: '#fda4af' } : null]}>
         {icon && <Icon name={icon} size={18} color={colors.textFaint} />}
         <TextInput
           placeholderTextColor={colors.textFaint}
           {...props}
+          onBlur={(event) => {
+            setFocused(false);
+            props.onBlur?.(event);
+          }}
           onFocus={(event) => {
+            setFocused(true);
             props.onFocus?.(event);
             // Give the keyboard a moment to open, then bring this field into view.
             setTimeout(() => { if (wrapRef.current) scrollToInput?.(wrapRef.current); }, 300);
@@ -158,8 +189,15 @@ export function Field({ label, hint, error, icon, ...props }: TextInputProps & {
   );
 }
 
+// The "primary" tone follows the shop's colour; the others keep their meaning (green is good, red is a problem).
+function useToneLook(tone: Tone) {
+  const brand = useBrand();
+  if (tone === 'primary') return { fg: brand.primaryDark, bg: brand.primaryTint };
+  return toneColors[tone];
+}
+
 export function Badge({ label, tone = 'neutral' }: { label: string; tone?: Tone }) {
-  const look = toneColors[tone];
+  const look = useToneLook(tone);
   return <Text style={[styles.badge, { color: look.fg, backgroundColor: look.bg }]}>{label}</Text>;
 }
 
@@ -174,7 +212,7 @@ export function InfoRow({ label, value, strong, tone }: { label: string; value: 
 }
 
 export function Notice({ children, tone = 'primary', icon = 'info' }: { children: ReactNode; tone?: Tone; icon?: IconName }) {
-  const look = toneColors[tone];
+  const look = useToneLook(tone);
   return (
     <View style={[styles.notice, { backgroundColor: look.bg }]}>
       <Icon name={icon} size={16} color={look.fg} style={{ marginTop: 1 }} />
@@ -184,9 +222,10 @@ export function Notice({ children, tone = 'primary', icon = 'info' }: { children
 }
 
 export function EmptyState({ message, icon = 'package', action }: { message: string; icon?: IconName; action?: ReactNode }) {
+  const brand = useBrand();
   return (
     <View style={styles.empty}>
-      <View style={[styles.iconBubble, { width: 56, height: 56, borderRadius: 18 }]}><Icon name={icon} size={26} color={colors.primary} /></View>
+      <LinearGradient colors={[brand.mesh[1], brand.mesh[2]]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.emptyIcon, glow(brand.glow)]}><Icon name={icon} size={28} color={colors.white} /></LinearGradient>
       <Text style={[text.muted, { textAlign: 'center' }]}>{message}</Text>
       {action}
     </View>
@@ -205,12 +244,14 @@ export function Loading() {
 // Row of choices that filter a list, like the website's filter pills.
 export function Pills<T extends string>({ options, value, onChange }: { options: { value: T; label: string; count?: number }[]; value: T; onChange(v: T): void }) {
   const t = useT();
+  const brand = useBrand();
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
       {options.map((option) => {
         const active = option.value === value;
         return (
-          <Pressable key={option.value} onPress={() => onChange(option.value)} style={[styles.pill, active && styles.pillActive]} accessibilityRole="tab" accessibilityState={{ selected: active }}>
+          <Pressable key={option.value} onPress={() => { selectFeedback(); onChange(option.value); }} style={[styles.pill, active && styles.pillActive]} accessibilityRole="tab" accessibilityState={{ selected: active }} aria-selected={active}>
+            {active && <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.pill }]} />}
             <Text style={[styles.pillText, active && { color: colors.white }]}>{t(option.label)}{option.count !== undefined ? `  ${option.count}` : ''}</Text>
           </Pressable>
         );
@@ -237,9 +278,10 @@ export function StatStrip({ items }: { items: { label: string; value: string }[]
 export function StatCard({ label, value, icon, fg, bg, hint }: { label: string; value: string; icon: IconName; fg: string; bg: string; hint?: string }) {
   return (
     <View style={[styles.card, styles.statCard]}>
+      <LinearGradient colors={[bg, colors.card]} start={{ x: 1, y: 0 }} end={{ x: 0, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg, opacity: 0.7 }]} />
       <View style={styles.rowBetween}>
         <Text style={[text.muted, { flex: 1 }]} numberOfLines={1}>{label}</Text>
-        <View style={[styles.statIcon, { backgroundColor: bg }]}><Icon name={icon} size={18} color={fg} /></View>
+        <LinearGradient colors={[withAlpha(fg, 0.75), fg]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.statIcon, glow(fg), { shadowOpacity: 0.25 }]}><Icon name={icon} size={18} color={colors.white} /></LinearGradient>
       </View>
       <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
       {hint ? <Text style={[text.small, { color: colors.textFaint }]} numberOfLines={1}>{hint}</Text> : null}
@@ -279,8 +321,9 @@ export function Avatar({ name, photoUrl, size = 48 }: { name: string; photoUrl?:
 export function HeroHeader({ title, subtitle, icon }: { title: string; subtitle?: string; icon?: IconName }) {
   const brand = useBrand();
   return (
-    <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+    <LinearGradient colors={brand.mesh} locations={[0, 0.4, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.hero, glow(brand.glow)]}>
       <View style={styles.heroCircle} />
+      <View style={styles.heroCircleLow} />
       <View style={{ flex: 1, gap: 4 }}>
         <Text style={styles.heroTitle} numberOfLines={2}>{title}</Text>
         {subtitle ? <Text style={styles.heroSubtitle}>{subtitle}</Text> : null}
@@ -313,10 +356,11 @@ export function SectionTitle({ children, right }: { children: ReactNode; right?:
 }
 
 // One tappable row with a coloured icon, a title and a hint. Used for menus and shortcuts.
-export function MenuRow({ icon, title, subtitle, onPress, fg = colors.primary, bg = colors.primaryTint }: { icon: IconName; title: string; subtitle?: string; onPress(): void; fg?: string; bg?: string }) {
+export function MenuRow({ icon, title, subtitle, onPress, fg, bg }: { icon: IconName; title: string; subtitle?: string; onPress(): void; fg?: string; bg?: string }) {
+  const brand = useBrand();
   return (
     <PressScale onPress={onPress} accessibilityRole="button" style={[styles.card, styles.menuRow]}>
-      <View style={[styles.menuIcon, { backgroundColor: bg }]}><Icon name={icon} size={18} color={fg} /></View>
+      <View style={[styles.menuIcon, { backgroundColor: bg ?? brand.primaryTint }]}><Icon name={icon} size={18} color={fg ?? brand.primary} /></View>
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={text.heading}>{title}</Text>
         {subtitle ? <Text style={text.small}>{subtitle}</Text> : null}
@@ -328,38 +372,42 @@ export function MenuRow({ icon, title, subtitle, onPress, fg = colors.primary, b
 
 export const styles = StyleSheet.create({
   hero: { flexDirection: 'row', alignItems: 'center', gap: space.md, borderRadius: radius.xl, padding: space.xl, overflow: 'hidden' },
-  heroCircle: { position: 'absolute', right: -30, top: -30, width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroCircle: { position: 'absolute', right: -30, top: -40, width: 150, height: 150, borderRadius: 75, backgroundColor: 'rgba(255,255,255,0.14)' },
+  heroCircleLow: { position: 'absolute', left: -40, bottom: -60, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.08)' },
   heroTitle: { fontSize: 24, fontWeight: '900', color: colors.white, letterSpacing: -0.6 },
-  heroSubtitle: { fontSize: 13, color: '#e0f2fe' },
-  heroIcon: { width: 48, height: 48, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  heroSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.85)' },
+  heroIcon: { width: 48, height: 48, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center' },
   menuRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   menuIcon: { width: 42, height: 42, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   screen: { flex: 1, backgroundColor: colors.bg },
   screenContent: { padding: space.lg, paddingTop: space.xl, paddingBottom: space.xxl * 2 },
   column: { width: '100%', maxWidth: 720, alignSelf: 'center', gap: space.lg },
-  footer: { borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.card, padding: space.md },
+  footer: { backgroundColor: colors.bg, paddingHorizontal: space.lg, paddingTop: space.sm, paddingBottom: space.xs },
   card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, gap: space.md, ...shadow },
   cardHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
   rowCenter: { flexDirection: 'row', alignItems: 'center', gap: space.sm, flexShrink: 1 },
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: space.sm },
-  iconBubble: { width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' },
-  button: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, paddingHorizontal: space.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm },
-  buttonSmall: { minHeight: 38, paddingHorizontal: space.md, borderRadius: radius.sm },
+  iconBubble: { width: 38, height: 38, borderRadius: 12, backgroundColor: colors.primarySoft, borderWidth: 0, borderColor: colors.primaryTint, alignItems: 'center', justifyContent: 'center' },
+  button: { minHeight: 52, borderRadius: radius.pill, borderWidth: 1, paddingHorizontal: space.lg, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm },
+  buttonSmall: { minHeight: 40, paddingHorizontal: space.lg, borderRadius: radius.pill },
   buttonText: { fontSize: 15, fontWeight: '700' },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: colors.textSoft },
-  inputWrap: { minHeight: 50, borderRadius: radius.md, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: space.md, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  inputWrap: { minHeight: 52, borderRadius: radius.md, borderWidth: 1.5, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: space.md, flexDirection: 'row', alignItems: 'center', gap: 10 },
+  inputSoft: { backgroundColor: colors.card, borderColor: colors.card },
+  buttonWaiting: { backgroundColor: colors.borderSoft, borderColor: colors.borderSoft },
   input: { flex: 1, minHeight: 48, fontSize: 15, color: colors.text },
   badge: { alignSelf: 'flex-start', overflow: 'hidden', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4, fontSize: 12, fontWeight: '700' },
   infoRow: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md, paddingVertical: 2 },
   notice: { flexDirection: 'row', gap: space.sm, borderRadius: radius.md, padding: space.md, paddingHorizontal: space.lg },
+  emptyIcon: { width: 64, height: 64, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   empty: { alignItems: 'center', gap: space.md, padding: space.xxl * 1.5, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, backgroundColor: colors.card },
   loading: { padding: space.xxl * 2, alignItems: 'center' },
-  pill: { height: 38, paddingHorizontal: 16, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, justifyContent: 'center' },
-  pillActive: { backgroundColor: colors.text, borderColor: colors.text },
+  pill: { height: 38, paddingHorizontal: 16, overflow: 'hidden', borderRadius: radius.pill, borderWidth: 0, backgroundColor: colors.card, justifyContent: 'center' },
+  pillActive: { borderColor: 'transparent' },
   pillText: { fontSize: 13, fontWeight: '600', color: colors.textSoft },
   strip: { flexDirection: 'row', paddingHorizontal: 0, paddingVertical: space.md, gap: 0 },
   stripCell: { flex: 1, alignItems: 'center', gap: 2, paddingHorizontal: space.sm },
-  statCard: { flexGrow: 1, flexBasis: '46%', gap: 6, padding: space.lg },
+  statCard: { flexGrow: 1, flexBasis: '46%', gap: 6, padding: space.lg, overflow: 'hidden' },
   statIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 24, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'], letterSpacing: -0.5 },
   stripValue: { fontSize: 20, fontWeight: '800', color: colors.text, fontVariant: ['tabular-nums'] },

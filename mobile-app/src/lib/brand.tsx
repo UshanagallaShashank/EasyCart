@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from './api';
-import { BRANDS, isThemeId, type Brand, type ThemeId } from '@/theme/brands';
+import { BRANDS, ROLE_LOOKS, isThemeId, type Brand, type RoleLookId, type ThemeId } from '@/theme/brands';
 
 export interface ThemeSettings {
   catalog: ThemeId[];
@@ -26,6 +26,11 @@ export function BrandProvider({ themeId, children }: { themeId: string | null | 
     return BRANDS.sky;
   }, [themeId, settings]);
   return <BrandContext.Provider value={brand}>{children}</BrandContext.Provider>;
+}
+
+// Rider and admin screens are not inside a shop, so they wear their area's own fixed look.
+export function RoleLookProvider({ look, children }: { look: RoleLookId; children: ReactNode }) {
+  return <BrandContext.Provider value={ROLE_LOOKS[look]}>{children}</BrandContext.Provider>;
 }
 
 export function useBrand(): Brand {
