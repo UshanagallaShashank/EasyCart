@@ -178,7 +178,7 @@ export default function ProductScreen() {
         </PressScale>
       </View>
       <View style={{ flex: 1 }}>
-        <Button icon="shopping-cart" label={`${t('View cart')} · ${rupeePrice(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
+        <Button icon="shopping-cart" label={`${t('View cart')} · ${rupeePrice(subtotal)}`} onPress={() => router.push('/shop/checkout')} />
       </View>
     </View>
   ) : (
