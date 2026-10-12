@@ -60,8 +60,10 @@ export default function OwnerMore() {
 
       // Upload store logo
       const { url } = await manageCalls.uploadStoreLogo(fileData);
-      // Save logo_url to store
+      // Save logo_url to store and user avatar
       await manageCalls.saveStore({ logo_url: url });
+      await manageCalls.updateProfile({ avatar_url: url } as any).catch(() => {});
+      await updateUser({ avatar_url: url });
       await queryClient.invalidateQueries({ queryKey: ['store'] });
       await refetchStore();
       toast('Profile image updated successfully', 'success');

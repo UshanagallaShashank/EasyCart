@@ -4,6 +4,7 @@ import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
 import { useOfferAlert } from '@/features/rider/use-offer-alert';
+import { useSession } from '@/lib/session';
 
 // While one of these pages is open, the tab next to it stays lit.
 const ACTIVE_FOR = {
@@ -14,12 +15,13 @@ const ACTIVE_FOR = {
 // The rider's profile menu in the top right corner
 function RiderProfileMenu() {
   const { data: rider } = useMyRider();
+  const { user } = useSession();
   return (
     <View style={{ marginRight: 16 }}>
       <ProfileMenu
         profileHref="/rider/profile"
-        name={rider?.full_name}
-        photoUrl={rider?.photo_url}
+        name={rider?.full_name || user?.username}
+        photoUrl={rider?.photo_url || user?.avatar_url}
         roleSubtitle="Delivery Partner"
         showSupport={true}
         showStoreRequest={false}

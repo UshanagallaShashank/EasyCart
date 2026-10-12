@@ -28,7 +28,7 @@ function OwnerProfileMenu() {
       <ProfileMenu
         profileHref="/owner/more"
         name={store?.name || user?.username}
-        photoUrl={store?.logo_url}
+        photoUrl={store?.logo_url || user?.avatar_url}
         roleSubtitle="Store Owner"
         showSupport={true}
         showStoreRequest={false}

@@ -36,7 +36,7 @@ export async function register_rider(payload) {
   await save_rider({ id: randomUUID(), user_id: user.id, full_name, email, phone_number, status: 'draft', documents: {}, is_online: false });
 
   const token = sign_token({ sub: user.id, email: user.email, username: user.username, role: user.role, tenant_id: null });
-  return { user: { id: user.id, username: user.username, email: user.email, phone_number: user.phone_number, role: user.role }, token };
+  return { user: { id: user.id, username: user.username, email: user.email, phone_number: user.phone_number, role: user.role, avatar_url: user.avatar_url ?? null }, token };
 }
 
 export async function get_rider_for_user(user_id) {

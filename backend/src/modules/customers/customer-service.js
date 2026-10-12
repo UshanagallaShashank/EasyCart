@@ -42,7 +42,9 @@ export async function register_customer(payload) {
       id: saved_user.id,
       username: saved_user.username,
       email: saved_user.email,
-      phone_number: saved_user.phone_number
+      phone_number: saved_user.phone_number,
+      role: 'customer',
+      avatar_url: saved_user.avatar_url ?? null
     },
     token
   };
@@ -74,7 +76,9 @@ export async function login_customer(payload) {
       id: user.id,
       username: user.username,
       email: user.email,
-      phone_number: user.phone_number
+      phone_number: user.phone_number,
+      role: 'customer',
+      avatar_url: user.avatar_url ?? null
     },
     token
   };

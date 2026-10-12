@@ -229,64 +229,6 @@ export default function ShopHome() {
               )}
             </Pressable>
           </View>
-
-          {/* Quick horizontal filter chips */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterChipsRow}
-          >
-            {/* Filter modal trigger chip */}
-            <Pressable
-              onPress={() => setFilterModalOpen(true)}
-              style={[
-                styles.chipButton,
-                styles.chipFilterBtn,
-                activeFilterCount > 0 && styles.chipActive
-              ]}
-            >
-              <Icon
-                name="sliders"
-                size={13}
-                color={activeFilterCount > 0 ? colors.white : colors.text}
-              />
-              <Text
-                style={[
-                  styles.chipText,
-                  activeFilterCount > 0 && styles.chipTextActive
-                ]}
-              >
-                {t('Filters')}
-                {activeFilterCount > 0 ? ` (${activeFilterCount})` : ''}
-              </Text>
-            </Pressable>
-
-            {/* In stock chip */}
-            <Pressable
-              onPress={() => setInStockOnly((v) => !v)}
-              style={[styles.chipButton, inStockOnly && styles.chipActive]}
-            >
-              <Text style={[styles.chipText, inStockOnly && styles.chipTextActive]}>
-                {t('In stock')}
-              </Text>
-            </Pressable>
-
-            {/* Category chips */}
-            {(categories.data ?? []).map((cat) => {
-              const isSelected = category === cat.id;
-              return (
-                <Pressable
-                  key={cat.id}
-                  onPress={() => setCategory(isSelected ? '' : cat.id)}
-                  style={[styles.chipButton, isSelected && styles.chipActive]}
-                >
-                  <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
-                    {cat.name}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
         </View>
 
         {/* Index 2: Products Grid */}
@@ -517,12 +459,6 @@ const styles = StyleSheet.create({
   filterIconButtonActive: { borderColor: '#0284c7', backgroundColor: '#f0f9ff' },
   filterBadge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 1.5, borderColor: colors.white },
   filterBadgeText: { color: '#ffffff', fontSize: 10, fontWeight: '800' },
-  filterChipsRow: { flexDirection: 'row', gap: space.sm, paddingVertical: 4 },
-  chipButton: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: colors.borderSoft },
-  chipFilterBtn: { borderColor: colors.border },
-  chipActive: { backgroundColor: '#0f172a', borderColor: '#0f172a' },
-  chipText: { fontSize: 13, fontWeight: '600', color: colors.text },
-  chipTextActive: { color: '#ffffff', fontWeight: '700' },
   modalBackdrop: { flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.4)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: colors.white, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, padding: space.xl, gap: space.md, maxHeight: '80%' },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.borderSoft, paddingBottom: space.md },

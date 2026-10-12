@@ -62,7 +62,8 @@ export async function create_user(payload) {
       username: saved_user.username,
       email: saved_user.email,
       phone_number: saved_user.phone_number,
-      role: saved_user.role
+      role: saved_user.role,
+      avatar_url: saved_user.avatar_url ?? null
     },
     tenant,
     token
@@ -96,7 +97,8 @@ export async function login_user(payload) {
       username: user.username,
       email: user.email,
       phone_number: user.phone_number,
-      role: user.role
+      role: user.role,
+      avatar_url: user.avatar_url ?? null
     },
     token
   };
