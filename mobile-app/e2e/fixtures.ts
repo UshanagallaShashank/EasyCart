@@ -16,7 +16,7 @@ export const USERS = {
 export type RoleName = keyof typeof USERS;
 
 const STORE = {
-  name: 'Green Leaf Market', slug: 'green-leaf-market', logo_url: null, banner_url: null, delivery_fee: 30, max_delivery_radius_km: 8,
+  name: 'Green Leaf Market', slug: 'green-leaf-market', logo_url: null, banner_url: null, delivery_fee: 30, free_delivery_above: 499, max_delivery_radius_km: 8,
   pincode: '500001', address: '12 Market Road, Hyderabad', latitude: 17.385, longitude: 78.4867, promotion_banner_text: 'Free delivery over Rs. 499 this week', color_theme: 'emerald', is_published: true
 };
 

@@ -14,7 +14,8 @@ import { useMyStores } from './shop-api';
 import { useShop } from './shop-context';
 import { useBrand } from '@/lib/brand';
 
-export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+// `light` draws the name in white, for a coloured header.
+export function ShopSwitcher({ name, logoUrl, light = false }: { name: string; logoUrl?: string | null; light?: boolean }) {
   const brand = useBrand();
   const [open, setOpen] = useState(false);
   const { slug, setSlug } = useShop();
@@ -40,8 +41,8 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
     <>
       <Pressable onPress={() => setOpen(true)} style={styles.trigger} accessibilityRole="button" accessibilityLabel="Switch shop">
         <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={[styles.headerLogo, { backgroundColor: brand.primarySoft }]} contentFit="cover" />
-        <Text style={styles.headerName} numberOfLines={1}>{name}</Text>
-        <Icon name="chevron-down" size={18} color={colors.textMuted} />
+        <Text style={[styles.headerName, light && { color: colors.white, fontSize: 15 }]} numberOfLines={1}>{name}</Text>
+        <Icon name="chevron-down" size={18} color={light ? colors.white : colors.textMuted} />
       </Pressable>
 
       <Modal visible={open} transparent animationType="none" onRequestClose={() => setOpen(false)}>

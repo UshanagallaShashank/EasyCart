@@ -1,4 +1,5 @@
-// One product in the grid: an inset rounded photo, name, price, and a wide ADD button that turns into a quantity stepper.
+// One product in the grid, grocery-app style: the photo (or initials tile) with an ADD pill on its corner that turns
+// into a quantity stepper, then the price, the name and small details (rating, options, few left).
 import { memo, useCallback, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
@@ -69,50 +70,48 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
     onAdd(product);
   }
 
+  const soldOut = stock <= 0;
   return (
     <FadeIn index={index} style={{ width }}>
-      <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} style={styles.card} accessibilityLabel={product.name}>
-        <View style={styles.imageWrap}>
+      <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} accessibilityLabel={product.name}>
+        <View style={[styles.imageWrap, soldOut && { opacity: 0.55 }]}>
           {image ? <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} cachePolicy="memory-disk" recyclingKey={product.id} /> : <ProductPlaceholder name={product.name} />}
-          <View style={styles.heart}><FavouriteButton productId={product.id} size={30} /></View>
-          {stock <= 0 ? (
-            <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><Text style={[styles.badgeText, { color: colors.white }]}>{t('Sold out')}</Text></View>
-          ) : fewLeft ? (
-            <View style={[styles.badge, { backgroundColor: colors.warningSoft }]}><Text style={[styles.badgeText, { color: colors.warning }]}>{t('Only {n} left', { n: stock })}</Text></View>
-          ) : null}
+          <View style={styles.heart}><FavouriteButton productId={product.id} size={28} /></View>
+        </View>
+
+        {/* The ADD pill sits over the photo's corner, like the big grocery apps, so it is always under the thumb. */}
+        <View style={styles.actionSlot}>
+          {soldOut ? (
+            <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
+          ) : inCart ? (
+            <View style={[styles.action, styles.stepper, { backgroundColor: brand.primary, borderColor: brand.primary }]}>
+              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity - 1); }} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
+                <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={14} color={colors.white} strokeWidth={2.6} />
+              </PressScale>
+              <Text style={styles.qty}>{inCart.quantity}</Text>
+              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity + 1); }} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
+                <Icon name="plus" size={14} color={colors.white} strokeWidth={2.6} />
+              </PressScale>
+            </View>
+          ) : (
+            <PressScale onPress={quickAdd} style={[styles.action, styles.add, { borderColor: brand.primary }]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
+              <Text style={[styles.addText, { color: brand.primary }]}>{t('ADD')}</Text>
+            </PressScale>
+          )}
         </View>
 
         <View style={styles.body}>
+          <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
           <Text style={styles.name} numberOfLines={2}>{name}</Text>
           <View style={styles.metaRow}>
             {rating && rating.count > 0 && rating.average !== null ? (
               <View style={styles.rating}>
-                <Icon name="star" size={11} color={accents.amber.fg} fill={accents.amber.fg} />
+                <Icon name="star" size={10} color={accents.amber.fg} fill={accents.amber.fg} />
                 <Text style={styles.ratingText}>{rating.average.toFixed(1)}</Text>
               </View>
             ) : null}
-            <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
+            {fewLeft ? <Text style={styles.fewLeft} numberOfLines={1}>{t('Only {n} left', { n: stock })}</Text> : needsChoice ? <Text style={styles.meta} numberOfLines={1}>{t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length })}</Text> : null}
           </View>
-          <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
-
-          {stock <= 0 ? (
-            <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
-          ) : inCart ? (
-            <View style={[styles.action, styles.stepper, { backgroundColor: brand.primary }]}>
-              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity - 1); }} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
-                <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={colors.white} strokeWidth={2.5} />
-              </PressScale>
-              <Text style={styles.qty}>{inCart.quantity}</Text>
-              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity + 1); }} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
-                <Icon name="plus" size={16} color={colors.white} strokeWidth={2.5} />
-              </PressScale>
-            </View>
-          ) : (
-            <PressScale onPress={quickAdd} style={[styles.action, styles.add, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
-              <Text style={[styles.addText, { color: brand.primary }]}>{t('ADD')}</Text>
-              <Icon name="plus" size={14} color={brand.primary} strokeWidth={3} />
-            </PressScale>
-          )}
         </View>
       </PressScale>
     </FadeIn>
@@ -123,26 +122,25 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
 export const ProductCard = memo(ProductCardView);
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: 8, ...shadow },
-  imageWrap: { aspectRatio: 1, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
+  imageWrap: { aspectRatio: 1, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.card, alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
-  heart: { position: 'absolute', top: 6, right: 6, zIndex: 2 },
-  badge: { position: 'absolute', left: 6, bottom: 6, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
-  badgeText: { fontSize: 11, fontWeight: '700' },
-  body: { paddingHorizontal: 4, paddingTop: 10, paddingBottom: 2, gap: 2 },
-  name: { fontSize: 14, fontWeight: '700', color: colors.text, minHeight: 36, lineHeight: 18 },
-  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  rating: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: accents.amber.bg, borderRadius: radius.pill, paddingHorizontal: 6, paddingVertical: 1 },
-  ratingText: { fontSize: 11, fontWeight: '800', color: '#92400e' },
-  meta: { fontSize: 11, color: colors.textMuted, flexShrink: 1 },
+  heart: { position: 'absolute', top: 5, right: 5, zIndex: 2 },
+  actionSlot: { alignItems: 'flex-end', marginTop: -18, marginRight: 6, zIndex: 3 },
+  action: { height: 34, minWidth: 72, borderRadius: radius.sm, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, paddingHorizontal: 10, backgroundColor: colors.white, shadowColor: '#0f1222', shadowOpacity: 0.12, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
+  add: { backgroundColor: colors.white },
+  addText: { fontSize: 13, fontWeight: '800', letterSpacing: 0.4 },
+  stepper: { justifyContent: 'space-between', paddingHorizontal: 0, minWidth: 84 },
+  stepButton: { width: 28, height: 32, alignItems: 'center', justifyContent: 'center' },
+  qty: { fontSize: 14, fontWeight: '800', color: colors.white },
+  soldOut: { borderColor: colors.border, backgroundColor: colors.card, shadowOpacity: 0, elevation: 0 },
+  soldOutText: { fontSize: 11, fontWeight: '700', color: colors.textMuted },
+  body: { paddingHorizontal: 2, paddingTop: 4, gap: 2 },
+  price: { fontSize: 15, fontWeight: '800', color: colors.text },
   from: { fontSize: 11, fontWeight: '600', color: colors.textMuted },
-  price: { fontSize: 16, fontWeight: '800', color: colors.text, marginTop: 2, marginBottom: 8 },
-  action: { height: 38, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  add: { borderWidth: 1.5, borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  addText: { fontSize: 13, fontWeight: '800', color: colors.primary, letterSpacing: 0.6 },
-  stepper: { backgroundColor: colors.primary, justifyContent: 'space-between', paddingHorizontal: 4 },
-  stepButton: { width: 40, height: 38, alignItems: 'center', justifyContent: 'center' },
-  qty: { fontSize: 15, fontWeight: '800', color: colors.white },
-  soldOut: { backgroundColor: colors.borderSoft },
-  soldOutText: { fontSize: 12, fontWeight: '700', color: colors.textFaint }
+  name: { fontSize: 13, fontWeight: '600', color: colors.textSoft, minHeight: 34, lineHeight: 17 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 16 },
+  rating: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: accents.amber.bg, borderRadius: radius.pill, paddingHorizontal: 5, paddingVertical: 1 },
+  ratingText: { fontSize: 10, fontWeight: '800', color: '#92400e' },
+  meta: { fontSize: 11, color: colors.textMuted, flexShrink: 1 },
+  fewLeft: { fontSize: 11, fontWeight: '700', color: colors.warning, flexShrink: 1 }
 });
