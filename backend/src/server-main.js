@@ -6,6 +6,9 @@ import { connect_db } from './platform/db/db.js';
 import { PORT, IS_PRODUCTION, CORS_ORIGINS, TRUST_PROXY_HOPS, assert_production_env } from './env.js';
 import { error_handler, not_found_handler } from './platform/shared/error-handler.js';
 import { api_limiter } from './platform/shared/rate-limit.js';
+import { request_log } from './platform/logging/request-log.js';
+import { log_event, flush_logs } from './platform/logging/log.js';
+import { ai_router } from './modules/ai/ai-route.js';
 import { auth_router } from './modules/auth/auth-route.js';
 import { health_router } from './platform/health/health-route.js';
 import { store_router } from './modules/stores/routes/store-route.js';
@@ -46,6 +49,7 @@ export function create_express_app() {
   app.use(cors({ origin: (origin, callback) => callback(null, is_origin_allowed(origin)) }));
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  app.use(request_log);
   app.use('/api', health_router);
   app.use('/api', private_file_router);
   app.use('/api', live_router);
@@ -69,6 +73,7 @@ export function create_express_app() {
   app.use('/api', photo_router);
   app.use('/api', refund_router);
   app.use('/api', theme_router);
+  app.use('/api', ai_router);
   app.use('/api', not_found_handler);
   app.use(error_handler);
   return app;
@@ -90,7 +95,7 @@ export async function start_server_main() {
   // When the host stops or restarts the app, finish the requests in progress before exiting.
   function shut_down(signal) {
     process.stdout.write(`${signal} received, shutting down\n`);
-    server.close(() => process.exit(0));
+    server.close(() => void flush_logs().finally(() => process.exit(0)));
     setTimeout(() => process.exit(1), 10000).unref();
   }
   process.on('SIGTERM', () => shut_down('SIGTERM'));
@@ -98,8 +103,8 @@ export async function start_server_main() {
 
   // A forgotten await somewhere should be logged and restarted by the host, not left running in a broken state.
   process.on('unhandledRejection', (reason) => {
-    console.error('Unhandled promise rejection:', reason);
-    process.exit(1);
+    log_event('error', 'Unhandled promise rejection', {}, reason);
+    void flush_logs().finally(() => process.exit(1));
   });
 }
 

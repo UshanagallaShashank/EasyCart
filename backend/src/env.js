@@ -99,3 +99,15 @@ export function assert_production_env(env = process.env) {
   if (problems.length === 0) return;
   throw new Error(`Cannot start in production:\n - ${problems.join('\n - ')}`);
 }
+
+// Sending the server's warnings and errors to an outside log service (for example Better Stack's free plan).
+// Off unless both are set. Use a different source (token) from the phone app's, so each can be read on its own.
+export const LOG_INGEST_URL = process.env.LOG_INGEST_URL || '';
+export const LOG_INGEST_TOKEN = process.env.LOG_INGEST_TOKEN || '';
+
+// Optional AI helpers (writing product descriptions). Off unless AI_ENABLED is exactly "true" and a key is set.
+//   AI_PROVIDER=gemini  with GEMINI_API_KEY  (Google AI Studio's free tier: no card needed)
+export const AI_ENABLED = process.env.AI_ENABLED === 'true';
+export const AI_PROVIDER = process.env.AI_PROVIDER === 'gemini' ? 'gemini' : 'none';
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
+export const AI_MODEL = process.env.AI_MODEL || 'gemini-flash-lite-latest';

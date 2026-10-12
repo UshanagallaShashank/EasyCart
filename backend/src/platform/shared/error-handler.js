@@ -1,6 +1,7 @@
 // Catches errors from any route. Known errors get their real message; unknown ones get a generic one.
 // The real error is always logged on the server, so nothing is lost.
 import { AppError } from './app-error.js';
+import { log_event } from '../logging/log.js';
 
 export function error_handler(err, req, res, next) {
   if (err instanceof AppError) {
@@ -21,7 +22,7 @@ export function error_handler(err, req, res, next) {
     return;
   }
 
-  console.error(`[500] ${req.method} ${req.originalUrl}`, err);
+  log_event('error', `[500] ${req.method} ${req.path}`, { method: req.method, path: req.baseUrl + req.path }, err);
   res.status(500).json({ error: 'Something went wrong' });
 }
 
