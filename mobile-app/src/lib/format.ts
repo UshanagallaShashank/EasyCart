@@ -2,7 +2,7 @@
 const PRICE = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 export function price(value: number | null | undefined) {
-  return `Rs. ${PRICE.format(Number(value ?? 0))}`;
+  return `₹${PRICE.format(Number(value ?? 0))}`;
 }
 
 export function shortId(id: string) {

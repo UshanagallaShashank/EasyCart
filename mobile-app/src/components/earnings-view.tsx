@@ -17,7 +17,7 @@ export interface EarningsDay extends EarningsTotals { date: string }
 
 // Whole rupees without trailing .00, like the rest of the app.
 export function rupees(amount: number): string {
-  return `Rs. ${Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+  return `₹${Number(amount).toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
 }
 
 const SHORT_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

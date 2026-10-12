@@ -117,7 +117,7 @@ export default function OwnerStoreSettings() {
       <ThemePicker current={store.color_theme} />
 
       <Card title="Delivery and announcement" icon="truck">
-        <Field label="Standard delivery fee (Rs.)" value={form.delivery_fee} onChangeText={set('delivery_fee')} keyboardType="decimal-pad" placeholder="0" />
+        <Field label="Standard delivery fee (₹)" value={form.delivery_fee} onChangeText={set('delivery_fee')} keyboardType="decimal-pad" placeholder="0" />
         <Field label="Max delivery radius (km)" value={form.radius} onChangeText={set('radius')} keyboardType="decimal-pad" placeholder="5" />
         <Field label="Storefront announcement" hint="Shown to shoppers at the top of your shop" value={form.banner} onChangeText={set('banner')} multiline placeholder="e.g. Free delivery this weekend!" />
       </Card>

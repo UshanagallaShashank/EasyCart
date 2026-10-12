@@ -20,6 +20,11 @@ import { price } from '@/lib/format';
 import { accents, colors, radius, space, text } from '@/theme/theme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+function rupeePrice(value: number | null | undefined) {
+  const n = Number(value ?? 0);
+  return `₹${n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+}
+
 export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
   const { slug, add, lines, subtotal, setQuantity: updateCartQuantity, markViewed } = useShop();
@@ -45,36 +50,34 @@ export default function ProductScreen() {
   const productRating = useProductRatings(slug).data?.[id];
   const description = useContent(product?.description);
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
-  const [quantity, setQuantity] = useState(1);
   const [photo, setPhoto] = useState(0);
   const pagerRef = useRef<ScrollView>(null);
 
   // Animated scroll value for sticky header transitions
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Header product title fades in smoothly as user scrolls past the top photo
+  // Header product title starts coming in slowly as soon as user begins scrolling down the image
   const headerTitleOpacity = scrollY.interpolate({
-    inputRange: [PHOTO_HEIGHT * 0.45, PHOTO_HEIGHT * 0.8],
+    inputRange: [20, Math.round(PHOTO_HEIGHT * 0.65)],
     outputRange: [0, 1],
     extrapolate: 'clamp'
   });
 
   const headerTitleTranslateY = scrollY.interpolate({
-    inputRange: [PHOTO_HEIGHT * 0.45, PHOTO_HEIGHT * 0.8],
-    outputRange: [8, 0],
+    inputRange: [20, Math.round(PHOTO_HEIGHT * 0.65)],
+    outputRange: [10, 0],
     extrapolate: 'clamp'
   });
 
-  // Solid header background and shadow fade in on scroll
+  // Solid header background and shadow fade in on scroll to keep title legible
   const headerBgOpacity = scrollY.interpolate({
-    inputRange: [PHOTO_HEIGHT * 0.3, PHOTO_HEIGHT * 0.7],
+    inputRange: [10, Math.round(PHOTO_HEIGHT * 0.55)],
     outputRange: [0, 1],
     extrapolate: 'clamp'
   });
 
   useEffect(() => {
     setVariantLabel(queryVariant);
-    setQuantity(1);
     setPhoto(0);
     pagerRef.current?.scrollTo({ x: 0, animated: false });
   }, [id, queryVariant]);
@@ -96,12 +99,6 @@ export default function ProductScreen() {
   const existingCartLine = lines.find(
     (l) => l.product_id === product?.id && (l.variant_label ?? '') === (variantLabel ?? '')
   );
-
-  useEffect(() => {
-    if (existingCartLine) {
-      setQuantity(existingCartLine.quantity);
-    }
-  }, [existingCartLine?.quantity, variantLabel]);
 
   const relatedProducts = useMemo(() => {
     if (!product) return [];
@@ -141,15 +138,15 @@ export default function ProductScreen() {
 
   function handleAddToCart() {
     if (!product) return;
-    if (__DEV__) console.log(`[cart] tapped add: ${product.name}, option=${variant?.label ?? 'none'}, stock=${stock}, quantity=${quantity}`);
-    add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity, image: images[0] ?? null, max: stock });
+    if (__DEV__) console.log(`[cart] tapped add: ${product.name}, option=${variant?.label ?? 'none'}, stock=${stock}`);
+    add({ product_id: product.id, variant_label: variant?.label, name: product.name, price: unitPrice, quantity: 1, image: images[0] ?? null, max: stock });
     toast(t('{name} added to cart', { name: `${product.name}${variant?.label ? ` (${variant.label})` : ''}` }), 'success');
   }
 
   // Once the item is in the cart, the stepper changes the cart straight away.
   function changeCartQuantity(next: number) {
     if (!product || !existingCartLine) return;
-    updateCartQuantity(product.id, variant?.label, Math.min(stock, next));
+    updateCartQuantity(product.id, variant?.label, Math.max(0, Math.min(stock, next)));
   }
 
   function handleThumbnailPress(index: number) {
@@ -162,7 +159,7 @@ export default function ProductScreen() {
     try {
       await Share.share({
         title: product.name,
-        message: `Check out ${product.name} on EasyCart! Price: ${price(unitPrice)}`
+        message: `Check out ${product.name} on EasyCart! Price: ${rupeePrice(unitPrice)}`
       });
     } catch {
       // User dismissed share dialog
@@ -181,11 +178,11 @@ export default function ProductScreen() {
         </PressScale>
       </View>
       <View style={{ flex: 1 }}>
-        <Button icon="shopping-cart" label={`${t('View cart')} · ${price(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
+        <Button icon="shopping-cart" label={`${t('View cart')} · ${rupeePrice(subtotal)}`} onPress={() => router.navigate('/shop/cart')} />
       </View>
     </View>
   ) : (
-    <Button variant="primary" icon="shopping-bag" label={needsVariant ? t('Choose an option') : stock <= 0 ? t('Out of stock') : `${t('Add to cart')} · ${price(unitPrice * quantity)}`} onPress={handleAddToCart} disabled={needsVariant || stock <= 0} />
+    <Button variant="primary" icon="shopping-bag" label={needsVariant ? t('Choose an option') : stock <= 0 ? t('Out of stock') : `${t('Add to cart')} · ${rupeePrice(unitPrice)}`} onPress={handleAddToCart} disabled={needsVariant || stock <= 0} />
   );
 
   return (
@@ -399,20 +396,25 @@ export default function ProductScreen() {
           )}
 
           <FadeIn style={styles.details}>
-            {!needsVariant && (
-              <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
-                <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
-                <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
-              </View>
-            )}
+            {/* Row with in-stock status on left and rating on the right corner */}
+            <View style={styles.stockMetaRow}>
+              {!needsVariant ? (
+                <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
+                  <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
+                  <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
+                </View>
+              ) : <View />}
+              {productRating && productRating.count > 0 && productRating.average !== null ? (
+                <View style={styles.ratingBadge}>
+                  <Icon name="star" size={13} color="#f59e0b" fill="#f59e0b" />
+                  <Text style={styles.ratingScore}>{productRating.average.toFixed(1)}</Text>
+                  <Text style={styles.ratingCount}>({productRating.count})</Text>
+                </View>
+              ) : null}
+            </View>
+
+            {/* Decreased font size for title, MRP removed below title, continued directly with description */}
             <Text style={styles.title}>{name}</Text>
-            {productRating && productRating.count > 0 && productRating.average !== null ? (
-              <View style={styles.ratingRow}>
-                <StarRating value={Math.round(productRating.average)} size={16} />
-                <Text style={styles.ratingText}>{t('{average} out of 5 · {count} ratings', { average: productRating.average.toFixed(1), count: productRating.count })}</Text>
-              </View>
-            ) : null}
-            <Text style={[styles.price, { color: brand.primaryDark }]}>{price(unitPrice)}</Text>
             {product.description ? <Text style={styles.description}>{description}</Text> : null}
           </FadeIn>
           <View style={styles.divider} />
@@ -424,7 +426,12 @@ export default function ProductScreen() {
                 {product.variants.map((v) => {
                   const active = v.label === variantLabel;
                   return (
-                    <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
+                    <PressScale
+                      key={v.label}
+                      disabled={v.stock <= 0}
+                      onPress={() => setVariantLabel(v.label)}
+                      style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}
+                    >
                       <Text style={[styles.variantText, active && { color: colors.primaryDark }]}>{v.label}</Text>
                     </PressScale>
                   );
@@ -433,14 +440,54 @@ export default function ProductScreen() {
             </View>
           )}
 
-          {!needsVariant && stock > 0 && !existingCartLine && (
-            <View style={styles.stepperRow}>
-              <Text style={text.heading}>{t('Quantity')}</Text>
-              <View style={styles.stepper}>
-                <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
-                <Text style={styles.qty}>{quantity}</Text>
-                <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.primaryDark} /></PressScale>
+          {/* Replaced Quantity with selected option name, price with rupee symbol, and Add button / count stepper */}
+          {!needsVariant && stock > 0 && (
+            <View style={styles.optionRow}>
+              <View style={styles.optionInfo}>
+                {variant ? (
+                  <View style={{ gap: 2 }}>
+                    <Text style={styles.optionName} numberOfLines={1}>{variant.label}</Text>
+                    <Text style={[styles.optionPrice, { color: brand.primaryDark }]}>{rupeePrice(unitPrice)}</Text>
+                  </View>
+                ) : (
+                  <Text style={[styles.optionPrice, { color: brand.primaryDark }]}>{rupeePrice(unitPrice)}</Text>
+                )}
               </View>
+
+              {existingCartLine ? (
+                <View style={[styles.stepper, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
+                  <PressScale
+                    onPress={() => changeCartQuantity(existingCartLine.quantity - 1)}
+                    style={styles.stepButton}
+                    accessibilityLabel={existingCartLine.quantity === 1 ? 'Remove from cart' : 'Less'}
+                  >
+                    <Icon
+                      name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'}
+                      size={15}
+                      color={existingCartLine.quantity === 1 ? colors.danger : colors.primaryDark}
+                    />
+                  </PressScale>
+                  <Text style={styles.qty}>{existingCartLine.quantity}</Text>
+                  <PressScale
+                    onPress={() => changeCartQuantity(existingCartLine.quantity + 1)}
+                    disabled={existingCartLine.quantity >= stock}
+                    style={[styles.stepButton, existingCartLine.quantity >= stock && { opacity: 0.35 }]}
+                    accessibilityLabel="More"
+                  >
+                    <Icon name="plus" size={15} color={colors.primaryDark} />
+                  </PressScale>
+                </View>
+              ) : (
+                <PressScale
+                  onPress={handleAddToCart}
+                  style={[styles.addBtn, { backgroundColor: brand.primary }]}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add ${variant?.label ?? name} to cart`}
+                >
+                  <Icon name="plus" size={15} color={colors.white} strokeWidth={2.8} />
+                  <Text style={styles.addBtnText}>{t('Add')}</Text>
+                </PressScale>
+              )}
             </View>
           )}
 
@@ -608,9 +655,11 @@ const styles = StyleSheet.create({
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(148, 163, 184, 0.45)' },
   dotActive: { width: 14, backgroundColor: colors.primary, borderRadius: 3 },
   details: { gap: 6, marginTop: space.sm },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  ratingText: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
-  title: { fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.3, lineHeight: 26 },
+  stockMetaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', minHeight: 28 },
+  ratingBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#fef3c7', paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
+  ratingScore: { fontSize: 12, fontWeight: '700', color: '#92400e' },
+  ratingCount: { fontSize: 12, fontWeight: '600', color: '#b45309' },
+  title: { fontSize: 17, fontWeight: '700', color: colors.text, letterSpacing: -0.2, lineHeight: 23 },
   stock: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
   stockDot: { width: 6, height: 6, borderRadius: 3 },
   stockText: { fontSize: 11, fontWeight: '700' },
@@ -626,6 +675,12 @@ const styles = StyleSheet.create({
   variant: { minWidth: 56, height: 36, paddingHorizontal: 12, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
   variantActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
   variantText: { fontSize: 13, fontWeight: '600', color: colors.text },
+  optionRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 10, paddingHorizontal: 14, backgroundColor: colors.white, borderRadius: radius.md, borderWidth: 1, borderColor: colors.borderSoft, gap: space.md, marginTop: 4 },
+  optionInfo: { flex: 1, justifyContent: 'center' },
+  optionName: { fontSize: 14, fontWeight: '700', color: colors.text },
+  optionPrice: { fontSize: 18, fontWeight: '800', color: colors.primaryDark, letterSpacing: -0.3 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 18, height: 38, borderRadius: radius.pill, shadowColor: '#000', shadowOffset: { width: 0, height: 1.5 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
+  addBtnText: { fontSize: 14, fontWeight: '700', color: colors.white },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: colors.primaryTint, borderRadius: radius.pill, backgroundColor: colors.primarySoft, paddingHorizontal: 4 },

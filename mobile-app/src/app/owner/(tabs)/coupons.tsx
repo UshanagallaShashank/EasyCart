@@ -56,9 +56,9 @@ export default function OwnerCoupons() {
         <Field label="Code" value={code} onChangeText={setCode} autoCapitalize="characters" placeholder="SAVE10" />
         <View style={{ gap: 6 }}>
           <Text style={text.label}>Discount type</Text>
-          <Pills<'flat' | 'percent'> options={[{ value: 'flat', label: 'Rs. off' }, { value: 'percent', label: '% off' }]} value={type} onChange={setType} />
+          <Pills<'flat' | 'percent'> options={[{ value: 'flat', label: '₹ off' }, { value: 'percent', label: '% off' }]} value={type} onChange={setType} />
         </View>
-        <Field label={type === 'percent' ? 'Percent' : 'Amount (Rs.)'} value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={type === 'percent' ? '10' : '50'} />
+        <Field label={type === 'percent' ? 'Percent' : 'Amount (₹)'} value={value} onChangeText={setValue} keyboardType="decimal-pad" placeholder={type === 'percent' ? '10' : '50'} />
         <Field label="Expires on (optional)" hint="Format: 2026-12-31" value={expires} onChangeText={setExpires} placeholder="2026-12-31" autoCapitalize="none" />
         <Button icon="plus" label="Create coupon" onPress={add} loading={create.isPending} />
       </Card>

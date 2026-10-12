@@ -234,7 +234,7 @@ function OwnerProduct() {
 
       <Card title="Details" icon="package">
         <Field label="Product name" value={form.name} onChangeText={set('name')} placeholder="e.g. Dove Beauty Moisture Bar" />
-        <Field label="Price (Rs.)" value={form.price} onChangeText={set('price')} keyboardType="decimal-pad" placeholder="0.00" />
+        <Field label="Price (₹)" value={form.price} onChangeText={set('price')} keyboardType="decimal-pad" placeholder="0.00" />
         <Field label="Description (optional)" value={form.description} onChangeText={set('description')} multiline placeholder="What makes it special?" />
         {isNew && <Field label="SKU (optional)" hint="Your own product code" value={form.sku} onChangeText={set('sku')} autoCapitalize="characters" placeholder="e.g. SOAP-100" />}
       </Card>
