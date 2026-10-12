@@ -11,6 +11,9 @@ import type { StoreDeliveryRow, StoreOrderDelivery, StoreSettlementSummary, Near
 export interface OwnerStore {
   name: string;
   slug: string;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  theme?: string | null;
   is_published: boolean;
   delivery_fee: number;
   max_delivery_radius_km?: number;
@@ -140,7 +143,9 @@ export const manageCalls = {
   deleteCoupon: (id: string) => api(`/coupons/${id}`, { method: 'DELETE' }),
   createCategory: (name: string) => api('/categories', { method: 'POST', body: { name } }),
   deleteCategory: (id: string) => api(`/categories/${id}`, { method: 'DELETE' }),
-  saveStore: (payload: Partial<{ name: string; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string; latitude: number; longitude: number }>) => api('/stores/me', { method: 'PATCH', body: payload }),
+  saveStore: (payload: Partial<{ name: string; logo_url: string | null; banner_url: string | null; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string; latitude: number; longitude: number }>) => api('/stores/me', { method: 'PATCH', body: payload }),
+  uploadStoreLogo: (file: string) => api<{ url: string }>('/stores/me/upload-image', { method: 'POST', body: { file, type: 'logo' } }),
+  updateProfile: (payload: Partial<{ username: string; email: string; phone_number: string }>) => api<{ user: { id: string; username: string; email: string; phone_number: string; role: string } }>('/profile', { method: 'PATCH', body: payload }),
   setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' }),
   // One of the colour themes the platform admin switched on (or null for the platform default).
   setColorTheme: (color_theme: string | null) => api('/stores/me/color-theme', { method: 'PUT', body: { color_theme } })

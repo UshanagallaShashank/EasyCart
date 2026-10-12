@@ -74,8 +74,8 @@ export async function upload_my_document(user_id, payload) {
   const parsed = document_upload_schema.safeParse(payload);
   if (!parsed.success) throw new AppError(issues_message(parsed.error), 400);
   const rider = await get_rider_for_user(user_id);
-  // An approved rider can still add a renewed licence or insurance as an extra document.
-  if (!EDITABLE_STATUSES.has(rider.status) && parsed.data.kind !== 'other') {
+  // An approved rider can still add a renewed licence or insurance as an extra document, or update their photo.
+  if (!EDITABLE_STATUSES.has(rider.status) && parsed.data.kind !== 'other' && parsed.data.kind !== 'partner_photo') {
     throw new AppError('Documents are locked while your application is reviewed. Add a renewed document under "Other".', 400);
   }
 
@@ -90,7 +90,15 @@ export async function upload_my_document(user_id, payload) {
   } else {
     documents[parsed.data.kind] = file_path;
   }
-  return to_full_rider(await update_rider(rider.id, { documents }));
+  const updated = await update_rider(rider.id, { documents });
+  const full = await to_full_rider(updated);
+  if (parsed.data.kind === 'partner_photo' && full.photo_url) {
+    try {
+      const { set_user_avatar } = await import('../../users/repositories/user-status-store.js');
+      await set_user_avatar(rider.user_id, full.photo_url);
+    } catch (_) {}
+  }
+  return full;
 }
 
 export async function remove_my_other_document(user_id, index) {

@@ -47,4 +47,5 @@ export interface SessionUser {
   email: string;
   phone_number: string;
   role: Role;
+  avatar_url?: string | null;
 }

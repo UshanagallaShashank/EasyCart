@@ -1,7 +1,7 @@
-import { Pressable } from 'react-native';
-import { Tabs, router } from 'expo-router';
-import { Avatar } from '@/components/ui';
+import { View } from 'react-native';
+import { Tabs } from 'expo-router';
 import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
+import { ProfileMenu } from '@/components/profile-menu';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
 import { useOfferAlert } from '@/features/rider/use-offer-alert';
 
@@ -11,13 +11,20 @@ const ACTIVE_FOR = {
   application: 'profile'
 };
 
-// The rider's own photo in the top corner opens their profile (log out is at the bottom of it).
-function ProfileButton() {
+// The rider's profile menu in the top right corner
+function RiderProfileMenu() {
   const { data: rider } = useMyRider();
   return (
-    <Pressable onPress={() => router.navigate('/rider/profile')} accessibilityLabel="Open my profile" hitSlop={8} style={{ marginRight: 16 }}>
-      <Avatar name={rider?.full_name ?? 'R'} photoUrl={rider?.photo_url} size={36} />
-    </Pressable>
+    <View style={{ marginRight: 16 }}>
+      <ProfileMenu
+        profileHref="/rider/profile"
+        name={rider?.full_name}
+        photoUrl={rider?.photo_url}
+        roleSubtitle="Delivery Partner"
+        showSupport={true}
+        showStoreRequest={false}
+      />
+    </View>
   );
 }
 
@@ -29,7 +36,7 @@ export default function RiderTabs() {
   const offers = home.data?.offers ?? [];
   useOfferAlert(home.data?.offers);
   return (
-    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <ProfileButton /> }}>
+    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <RiderProfileMenu /> }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('bike'), tabBarBadge: offers.length > 0 ? offers.length : undefined }} />
       {/* History and earnings only matter once the rider can deliver. */}
       <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: tabIcon('clock'), href: approved ? undefined : null }} />

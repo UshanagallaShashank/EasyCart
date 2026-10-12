@@ -12,6 +12,7 @@ interface SessionState {
   user: SessionUser | null;
   isReady: boolean;
   signIn(user: SessionUser, token: string): Promise<void>;
+  updateUser(patch: Partial<SessionUser>): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -48,7 +49,20 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await setItem(KEY, JSON.stringify({ user: next, token }));
   }, []);
 
-  const value = useMemo(() => ({ user, isReady, signIn, signOut }), [user, isReady, signIn, signOut]);
+  const updateUser = useCallback(async (patch: Partial<SessionUser>) => {
+    setUser((curr) => {
+      if (!curr) return null;
+      const updated = { ...curr, ...patch };
+      getItem(KEY).then((raw) => {
+        if (!raw) return;
+        const saved = JSON.parse(raw) as { user: SessionUser; token: string };
+        void setItem(KEY, JSON.stringify({ ...saved, user: updated }));
+      }).catch(() => undefined);
+      return updated;
+    });
+  }, []);
+
+  const value = useMemo(() => ({ user, isReady, signIn, updateUser, signOut }), [user, isReady, signIn, updateUser, signOut]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 

@@ -7,7 +7,9 @@ import {
   set_user_status,
   set_user_last_active,
   get_user_status,
-  get_user_last_active
+  get_user_last_active,
+  get_user_avatar,
+  set_user_avatar
 } from './user-status-store.js';
 
 const SUPABASE_IN_CHUNK_SIZE = 100;
@@ -27,11 +29,12 @@ export async function find_user_by_email(email) {
       throw error;
     }
     if (!data) return null;
-    const [status, last_active_at] = await Promise.all([
+    const [status, last_active_at, avatar_url] = await Promise.all([
       get_user_status(data.id),
-      get_user_last_active(data.id)
+      get_user_last_active(data.id),
+      get_user_avatar(data.id)
     ]);
-    return { ...data, status: status || 'active', last_active_at: last_active_at || data.created_at };
+    return { ...data, status: status || 'active', last_active_at: last_active_at || data.created_at, avatar_url: avatar_url || data.avatar_url || null };
   }
 
   return User.findOne({ email: normalized }).lean();
@@ -101,11 +104,12 @@ export async function find_user_by_id(id) {
     const { data, error } = await get_supabase().from('users').select('*').eq('id', id).maybeSingle();
     if (error && error.code !== 'PGRST116') throw error;
     if (!data) return null;
-    const [status, last_active_at] = await Promise.all([
+    const [status, last_active_at, avatar_url] = await Promise.all([
       get_user_status(id),
-      get_user_last_active(id)
+      get_user_last_active(id),
+      get_user_avatar(id)
     ]);
-    return { ...data, status: status || 'active', last_active_at: last_active_at || data.created_at };
+    return { ...data, status: status || 'active', last_active_at: last_active_at || data.created_at, avatar_url: avatar_url || data.avatar_url || null };
   }
   return User.findOne({ id }).lean();
 }
@@ -187,13 +191,16 @@ export async function count_platform_admins() {
 }
 
 export async function update_user_fields(id, fields) {
-  const { status, last_active_at, ...tableFields } = fields;
+  const { status, last_active_at, avatar_url, ...tableFields } = fields;
 
   if (status !== undefined) {
     await set_user_status(id, status);
   }
   if (last_active_at !== undefined) {
     await set_user_last_active(id, last_active_at);
+  }
+  if (avatar_url !== undefined) {
+    await set_user_avatar(id, avatar_url);
   }
 
   if (DB_PROVIDER === 'supabase') {
@@ -212,18 +219,20 @@ export async function update_user_fields(id, fields) {
     }
     const currentStatus = status !== undefined ? status : await get_user_status(id);
     const currentActive = last_active_at !== undefined ? last_active_at : await get_user_last_active(id);
-    return { ...data, status: currentStatus || 'active', last_active_at: currentActive || data.created_at };
+    const currentAvatar = avatar_url !== undefined ? avatar_url : await get_user_avatar(id);
+    return { ...data, status: currentStatus || 'active', last_active_at: currentActive || data.created_at, avatar_url: currentAvatar || data.avatar_url || null };
   }
 
   const updateDoc = { ...tableFields };
   if (status !== undefined) updateDoc.status = status;
   if (last_active_at !== undefined) updateDoc.last_active_at = new Date(last_active_at);
+  if (avatar_url !== undefined) updateDoc.avatar_url = avatar_url;
 
   return User.findOneAndUpdate(
     { id },
     { $set: updateDoc },
     { new: true }
-  ).select('id username email phone_number role status last_active_at tenant_id created_at').lean();
+  ).select('id username email phone_number role status last_active_at avatar_url tenant_id created_at').lean();
 }
 
 export async function update_user_last_active(id) {

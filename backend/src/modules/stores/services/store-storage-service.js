@@ -76,7 +76,7 @@ export async function upload_store_asset_to_supabase({ user_id, file, type }) {
   await ensure_storage_bucket(supabase);
 
   // Store file strictly under user id: <userId>/<type>-<timestamp>.<ext>
-  const assetType = type === 'banner' ? 'banner' : 'logo';
+  const assetType = type === 'banner' ? 'banner' : type === 'avatar' ? 'avatar' : 'logo';
   const timestamp = Date.now();
   const filePath = `${user_id}/${assetType}-${timestamp}.${ext}`;
 

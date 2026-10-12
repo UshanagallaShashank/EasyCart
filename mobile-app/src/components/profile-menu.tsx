@@ -12,14 +12,31 @@ import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
 import { NotificationModal } from '@/components/notification-button';
 
-export function ProfileMenu() {
+export interface ProfileMenuProps {
+  profileHref?: string;
+  name?: string;
+  photoUrl?: string | null;
+  roleSubtitle?: string;
+  showSupport?: boolean;
+  showStoreRequest?: boolean;
+}
+
+export function ProfileMenu({
+  profileHref = '/shop/account',
+  name,
+  photoUrl,
+  roleSubtitle,
+  showSupport = true,
+  showStoreRequest = true
+}: ProfileMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
   const [notificationOpen, setNotificationOpen] = useState(false);
   const { user } = useSession();
   const logout = useConfirmedSignOut();
-  const { count } = useShop();
   const insets = useSafeAreaInsets();
+
+  const displayName = name || user?.username || 'User';
 
   return (
     <>
@@ -29,7 +46,7 @@ export function ProfileMenu() {
         hitSlop={8}
         style={styles.trigger}
       >
-        <Avatar name={user?.username ?? 'U'} size={34} />
+        <Avatar name={displayName} photoUrl={photoUrl} size={34} />
       </Pressable>
 
       <Modal
@@ -43,11 +60,16 @@ export function ProfileMenu() {
             {/* User name & email */}
             <View style={styles.userHeader}>
               <Text style={styles.userName} numberOfLines={1}>
-                {user?.username ?? 'Customer'}
+                {displayName}
               </Text>
               <Text style={styles.userEmail} numberOfLines={1}>
                 {user?.email ?? ''}
               </Text>
+              {roleSubtitle ? (
+                <Text style={[styles.userEmail, { color: colors.primary, fontWeight: '600' }]} numberOfLines={1}>
+                  {roleSubtitle}
+                </Text>
+              ) : null}
             </View>
 
             <View style={styles.divider} />
@@ -57,7 +79,7 @@ export function ProfileMenu() {
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                router.navigate('/shop/account');
+                router.navigate(profileHref as any);
               }}
             >
               <Icon name="user" size={16} color="#0ea5e9" />
@@ -78,28 +100,32 @@ export function ProfileMenu() {
             </Pressable>
 
             {/* Customer support */}
-            <Pressable
-              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
-              onPress={() => {
-                setOpen(false);
-                setSupportOpen(true);
-              }}
-            >
-              <Icon name="headphones" size={16} color="#0284c7" />
-              <Text style={styles.itemLabel}>Customer support</Text>
-            </Pressable>
+            {showSupport && (
+              <Pressable
+                style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+                onPress={() => {
+                  setOpen(false);
+                  setSupportOpen(true);
+                }}
+              >
+                <Icon name="headphones" size={16} color="#0284c7" />
+                <Text style={styles.itemLabel}>Customer support</Text>
+              </Pressable>
+            )}
 
             {/* Request to create a store */}
-            <Pressable
-              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
-              onPress={() => {
-                setOpen(false);
-                router.push('/shop/store-request');
-              }}
-            >
-              <Icon name="store" size={16} color="#f59e0b" />
-              <Text style={styles.itemLabel}>Request to create a store</Text>
-            </Pressable>
+            {showStoreRequest && (
+              <Pressable
+                style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+                onPress={() => {
+                  setOpen(false);
+                  router.push('/shop/store-request');
+                }}
+              >
+                <Icon name="store" size={16} color="#f59e0b" />
+                <Text style={styles.itemLabel}>Request to create a store</Text>
+              </Pressable>
+            )}
 
             <View style={styles.divider} />
 

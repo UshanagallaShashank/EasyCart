@@ -106,3 +106,25 @@ export async function set_user_last_active(userId, last_active_at = new Date().t
   store[userId].last_active_at = last_active_at;
   await persist_store();
 }
+
+export async function get_user_avatar(userId) {
+  if (DB_PROVIDER === 'mongodb') {
+    const u = await User.findOne({ id: userId }, { avatar_url: 1 }).lean();
+    return u?.avatar_url || null;
+  }
+
+  const store = await load_store();
+  return store[userId]?.avatar_url || null;
+}
+
+export async function set_user_avatar(userId, avatar_url) {
+  if (DB_PROVIDER === 'mongodb') {
+    await User.updateOne({ id: userId }, { $set: { avatar_url } });
+    return;
+  }
+
+  const store = await load_store();
+  if (!store[userId]) store[userId] = {};
+  store[userId].avatar_url = avatar_url;
+  await persist_store();
+}

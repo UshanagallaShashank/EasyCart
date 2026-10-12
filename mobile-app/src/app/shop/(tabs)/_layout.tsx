@@ -8,12 +8,14 @@ import { useStore } from '@/features/shop/shop-api';
 import { BrandProvider } from '@/lib/brand';
 import { useT } from '@/lib/i18n';
 import { useOrderAlerts } from '@/features/shop/use-order-alerts';
+import { useSession } from '@/lib/session';
 
 function HeaderRightActions() {
+  const { user } = useSession();
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginRight: 16 }}>
       <FavouritesButton />
-      <ProfileMenu />
+      <ProfileMenu photoUrl={user?.avatar_url} />
     </View>
   );
 }

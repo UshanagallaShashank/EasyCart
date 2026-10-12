@@ -111,6 +111,7 @@ export async function get_current_profile(userId) {
     email: user.email,
     phone_number: user.phone_number ?? '',
     role: user.role,
+    avatar_url: user.avatar_url ?? null,
     tenant_id: user.tenant_id ?? null,
     created_at: user.created_at
   };
@@ -152,13 +153,32 @@ export async function update_current_profile(userId, updates) {
     payload.phone_number = String(updates.phone_number).trim();
   }
 
+  if (updates.avatar_url !== undefined) {
+    payload.avatar_url = updates.avatar_url ? String(updates.avatar_url) : null;
+  }
+
   const updated = await update_user_fields(userId, payload);
+  if (user.role === 'delivery_partner') {
+    try {
+      const { find_rider_by_user_id, update_rider } = await import('../delivery/repositories/rider-repository.js');
+      const rider = await find_rider_by_user_id(userId);
+      if (rider) {
+        const rUpdates = {};
+        if (payload.email) rUpdates.email = payload.email;
+        if (payload.phone_number !== undefined) rUpdates.phone_number = payload.phone_number;
+        if (Object.keys(rUpdates).length > 0) {
+          await update_rider(rider.id, rUpdates);
+        }
+      }
+    } catch (_) {}
+  }
   return {
     id: updated.id,
     username: updated.username,
     email: updated.email,
     phone_number: updated.phone_number ?? '',
     role: updated.role,
+    avatar_url: updated.avatar_url ?? null,
     tenant_id: updated.tenant_id ?? null,
     created_at: updated.created_at
   };
