@@ -100,6 +100,7 @@ export function ProductRail({ title, subtitle, icon, accent, products, actions, 
               width={CARD_WIDTH}
               index={index}
               line={actions.lineFor(product.id)}
+              lines={actions.linesFor(product.id)}
               rating={actions.ratingFor(product.id)}
               onAdd={actions.onAdd}
               onSetQuantity={actions.onSetQuantity}

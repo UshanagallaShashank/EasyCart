@@ -183,6 +183,7 @@ export default function FavouritesScreen() {
                       width={cardWidth}
                       index={index}
                       line={cardActions.lineFor(product.id)}
+                      lines={cardActions.linesFor(product.id)}
                       rating={cardActions.ratingFor(product.id)}
                       onAdd={cardActions.onAdd}
                       onSetQuantity={cardActions.onSetQuantity}

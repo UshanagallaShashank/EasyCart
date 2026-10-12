@@ -39,13 +39,13 @@ export default function ShopTabs() {
   const store = useStore(slug);
   const t = useT();
   useOrderAlerts();
-  const units = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const cartCount = lines.length;
 
   return (
     <BrandProvider themeId={store.data?.color_theme}>
     <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
       <Tabs.Screen name="index" options={{ title: t('Shop'), headerShown: false, tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
+      <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: cartCount > 0 ? cartCount : undefined }} />
       <Tabs.Screen name="orders" options={{ title: t('My orders'), tabBarLabel: t('Orders'), tabBarIcon: tabIcon('clipboard') }} />
       <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user') }} />
       <Tabs.Screen name="product/[id]" options={{ title: t('Product'), headerShown: false, tabBarStyle: { display: 'none' }, href: null }} />

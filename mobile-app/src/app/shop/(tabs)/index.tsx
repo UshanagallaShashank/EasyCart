@@ -257,7 +257,19 @@ export default function ShopHome() {
             <EmptyState icon="search" message={search ? t('No products match "{search}".', { search }) : t('This shop has no products yet.')} />
           ) : (
             <View style={styles.grid}>
-              {shown.map((product, index) => <ProductCard key={product.id} product={product} width={cardWidth} index={index} line={cardActions.lineFor(product.id)} rating={cardActions.ratingFor(product.id)} onAdd={cardActions.onAdd} onSetQuantity={cardActions.onSetQuantity} />)}
+              {shown.map((product, index) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  width={cardWidth}
+                  index={index}
+                  line={cardActions.lineFor(product.id)}
+                  lines={cardActions.linesFor(product.id)}
+                  rating={cardActions.ratingFor(product.id)}
+                  onAdd={cardActions.onAdd}
+                  onSetQuantity={cardActions.onSetQuantity}
+                />
+              ))}
             </View>
           )}
         </View>

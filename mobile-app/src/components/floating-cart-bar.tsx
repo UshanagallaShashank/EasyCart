@@ -13,7 +13,7 @@ export function FloatingCartBar() {
   const { lines } = useShop();
   const brand = useBrand();
 
-  const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const totalItems = lines.length;
 
   // The pill gives a little pop and a tap when something is added.
   const pop = useSharedValue(1);
