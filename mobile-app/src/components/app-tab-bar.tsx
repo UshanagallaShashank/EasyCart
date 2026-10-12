@@ -47,9 +47,14 @@ export function AppTabBar({ state, descriptors, navigation, insets, activeFor }:
   const brand = useBrand();
   const slide = useSharedValue(0);
 
-  // Hidden pages are tabs styled with display:none; they get no button.
-  const visible = state.routes.filter((route) => StyleSheet.flatten(descriptors[route.key].options.tabBarItemStyle)?.display !== 'none');
   const focusedName = state.routes[state.index].name;
+  const focusedOptions = descriptors[state.routes[state.index].key]?.options;
+  if (focusedName === 'product/[id]' || (focusedOptions?.tabBarStyle as any)?.display === 'none') {
+    return null;
+  }
+
+  // Hidden pages are tabs styled with display:none; they get no button.
+  const visible = state.routes.filter((route) => (descriptors[route.key].options.tabBarItemStyle as any)?.display !== 'none');
   const activeName = activeFor?.[focusedName] ?? focusedName;
   const activeIndex = visible.findIndex((route) => route.name === activeName);
   const itemWidth = visible.length > 0 ? width / visible.length : 0;

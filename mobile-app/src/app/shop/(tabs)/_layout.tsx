@@ -48,7 +48,7 @@ export default function ShopTabs() {
       <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: units > 0 ? units : undefined }} />
       <Tabs.Screen name="orders" options={{ title: t('My orders'), tabBarLabel: t('Orders'), tabBarIcon: tabIcon('clipboard') }} />
       <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user') }} />
-      <Tabs.Screen name="product/[id]" options={hiddenPage(t('Product'))} />
+      <Tabs.Screen name="product/[id]" options={{ title: t('Product'), headerShown: false, tabBarStyle: { display: 'none' }, href: null }} />
       <Tabs.Screen name="checkout" options={hiddenPage(t('Checkout'))} />
       <Tabs.Screen name="pay" options={hiddenPage(t('Pay online'))} />
       <Tabs.Screen name="nearby" options={hiddenPage(t('Shops near you'))} />

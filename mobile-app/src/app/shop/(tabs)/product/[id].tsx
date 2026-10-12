@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { Animated, Pressable, ScrollView, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/text';
-import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
 import { useT, useContent } from '@/lib/i18n';
@@ -18,9 +18,7 @@ import { StarRating } from '@/components/star-rating';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { accents, colors, radius, space, text } from '@/theme/theme';
-import { FloatingCartBar } from '@/components/floating-cart-bar';
-
-const PHOTO_HEIGHT = 300;
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ProductScreen() {
   const { id, variant: queryVariant } = useLocalSearchParams<{ id: string; variant?: string }>();
@@ -28,6 +26,12 @@ export default function ProductScreen() {
   const toast = useToast();
   const t = useT();
   const brand = useBrand();
+  const insets = useSafeAreaInsets();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+
+  // Make image visible around 40% of the screen height, starting flush from the very top
+  const PHOTO_HEIGHT = Math.round(Math.max(300, Math.min(windowHeight * 0.40, 440)));
+
   const { data: product, isLoading } = useProduct(slug, id);
   const { data: categories } = useCategories(slug);
   const currentCategory = categories?.find((c) => c.id === product?.category_id);
@@ -36,6 +40,7 @@ export default function ProductScreen() {
   const { data: categoryProducts } = useProducts(slug, '', product?.category_id ?? '');
   const { data: allProducts } = useProducts(slug, '', '');
   const cardActions = useCardActions();
+
   const name = useContent(product?.name);
   const productRating = useProductRatings(slug).data?.[id];
   const description = useContent(product?.description);
@@ -43,7 +48,29 @@ export default function ProductScreen() {
   const [quantity, setQuantity] = useState(1);
   const [photo, setPhoto] = useState(0);
   const pagerRef = useRef<ScrollView>(null);
-  const { width: windowWidth } = useWindowDimensions();
+
+  // Animated scroll value for sticky header transitions
+  const scrollY = useRef(new Animated.Value(0)).current;
+
+  // Header product title fades in smoothly as user scrolls past the top photo
+  const headerTitleOpacity = scrollY.interpolate({
+    inputRange: [PHOTO_HEIGHT * 0.45, PHOTO_HEIGHT * 0.8],
+    outputRange: [0, 1],
+    extrapolate: 'clamp'
+  });
+
+  const headerTitleTranslateY = scrollY.interpolate({
+    inputRange: [PHOTO_HEIGHT * 0.45, PHOTO_HEIGHT * 0.8],
+    outputRange: [8, 0],
+    extrapolate: 'clamp'
+  });
+
+  // Solid header background and shadow fade in on scroll
+  const headerBgOpacity = scrollY.interpolate({
+    inputRange: [PHOTO_HEIGHT * 0.3, PHOTO_HEIGHT * 0.7],
+    outputRange: [0, 1],
+    extrapolate: 'clamp'
+  });
 
   useEffect(() => {
     setVariantLabel(queryVariant);
@@ -55,9 +82,6 @@ export default function ProductScreen() {
   useEffect(() => {
     if (product) markViewed(product.id);
   }, [product?.id]);
-
-  // Width of the photo container within Screen column (padding 16 on each side)
-  const cardWidth = Math.max(280, Math.min(windowWidth - 32, 680));
 
   useEffect(() => {
     if (product && product.variants.length > 0 && !variantLabel) {
@@ -130,7 +154,19 @@ export default function ProductScreen() {
 
   function handleThumbnailPress(index: number) {
     setPhoto(index);
-    pagerRef.current?.scrollTo({ x: index * cardWidth, animated: true });
+    pagerRef.current?.scrollTo({ x: index * windowWidth, animated: true });
+  }
+
+  async function handleShare() {
+    if (!product) return;
+    try {
+      await Share.share({
+        title: product.name,
+        message: `Check out ${product.name} on EasyCart! Price: ${price(unitPrice)}`
+      });
+    } catch {
+      // User dismissed share dialog
+    }
   }
 
   const footer = existingCartLine ? (
@@ -153,194 +189,357 @@ export default function ProductScreen() {
   );
 
   return (
-    <Screen footer={footer}>
-      <Stack.Screen options={{ title: name }} />
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      {/* Floating Top Header Bar */}
+      <View style={[styles.topHeaderBar, { paddingTop: insets.top }]}>
+        {/* Animated background that fades in when scrolling down */}
+        <Animated.View style={[StyleSheet.absoluteFill, styles.headerBg, { opacity: headerBgOpacity }]} />
 
-      {/* Flipkart-style 1-Image View with Carousel Paging */}
-      <View style={[styles.photo, { width: cardWidth }]}>
-        {images.length > 1 ? (
-          <ScrollView
-            ref={pagerRef}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            snapToInterval={cardWidth}
-            snapToAlignment="start"
-            decelerationRate="fast"
-            style={{ width: cardWidth, height: PHOTO_HEIGHT }}
-            contentContainerStyle={{ width: cardWidth * images.length, height: PHOTO_HEIGHT }}
-            onMomentumScrollEnd={(e) => {
-              const newIndex = Math.round(e.nativeEvent.contentOffset.x / cardWidth);
-              if (newIndex >= 0 && newIndex < images.length) {
-                setPhoto(newIndex);
+        <View style={styles.headerRow}>
+          {/* Back button */}
+          <Pressable
+            onPress={() => (router.canGoBack() ? router.back() : router.navigate('/shop'))}
+            style={styles.headerCircleBtn}
+            hitSlop={8}
+            accessibilityLabel="Go back"
+          >
+            <Icon name="arrow-left" size={18} color={colors.text} />
+          </Pressable>
+
+          {/* Product Name (fades in smoothly when scrolling down) */}
+          <Animated.View
+            style={[
+              styles.headerTitleWrap,
+              {
+                opacity: headerTitleOpacity,
+                transform: [{ translateY: headerTitleTranslateY }]
               }
-            }}
-            scrollEventThrottle={16}
+            ]}
           >
-            {images.map((uri, idx) => (
-              <View
-                key={`${uri}-${idx}`}
-                style={{
-                  width: cardWidth,
-                  height: PHOTO_HEIGHT,
-                  flexShrink: 0,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: 14
-                }}
-              >
-                <Image
-                  source={{ uri }}
-                  style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }}
-                  contentFit="contain"
-                />
-              </View>
-            ))}
-          </ScrollView>
-        ) : images[0] ? (
-          <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center', padding: 14 }}>
-            <Image source={{ uri: images[0] }} style={{ width: cardWidth - 28, height: PHOTO_HEIGHT - 28 }} contentFit="contain" />
+            <Text style={styles.headerTitleText} numberOfLines={1} ellipsizeMode="tail">
+              {name}
+            </Text>
+          </Animated.View>
+
+          {/* Search & Share Action Buttons */}
+          <View style={styles.headerActions}>
+            <Pressable
+              onPress={() => router.navigate('/shop')}
+              style={styles.headerCircleBtn}
+              hitSlop={8}
+              accessibilityLabel="Search products"
+            >
+              <Icon name="search" size={18} color={colors.text} />
+            </Pressable>
+
+            <Pressable
+              onPress={handleShare}
+              style={styles.headerCircleBtn}
+              hitSlop={8}
+              accessibilityLabel="Share product"
+            >
+              <Icon name="share-2" size={18} color={colors.text} />
+            </Pressable>
           </View>
-        ) : (
-          <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="image" size={36} color={colors.textFaint} />
-          </View>
+        </View>
+      </View>
+
+      <Screen
+        noPadding
+        footer={footer}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
         )}
-
-        <View style={styles.heart}><FavouriteButton productId={product.id} size={38} /></View>
-
-        {/* Previous arrow button (Flipkart style) */}
-        {images.length > 1 && photo > 0 && (
-          <Pressable
-            onPress={() => handleThumbnailPress(photo - 1)}
-            style={styles.navBtnLeft}
-            hitSlop={8}
-            accessibilityLabel="Previous image"
-          >
-            <Icon name="chevron-left" size={18} color="#1e293b" />
-          </Pressable>
-        )}
-
-        {/* Next arrow button (Flipkart style) */}
-        {images.length > 1 && photo < images.length - 1 && (
-          <Pressable
-            onPress={() => handleThumbnailPress(photo + 1)}
-            style={styles.navBtnRight}
-            hitSlop={8}
-            accessibilityLabel="Next image"
-          >
-            <Icon name="chevron-right" size={18} color="#1e293b" />
-          </Pressable>
-        )}
-
-        {/* Counter badge (Flipkart style: 1 / 2) */}
-        {images.length > 1 && (
-          <View style={styles.counterBadge}>
-            <Text style={styles.counterText}>{photo + 1} / {images.length}</Text>
-          </View>
-        )}
-
-        {/* Indicator dots (Flipkart style) */}
-        {images.length > 1 && (
-          <View style={styles.dotsRow}>
-            {images.map((_, idx) => (
-              <View
-                key={idx}
-                style={[styles.dot, idx === photo && styles.dotActive]}
+        scrollEventThrottle={16}
+      >
+        {/* Top Product Image Container (Starts flush from the top, under the floating header) */}
+        <View style={[styles.photo, { width: windowWidth, height: PHOTO_HEIGHT }]}>
+          {images.length > 1 ? (
+            <ScrollView
+              ref={pagerRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              snapToInterval={windowWidth}
+              snapToAlignment="start"
+              decelerationRate="fast"
+              style={{ width: windowWidth, height: PHOTO_HEIGHT }}
+              contentContainerStyle={{ width: windowWidth * images.length, height: PHOTO_HEIGHT }}
+              onMomentumScrollEnd={(e) => {
+                const newIndex = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
+                if (newIndex >= 0 && newIndex < images.length) {
+                  setPhoto(newIndex);
+                }
+              }}
+              scrollEventThrottle={16}
+            >
+              {images.map((uri, idx) => (
+                <View
+                  key={`${uri}-${idx}`}
+                  style={{
+                    width: windowWidth,
+                    height: PHOTO_HEIGHT,
+                    flexShrink: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingTop: insets.top + 44,
+                    paddingBottom: 24,
+                    paddingHorizontal: 20
+                  }}
+                >
+                  <Image
+                    source={{ uri }}
+                    style={{ width: windowWidth - 40, height: PHOTO_HEIGHT - insets.top - 68 }}
+                    contentFit="contain"
+                  />
+                </View>
+              ))}
+            </ScrollView>
+          ) : images[0] ? (
+            <View
+              style={{
+                width: windowWidth,
+                height: PHOTO_HEIGHT,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingTop: insets.top + 44,
+                paddingBottom: 24,
+                paddingHorizontal: 20
+              }}
+            >
+              <Image
+                source={{ uri: images[0] }}
+                style={{ width: windowWidth - 40, height: PHOTO_HEIGHT - insets.top - 68 }}
+                contentFit="contain"
               />
-            ))}
-          </View>
-        )}
-      </View>
+            </View>
+          ) : (
+            <View
+              style={{
+                width: windowWidth,
+                height: PHOTO_HEIGHT,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingTop: insets.top + 44
+              }}
+            >
+              <Icon name="image" size={44} color={colors.textFaint} />
+            </View>
+          )}
 
-      {/* Thumbnails row (Flipkart style) */}
-      {images.length > 1 && (
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.xs }}>
-          {images.map((uri, index) => {
-            const active = index === photo;
-            return (
-              <Pressable
-                key={`${uri}-${index}`}
-                onPress={() => handleThumbnailPress(index)}
-                style={[styles.thumb, active && styles.thumbActive]}
-                accessibilityLabel={`View photo ${index + 1}`}
-              >
-                <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      )}
+          {/* Favourite Heart floating on the bottom right of the image */}
+          <View style={styles.heart}>
+            <FavouriteButton productId={product.id} size={38} />
+          </View>
 
-      <FadeIn style={styles.details}>
-        {!needsVariant && (
-          <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
-            <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
-            <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
-          </View>
-        )}
-        <Text style={styles.title}>{name}</Text>
-        {productRating && productRating.count > 0 && productRating.average !== null ? (
-          <View style={styles.ratingRow}>
-            <StarRating value={Math.round(productRating.average)} size={16} />
-            <Text style={styles.ratingText}>{t('{average} out of 5 · {count} ratings', { average: productRating.average.toFixed(1), count: productRating.count })}</Text>
-          </View>
-        ) : null}
-        <Text style={[styles.price, { color: brand.primaryDark }]}>{price(unitPrice)}</Text>
-        {product.description ? <Text style={styles.description}>{description}</Text> : null}
-      </FadeIn>
-      <View style={styles.divider} />
+          {/* Previous arrow button */}
+          {images.length > 1 && photo > 0 && (
+            <Pressable
+              onPress={() => handleThumbnailPress(photo - 1)}
+              style={styles.navBtnLeft}
+              hitSlop={8}
+              accessibilityLabel="Previous image"
+            >
+              <Icon name="chevron-left" size={18} color="#1e293b" />
+            </Pressable>
+          )}
 
-      {product.variants.length > 0 && (
-        <View style={{ gap: space.xs }}>
-          <Text style={text.heading}>{t('Choose an option')}</Text>
-          <View style={styles.variants}>
-            {product.variants.map((v) => {
-              const active = v.label === variantLabel;
-              return (
-                <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
-                  <Text style={[styles.variantText, active && { color: colors.primaryDark }]}>{v.label}</Text>
-                </PressScale>
-              );
-            })}
-          </View>
+          {/* Next arrow button */}
+          {images.length > 1 && photo < images.length - 1 && (
+            <Pressable
+              onPress={() => handleThumbnailPress(photo + 1)}
+              style={styles.navBtnRight}
+              hitSlop={8}
+              accessibilityLabel="Next image"
+            >
+              <Icon name="chevron-right" size={18} color="#1e293b" />
+            </Pressable>
+          )}
+
+          {/* Counter badge (e.g. 1 / 3) */}
+          {images.length > 1 && (
+            <View style={styles.counterBadge}>
+              <Text style={styles.counterText}>{photo + 1} / {images.length}</Text>
+            </View>
+          )}
+
+          {/* Indicator dots */}
+          {images.length > 1 && (
+            <View style={styles.dotsRow}>
+              {images.map((_, idx) => (
+                <View
+                  key={idx}
+                  style={[styles.dot, idx === photo && styles.dotActive]}
+                />
+              ))}
+            </View>
+          )}
         </View>
-      )}
 
-      {!needsVariant && stock > 0 && !existingCartLine && (
-        <View style={styles.stepperRow}>
-          <Text style={text.heading}>{t('Quantity')}</Text>
-          <View style={styles.stepper}>
-            <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
-            <Text style={styles.qty}>{quantity}</Text>
-            <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.primaryDark} /></PressScale>
+        {/* Content body with responsive width and comfortable padding */}
+        <View style={styles.contentWrap}>
+          {/* Thumbnails row */}
+          {images.length > 1 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: space.xs }}>
+              {images.map((uri, index) => {
+                const active = index === photo;
+                return (
+                  <Pressable
+                    key={`${uri}-${index}`}
+                    onPress={() => handleThumbnailPress(index)}
+                    style={[styles.thumb, active && styles.thumbActive]}
+                    accessibilityLabel={`View photo ${index + 1}`}
+                  >
+                    <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
+
+          <FadeIn style={styles.details}>
+            {!needsVariant && (
+              <View style={[styles.stock, { backgroundColor: stockLook.bg, borderColor: stockLook.border }]}>
+                <View style={[styles.stockDot, { backgroundColor: stockLook.dot }]} />
+                <Text style={[styles.stockText, { color: stockLook.fg }]}>{stockLook.label}</Text>
+              </View>
+            )}
+            <Text style={styles.title}>{name}</Text>
+            {productRating && productRating.count > 0 && productRating.average !== null ? (
+              <View style={styles.ratingRow}>
+                <StarRating value={Math.round(productRating.average)} size={16} />
+                <Text style={styles.ratingText}>{t('{average} out of 5 · {count} ratings', { average: productRating.average.toFixed(1), count: productRating.count })}</Text>
+              </View>
+            ) : null}
+            <Text style={[styles.price, { color: brand.primaryDark }]}>{price(unitPrice)}</Text>
+            {product.description ? <Text style={styles.description}>{description}</Text> : null}
+          </FadeIn>
+          <View style={styles.divider} />
+
+          {product.variants.length > 0 && (
+            <View style={{ gap: space.xs }}>
+              <Text style={text.heading}>{t('Choose an option')}</Text>
+              <View style={styles.variants}>
+                {product.variants.map((v) => {
+                  const active = v.label === variantLabel;
+                  return (
+                    <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
+                      <Text style={[styles.variantText, active && { color: colors.primaryDark }]}>{v.label}</Text>
+                    </PressScale>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+
+          {!needsVariant && stock > 0 && !existingCartLine && (
+            <View style={styles.stepperRow}>
+              <Text style={text.heading}>{t('Quantity')}</Text>
+              <View style={styles.stepper}>
+                <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
+                <Text style={styles.qty}>{quantity}</Text>
+                <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.primaryDark} /></PressScale>
+              </View>
+            </View>
+          )}
+
+          <View style={styles.trust}>
+            <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
+            <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
           </View>
-        </View>
-      )}
 
-      <View style={styles.trust}>
-        <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
-        <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
-      </View>
-
-      {relatedProducts.length > 0 && (
-        <View style={{ marginTop: space.sm, marginBottom: space.sm }}>
-          <ProductRail
-            actions={cardActions}
-            title={categoryName ? t('Related in {category}', { category: categoryName }) : t('Related products')}
-            subtitle={categoryName ? t('More available items from {category}', { category: categoryName }) : t('More available items you might like')}
-            icon="tags"
-            accent={accents.teal}
-            products={relatedProducts}
-          />
+          {/* Related products strictly based on category */}
+          {relatedProducts.length > 0 && (
+            <View style={{ marginTop: space.sm, marginBottom: space.sm }}>
+              <ProductRail
+                actions={cardActions}
+                title={categoryName ? t('Related in {category}', { category: categoryName }) : t('Related products')}
+                subtitle={categoryName ? t('More available items from {category}', { category: categoryName }) : t('More available items you might like')}
+                icon="tags"
+                accent={accents.teal}
+                products={relatedProducts}
+              />
+            </View>
+          )}
         </View>
-      )}
-    </Screen>
+      </Screen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  photo: { height: PHOTO_HEIGHT, borderRadius: radius.xl, overflow: 'hidden', backgroundColor: colors.white, borderWidth: 1, borderColor: colors.cardBorder, position: 'relative' },
+  topHeaderBar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 100
+  },
+  headerBg: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderSoft,
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 5,
+    elevation: 4
+  },
+  headerRow: {
+    height: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: space.md,
+    gap: space.sm
+  },
+  headerCircleBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: 'rgba(255, 255, 255, 0.94)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOffset: { width: 0, height: 1.5 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2
+  },
+  headerTitleWrap: {
+    flex: 1,
+    paddingHorizontal: 4
+  },
+  headerTitleText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text,
+    letterSpacing: -0.2
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  photo: {
+    backgroundColor: colors.white,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderSoft,
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    overflow: 'hidden',
+    position: 'relative'
+  },
+  contentWrap: {
+    width: '100%',
+    maxWidth: 720,
+    alignSelf: 'center',
+    paddingHorizontal: space.lg,
+    paddingTop: space.md,
+    gap: space.md
+  },
   navBtnLeft: {
     position: 'absolute',
     left: 8,
@@ -381,20 +580,41 @@ const styles = StyleSheet.create({
     elevation: 3,
     zIndex: 10
   },
-  heart: { position: 'absolute', top: 10, right: 10, zIndex: 11 },
-  counterBadge: { position: 'absolute', bottom: 10, right: 10, backgroundColor: 'rgba(15, 23, 42, 0.75)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill, zIndex: 10 },
+  heart: {
+    position: 'absolute',
+    bottom: 12,
+    right: 14,
+    zIndex: 11
+  },
+  counterBadge: {
+    position: 'absolute',
+    bottom: 14,
+    left: 14,
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    zIndex: 10
+  },
   counterText: { fontSize: 11, fontWeight: '700', color: colors.white },
-  dotsRow: { position: 'absolute', bottom: 10, alignSelf: 'center', flexDirection: 'row', gap: 5, alignItems: 'center' },
+  dotsRow: {
+    position: 'absolute',
+    bottom: 14,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    gap: 5,
+    alignItems: 'center'
+  },
   dot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: 'rgba(148, 163, 184, 0.45)' },
   dotActive: { width: 14, backgroundColor: colors.primary, borderRadius: 3 },
-  details: { gap: 6 },
+  details: { gap: 6, marginTop: space.sm },
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   ratingText: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
-  title: { fontSize: 22, fontWeight: '800', color: colors.text, letterSpacing: -0.4, lineHeight: 28 },
+  title: { fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.3, lineHeight: 26 },
   stock: { flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', borderWidth: 1, borderRadius: radius.pill, paddingHorizontal: 8, paddingVertical: 3 },
   stockDot: { width: 6, height: 6, borderRadius: 3 },
   stockText: { fontSize: 11, fontWeight: '700' },
-  price: { fontSize: 28, fontWeight: '900', color: colors.primaryDark, letterSpacing: -0.6 },
+  price: { fontSize: 24, fontWeight: '900', color: colors.primaryDark, letterSpacing: -0.5 },
   description: { fontSize: 14, lineHeight: 21, color: colors.textMuted },
   divider: { height: 1, backgroundColor: colors.border },
   trust: { gap: 8, padding: 12, borderRadius: radius.md, backgroundColor: colors.primarySoft, borderWidth: 1, borderColor: colors.primaryTint },

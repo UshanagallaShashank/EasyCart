@@ -26,7 +26,8 @@ export function Screen({
   footer,
   onScroll,
   scrollEventThrottle,
-  stickyHeaderIndices
+  stickyHeaderIndices,
+  noPadding
 }: {
   children: ReactNode;
   onRefresh?(): void;
@@ -35,6 +36,7 @@ export function Screen({
   onScroll?: any;
   scrollEventThrottle?: number;
   stickyHeaderIndices?: number[];
+  noPadding?: boolean;
 }) {
   const { pagePadding } = useScreen();
   const rootRef = useRef<View>(null);
@@ -64,14 +66,19 @@ export function Screen({
       <ScrollView
         ref={scrollRef}
         keyboardDismissMode="on-drag"
-        contentContainerStyle={[styles.screenContent, { padding: pagePadding, paddingTop: space.xl, paddingBottom: space.xxl * 2 }]}
+        contentContainerStyle={[
+          styles.screenContent,
+          noPadding
+            ? { padding: 0, paddingTop: 0, paddingBottom: space.xxl * 2 }
+            : { padding: pagePadding, paddingTop: space.xl, paddingBottom: space.xxl * 2 }
+        ]}
         keyboardShouldPersistTaps="handled"
         onScroll={onScroll}
         scrollEventThrottle={scrollEventThrottle}
         stickyHeaderIndices={stickyHeaderIndices}
         refreshControl={onRefresh ? <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} /> : undefined}
       >
-        {stickyHeaderIndices ? children : <View style={styles.column}>{children}</View>}
+        {stickyHeaderIndices || noPadding ? children : <View style={styles.column}>{children}</View>}
       </ScrollView>
       {footer && <View style={styles.footer}><View style={styles.column}>{footer}</View></View>}
     </View>
