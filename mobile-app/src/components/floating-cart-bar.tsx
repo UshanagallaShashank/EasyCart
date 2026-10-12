@@ -47,7 +47,7 @@ export function FloatingCartBar() {
           { backgroundColor: brand.primary },
           pressed && styles.pillPressed
         ]}
-        onPress={() => router.navigate('/shop/cart')}
+        onPress={() => router.push('/shop/checkout')}
         accessibilityLabel={`View cart, ${totalItems} items`}
       >
         {/* Overlapping circular product thumbnails */}

@@ -50,6 +50,6 @@ export function useReorder() {
       return;
     }
     toast(skipped > 0 ? t('{added} added, {skipped} not available', { added, skipped }) : t('Items added to your cart'), 'success');
-    router.push('/shop/cart');
+    router.push('/shop/checkout');
   };
 }
