@@ -12,12 +12,14 @@ import { useT } from '@/lib/i18n';
 import { colors, radius, space, text } from '@/theme/theme';
 import { useOrderRating, useRateOrder } from './shop-api';
 import { OrderPhotoPicker } from './order-photo-picker';
+import { useBrand } from '@/lib/brand';
 
 const WORDS = ['', 'Poor', 'Could be better', 'Okay', 'Good', 'Excellent'];
 
 interface Item { product_id: string; name: string }
 
 export function RateOrderCard({ orderId, wasDelivery, items }: { orderId: string; wasDelivery: boolean; items: Item[] }) {
+  const brand = useBrand();
   const existing = useOrderRating(orderId, true);
   const rate = useRateOrder(orderId);
   const toast = useToast();
@@ -82,7 +84,7 @@ export function RateOrderCard({ orderId, wasDelivery, items }: { orderId: string
       <View style={styles.block}>
         <Text style={text.label}>The store</Text>
         <StarRating value={store} onChange={setStore} size={34} />
-        {store > 0 ? <Text style={styles.word}>{WORDS[store]}</Text> : null}
+        {store > 0 ? <Text style={[styles.word, { color: brand.primaryDark }]}>{WORDS[store]}</Text> : null}
       </View>
       {wasDelivery && (
         <View style={styles.block}>

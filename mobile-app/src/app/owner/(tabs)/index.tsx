@@ -13,7 +13,8 @@ import { SetupChecklist, ShareShopCard } from '@/features/owner/setup-checklist'
 import { getBestSellers, getBusiestHour, getGreeting, getLowStock, getPendingCount, getRepeatRate, getRevenue, getToday } from '@/features/owner/overview-stats';
 import { useSession } from '@/lib/session';
 import { price } from '@/lib/format';
-import { accentAt, colors, radius, space } from '@/theme/theme';
+import { accentAt, colors, glow, radius, space } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 export default function OwnerOverview() {
   const { user } = useSession();
@@ -23,6 +24,7 @@ export default function OwnerOverview() {
   const customers = useCustomerCount();
   const ratings = useRatingsSummary();
   const refunds = useStoreRefunds();
+  const brand = useBrand();
   const waitingRefunds = (refunds.data ?? []).filter((refund) => refund.status === 'requested').length;
   if (orders.isLoading) return <Loading />;
 
@@ -36,7 +38,8 @@ export default function OwnerOverview() {
 
   return (
     <Screen onRefresh={() => { void orders.refetch(); void products.refetch(); void customers.refetch(); }} refreshing={orders.isRefetching}>
-      <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
+      <LinearGradient colors={brand.mesh} locations={[0, 0.4, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.banner, glow(brand.glow)]}>
+        <View style={styles.bannerGlow} />
         <Text style={styles.bannerHello}>{getGreeting()}, {user?.username}</Text>
         <Text style={styles.bannerTitle} numberOfLines={2}>{store.data?.name ?? 'Your store'} at a glance</Text>
         <View style={styles.chips}>
@@ -147,12 +150,13 @@ function Chip({ icon, label, onPress }: { icon: 'package' | 'shopping-bag' | 'tr
 }
 
 const styles = StyleSheet.create({
-  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.sm, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
-  bannerHello: { color: '#0284c7', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  bannerTitle: { color: '#0f172a', fontSize: 24, lineHeight: 29, fontWeight: '900', letterSpacing: -0.6 },
+  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.sm, overflow: 'hidden' },
+  bannerGlow: { position: 'absolute', right: -40, top: -50, width: 170, height: 170, borderRadius: 85, backgroundColor: 'rgba(255,255,255,0.14)' },
+  bannerHello: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bannerTitle: { color: colors.white, fontSize: 24, lineHeight: 29, fontWeight: '900', letterSpacing: -0.6 },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.sm },
-  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#ffffff', borderWidth: 1, borderColor: '#bae6fd', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
-  chipText: { color: '#0284c7', fontSize: 12, fontWeight: '700' },
+  chip: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(255,255,255,0.18)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.35)', borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 8 },
+  chipText: { color: colors.white, fontSize: 12, fontWeight: '700' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   ratingTop: { flexDirection: 'row', gap: space.md },
   ratingBox: { flex: 1, alignItems: 'center', gap: 4, backgroundColor: '#fffbeb', borderRadius: radius.md, paddingVertical: space.md },

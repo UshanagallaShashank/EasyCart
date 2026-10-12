@@ -10,6 +10,7 @@ import { addressLocation, useAddresses, type SavedAddress } from '@/features/sho
 import { describePlace, readCurrentPosition, type Coords } from '@/lib/location';
 import { errorMessage } from '@/lib/api';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 const LABEL_ICONS: Record<string, IconName> = { Home: 'home', Work: 'store', Other: 'map-pin' };
 const EMPTY = { label: 'Home', recipientName: '', phone: '', street: '', landmark: '', city: '', state: '', zip: '' };
@@ -19,6 +20,7 @@ function isAllDigits(text: string) {
 }
 
 export default function AddressesScreen() {
+  const brand = useBrand();
   const { addresses, active, isLoading, save, remove, setActive } = useAddresses();
   const toast = useToast();
   const [form, setForm] = useState(EMPTY);
@@ -123,7 +125,7 @@ export default function AddressesScreen() {
 
       {showForm && (
         <Card title={editingId ? 'Edit delivery address' : 'New delivery address'} icon="map-pin">
-          <View style={styles.locationBox}>
+          <View style={[styles.locationBox, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
             <Text style={text.label}>Where should we deliver?</Text>
             <View style={{ flexDirection: 'row', gap: space.sm }}>
               <View style={{ flex: 1 }}><Button small icon="navigation" label={locating ? 'Finding you…' : 'Use my location'} onPress={() => void useMyLocation()} loading={locating} /></View>
@@ -157,9 +159,9 @@ export default function AddressesScreen() {
       ) : addresses.map((address) => {
         const isActive = active?.id === address.id;
         return (
-          <View key={address.id} style={[styles.row, isActive && styles.rowActive]}>
+          <View key={address.id} style={[styles.row, isActive && [styles.rowActive, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]]}>
             <View style={styles.top}>
-              <View style={styles.icon}><Icon name={LABEL_ICONS[address.label] ?? 'map-pin'} size={18} color={colors.primary} /></View>
+              <View style={[styles.icon, { backgroundColor: brand.primaryTint }]}><Icon name={LABEL_ICONS[address.label] ?? 'map-pin'} size={18} color={brand.primary} /></View>
               <View style={{ flex: 1, gap: 4 }}>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' }}>
                   <Text style={text.heading}>{address.label}</Text>

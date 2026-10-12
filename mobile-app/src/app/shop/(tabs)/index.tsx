@@ -165,7 +165,7 @@ export default function ShopHome() {
           <View style={styles.hero}>
             {banner ? <Image source={{ uri: banner }} style={StyleSheet.absoluteFill} contentFit="cover" /> : null}
             <LinearGradient
-              colors={banner ? [withAlpha(brand.gradient[0], 0.95), withAlpha(brand.gradient[1], 0.88)] : brand.gradient}
+              colors={banner ? [withAlpha(brand.mesh[0], 0.95), withAlpha(brand.mesh[1], 0.88), withAlpha(brand.mesh[2], 0.8)] : brand.mesh}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={StyleSheet.absoluteFill}
@@ -269,9 +269,9 @@ const styles = StyleSheet.create({
   addressIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: accents.green.bg, alignItems: 'center', justifyContent: 'center' },
   addressLabel: { fontSize: 11, fontWeight: '700', color: colors.textFaint, letterSpacing: 0.5, textTransform: 'uppercase' },
   addressText: { fontSize: 14, fontWeight: '700', color: colors.text },
-  promo: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: accents.amber.bg, borderRadius: radius.lg, padding: space.md },
+  promo: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: '#fff8eb', borderRadius: radius.lg, paddingVertical: 10, paddingHorizontal: space.md },
   promoIcon: { width: 36, height: 36, borderRadius: 12, backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center' },
-  promoText: { flex: 1, fontSize: 13, fontWeight: '700', color: '#92400e' },
+  promoText: { flex: 1, fontSize: 13, fontWeight: '600', color: '#92400e' },
   topHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingBottom: space.xs },
   hero: { borderRadius: radius.xl, padding: space.xl, gap: 8, overflow: 'hidden', minHeight: 170 },
   heroCircleBig: { position: 'absolute', right: -40, top: -40, width: 160, height: 160, borderRadius: 80, backgroundColor: 'rgba(255,255,255,0.12)' },
@@ -291,11 +291,11 @@ const styles = StyleSheet.create({
   tile: { width: 68, alignItems: 'center', gap: 6 },
   tileIcon: { width: 56, height: 56, borderRadius: 18, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'transparent' },
   tileLabel: { fontSize: 12, fontWeight: '600', color: colors.textMuted, textAlign: 'center' },
-  categoryPill: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill, backgroundColor: colors.white, borderWidth: 1, borderColor: '#e2e8f0', alignItems: 'center', justifyContent: 'center' },
+  categoryPill: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: radius.pill, backgroundColor: colors.card, borderWidth: 0, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' },
   categoryPillActive: { borderColor: colors.primary, backgroundColor: colors.primary },
   categoryName: { fontSize: 13, fontWeight: '600', color: colors.textMuted },
   categoryNameActive: { color: colors.white, fontWeight: '800' },
-  search: { flexDirection: 'row', alignItems: 'center', gap: space.sm, height: 50, borderRadius: radius.pill, borderWidth: 1, borderColor: colors.border, backgroundColor: colors.white, paddingHorizontal: space.lg, marginVertical: 4 },
+  search: { flexDirection: 'row', alignItems: 'center', gap: space.sm, height: 50, borderRadius: radius.pill, borderWidth: 0, backgroundColor: colors.card, paddingHorizontal: space.lg, marginVertical: 4 },
   searchInput: { flex: 1, fontSize: 15, color: colors.text, height: '100%' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   skeletonCard: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: 8, gap: 10 }

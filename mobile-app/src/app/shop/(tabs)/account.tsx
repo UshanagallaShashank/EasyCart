@@ -1,6 +1,7 @@
 // Account: who is signed in, quick shortcuts, which shop is open, and switching shops.
 import { useState } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { MenuList } from '@/components/menu-list';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { Text } from '@/components/text';
@@ -38,7 +39,7 @@ export default function AccountScreen() {
   return (
     <Screen>
       <FadeIn>
-        <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profile}>
+        <LinearGradient colors={brand.mesh} locations={[0, 0.4, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.profile}>
           <View style={styles.circle} />
           <Avatar name={user?.username ?? '?'} size={60} />
           <View style={{ flex: 1, gap: 2 }}>
@@ -49,9 +50,11 @@ export default function AccountScreen() {
         </LinearGradient>
       </FadeIn>
 
-      <MenuRow icon="clipboard" fg={accents.sky.fg} bg={accents.sky.bg} title={t('My orders')} subtitle="Track, reorder and see what you saved" onPress={() => router.navigate('/shop/orders')} />
-      <MenuRow icon="map-pin" fg={accents.green.fg} bg={accents.green.bg} title={t('Delivery addresses')} subtitle="Home, work and other places you order to" onPress={() => router.push('/shop/addresses')} />
-      <MenuRow icon="headphones" fg={accents.violet.fg} bg={accents.violet.bg} title={t('Customer support')} subtitle="Helpline, live assistance & FAQs" onPress={() => setSupportOpen(true)} />
+      <MenuList items={[
+        { icon: 'clipboard', color: accents.sky.fg, title: t('My orders'), subtitle: t('Track, reorder and see what you saved'), onPress: () => router.navigate('/shop/orders') },
+        { icon: 'map-pin', color: accents.green.fg, title: t('Delivery addresses'), subtitle: t('Home, work and other places you order to'), onPress: () => router.push('/shop/addresses') },
+        { icon: 'headphones', color: accents.violet.fg, title: t('Customer support'), subtitle: t('Helpline, live assistance & FAQs'), onPress: () => setSupportOpen(true) }
+      ]} />
 
       <Card title={t('Language')} icon="sparkles">
         <LanguagePicker />
@@ -59,7 +62,7 @@ export default function AccountScreen() {
 
       <Card title={t('Shops')} icon="shopping-bag">
         <View style={styles.openNow}>
-          <Icon name="check-circle" size={16} color={colors.primary} />
+          <Icon name="check-circle" size={16} color={brand.primary} />
           <Text style={text.small}>{t('Open now')}: <Text style={{ fontWeight: '700', color: colors.text }}>{slug}</Text></Text>
         </View>
         {(stores ?? []).filter((s) => s.slug !== slug).map((store) => (
@@ -85,7 +88,7 @@ const styles = StyleSheet.create({
   profile: { flexDirection: 'row', alignItems: 'center', gap: space.lg, borderRadius: radius.xl, padding: space.xl, overflow: 'hidden' },
   circle: { position: 'absolute', right: -30, top: -30, width: 130, height: 130, borderRadius: 65, backgroundColor: 'rgba(255,255,255,0.12)' },
   name: { fontSize: 20, fontWeight: '800', color: colors.white, letterSpacing: -0.4 },
-  email: { fontSize: 13, color: '#e0f2fe' },
+  email: { fontSize: 13, color: 'rgba(255,255,255,0.85)' },
   stat: { fontSize: 12, fontWeight: '700', color: colors.white, marginTop: 4 },
   openNow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   shopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8 }

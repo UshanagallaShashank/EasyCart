@@ -12,10 +12,13 @@ import { ownerCalls, useOwnerAction, useOwnerProducts } from '@/features/owner/o
 import { errorMessage, fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
+import { ProductPlaceholder } from '@/components/product-placeholder';
+import { useBrand } from '@/lib/brand';
 
 type Filter = 'all' | 'low' | 'out' | 'hidden';
 
 export default function OwnerProducts() {
+  const brand = useBrand();
   const { data, isLoading, refetch, isRefetching } = useOwnerProducts();
   const adjust = useOwnerAction(ownerCalls.adjustStock);
   const toast = useToast();
@@ -66,7 +69,7 @@ export default function OwnerProducts() {
         return (
           <View key={product.id} style={styles.row}>
             <Pressable accessibilityRole="button" onPress={() => router.push(`/owner/product/${product.id}`)} style={styles.open}>
-              <View style={styles.thumb}>{image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={18} color={colors.textFaint} />}</View>
+              <View style={styles.thumb}>{image ? <Image source={{ uri: image }} style={{ width: '100%', height: '100%' }} /> : <ProductPlaceholder name={product.name} size="sm" />}</View>
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={text.heading} numberOfLines={1}>{product.name}</Text>
                 <Text style={text.small}>{price(product.price)}{product.variants.length ? ` · ${product.variants.length} ${product.variants.length === 1 ? 'option' : 'options'}` : ''}</Text>
@@ -79,13 +82,13 @@ export default function OwnerProducts() {
 
             <View style={styles.stockBox}>
               <Text style={styles.stockLabel}>Stock</Text>
-              <View style={styles.stepper}>
+              <View style={[styles.stepper, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
                 <PressScale onPress={() => change(product.id, -1)} disabled={stock <= 0} style={[styles.stepButton, stock <= 0 && { opacity: 0.3 }]} accessibilityLabel={`Reduce stock of ${product.name}`}>
-                  <Icon name="minus" size={16} color={colors.primaryDark} />
+                  <Icon name="minus" size={16} color={brand.primaryDark} />
                 </PressScale>
                 <Text style={styles.stockQty}>{stock}</Text>
                 <PressScale onPress={() => change(product.id, 1)} style={styles.stepButton} accessibilityLabel={`Increase stock of ${product.name}`}>
-                  <Icon name="plus" size={16} color={colors.primaryDark} />
+                  <Icon name="plus" size={16} color={brand.primaryDark} />
                 </PressScale>
               </View>
             </View>

@@ -16,6 +16,7 @@ import { dateTime, distance, price, shortId } from '@/lib/format';
 import { RIDER_ORDER_STAGE } from '@/lib/delivery-labels';
 import { colors, radius, space, text } from '@/theme/theme';
 import type { RiderOrder } from '@/types/delivery';
+import { useBrand } from '@/lib/brand';
 
 function PickupStep({ order }: { order: RiderOrder }) {
   const [code, setCode] = useState('');
@@ -51,6 +52,7 @@ function GiveBackButton({ order }: { order: RiderOrder }) {
 }
 
 function DeliverStep({ order }: { order: RiderOrder }) {
+  const brand = useBrand();
   const [code, setCode] = useState('');
   const [photo, setPhoto] = useState<string | null>(null);
   const [cash, setCash] = useState('');
@@ -73,7 +75,7 @@ function DeliverStep({ order }: { order: RiderOrder }) {
       {photo ? (
         <Pressable onPress={snap}><Image source={{ uri: photo }} style={styles.photo} /><Text style={[text.small, { textAlign: 'center', marginTop: 4 }]}>Tap to retake</Text></Pressable>
       ) : (
-        <Pressable onPress={snap} style={styles.camera}><Icon name="camera" size={26} color={colors.primary} /><Text style={{ fontWeight: '600', color: colors.primaryDark }}>Take photo</Text><Text style={text.small}>Show the package at the door</Text></Pressable>
+        <Pressable onPress={snap} style={[styles.camera, { backgroundColor: brand.primarySoft }]}><Icon name="camera" size={26} color={brand.primary} /><Text style={{ fontWeight: '600', color: brand.primaryDark }}>Take photo</Text><Text style={text.small}>Show the package at the door</Text></Pressable>
       )}
 
       <Text style={styles.stepLabel}>3. Cash collected</Text>

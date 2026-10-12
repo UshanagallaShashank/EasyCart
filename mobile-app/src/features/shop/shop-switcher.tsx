@@ -12,8 +12,10 @@ import { colors, radius, shadow, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
 import { useMyStores } from './shop-api';
 import { useShop } from './shop-context';
+import { useBrand } from '@/lib/brand';
 
 export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string | null }) {
+  const brand = useBrand();
   const [open, setOpen] = useState(false);
   const { slug, setSlug } = useShop();
   const { data: stores } = useMyStores();
@@ -37,7 +39,7 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={styles.trigger} accessibilityRole="button" accessibilityLabel="Switch shop">
-        <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={styles.headerLogo} contentFit="cover" />
+        <Image source={logoUrl ? { uri: logoUrl } : require('../../../assets/logo-mark.png')} style={[styles.headerLogo, { backgroundColor: brand.primarySoft }]} contentFit="cover" />
         <Text style={styles.headerName} numberOfLines={1}>{name}</Text>
         <Icon name="chevron-down" size={18} color={colors.textMuted} />
       </Pressable>
@@ -56,23 +58,23 @@ export function ShopSwitcher({ name, logoUrl }: { name: string; logoUrl?: string
                 const active = store.slug === slug;
                 const logo = fileUrl(store.logo_url);
                 return (
-                  <PressScale key={store.slug} onPress={() => choose(store.slug)} style={[styles.row, active && styles.rowActive]} accessibilityRole="button">
-                    {logo ? <Image source={{ uri: logo }} style={styles.logo} /> : <View style={styles.logo}><Icon name="store" size={20} color={colors.primary} /></View>}
+                  <PressScale key={store.slug} onPress={() => choose(store.slug)} style={[styles.row, active && [styles.rowActive, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]]} accessibilityRole="button">
+                    {logo ? <Image source={{ uri: logo }} style={[styles.logo, { backgroundColor: brand.primarySoft }]} /> : <View style={[styles.logo, { backgroundColor: brand.primarySoft }]}><Icon name="store" size={20} color={brand.primary} /></View>}
                     <Text style={styles.storeName} numberOfLines={1}>{store.name}</Text>
-                    {active && <Icon name="check-circle" size={20} color={colors.primary} />}
+                    {active && <Icon name="check-circle" size={20} color={brand.primary} />}
                   </PressScale>
                 );
               })}
             </ScrollView>
 
-            <PressScale onPress={findNearby} style={styles.nearbyRow} accessibilityRole="button">
+            <PressScale onPress={findNearby} style={[styles.nearbyRow, { backgroundColor: brand.primary }]} accessibilityRole="button">
               <Icon name="map-pin" size={18} color={colors.white} />
               <Text style={styles.nearbyText}>{t('Find shops near me')}</Text>
             </PressScale>
 
-            <PressScale onPress={enterCode} style={styles.addRow} accessibilityRole="button">
-              <Icon name="plus" size={18} color={colors.primary} />
-              <Text style={styles.addText}>{t('Open a shop by its code')}</Text>
+            <PressScale onPress={enterCode} style={[styles.addRow, { backgroundColor: brand.primarySoft }]} accessibilityRole="button">
+              <Icon name="plus" size={18} color={brand.primary} />
+              <Text style={[styles.addText, { color: brand.primary }]}>{t('Open a shop by its code')}</Text>
             </PressScale>
           </Animated.View>
         </Animated.View>

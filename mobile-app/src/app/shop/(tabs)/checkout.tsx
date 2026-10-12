@@ -118,10 +118,10 @@ export default function CheckoutScreen() {
         <View style={styles.methods}>
           {(['delivery', 'pickup'] as Method[]).map((option) => (
             <PressScale key={option} onPress={() => setMethod(option)} style={[styles.method, method === option && chosen]} accessibilityState={{ selected: method === option }}>
-              <View style={[styles.methodIcon, method === option && { backgroundColor: colors.primaryTint }]}>
-                <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? colors.primary : colors.textMuted} />
+              <View style={[styles.methodIcon, method === option && { backgroundColor: brand.primaryTint }]}>
+                <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? brand.primary : colors.textMuted} />
               </View>
-              <Text style={[styles.methodText, method === option && { color: colors.primaryDark }]}>{option === 'delivery' ? t('Delivery') : t('Pick up')}</Text>
+              <Text style={[styles.methodText, method === option && { color: brand.primaryDark }]}>{option === 'delivery' ? t('Delivery') : t('Pick up')}</Text>
               <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : t('Free')) : t('Free')}</Text>
             </PressScale>
           ))}
@@ -129,8 +129,8 @@ export default function CheckoutScreen() {
         {method === 'delivery' ? (
           <>
             {address ? (
-              <View style={styles.addressBox}>
-                <View style={styles.addressIcon}><Icon name="map-pin" size={18} color={colors.primary} /></View>
+              <View style={[styles.addressBox, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
+                <View style={[styles.addressIcon, { backgroundColor: brand.primaryTint }]}><Icon name="map-pin" size={18} color={brand.primary} /></View>
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={text.heading} numberOfLines={1}>{address.recipientName} · {address.label}</Text>
                   <Text style={text.muted}>{addressLocation(address)}</Text>
@@ -174,10 +174,10 @@ export default function CheckoutScreen() {
           <View style={styles.methods}>
             {(['cash_on_delivery', 'online'] as const).map((option) => (
               <PressScale key={option} onPress={() => setPayWith(option)} style={[styles.method, paymentChoice === option && chosen]} accessibilityState={{ selected: paymentChoice === option }}>
-                <View style={[styles.methodIcon, paymentChoice === option && { backgroundColor: colors.primaryTint }]}>
-                  <Icon name={option === 'online' ? 'credit-card' : 'wallet'} size={20} color={paymentChoice === option ? colors.primary : colors.textMuted} />
+                <View style={[styles.methodIcon, paymentChoice === option && { backgroundColor: brand.primaryTint }]}>
+                  <Icon name={option === 'online' ? 'credit-card' : 'wallet'} size={20} color={paymentChoice === option ? brand.primary : colors.textMuted} />
                 </View>
-                <Text style={[styles.methodText, paymentChoice === option && { color: colors.primaryDark }]}>{option === 'online' ? t('Pay online') : t('Cash on delivery')}</Text>
+                <Text style={[styles.methodText, paymentChoice === option && { color: brand.primaryDark }]}>{option === 'online' ? t('Pay online') : t('Cash on delivery')}</Text>
               </PressScale>
             ))}
           </View>

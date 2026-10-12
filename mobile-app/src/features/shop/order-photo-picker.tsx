@@ -9,6 +9,7 @@ import { errorMessage } from '@/lib/api';
 import { pickPhotos } from '@/lib/device';
 import { colors, radius, space } from '@/theme/theme';
 import { uploadOrderPhoto } from './shop-api';
+import { useBrand } from '@/lib/brand';
 
 export function OrderPhotoPicker({ orderId, purpose, photos, onChange, onBusyChange, max = 3 }: {
   orderId: string;
@@ -18,6 +19,7 @@ export function OrderPhotoPicker({ orderId, purpose, photos, onChange, onBusyCha
   onBusyChange?(busy: boolean): void;
   max?: number;
 }) {
+  const brand = useBrand();
   const toast = useToast();
   const [uploading, setUploading] = useState(false);
 
@@ -54,14 +56,14 @@ export function OrderPhotoPicker({ orderId, purpose, photos, onChange, onBusyCha
           </Pressable>
         </View>
       ))}
-      {uploading ? <View style={[styles.photo, styles.adding]}><ActivityIndicator color={colors.primary} /></View> : null}
+      {uploading ? <View style={[styles.photo, [styles.adding, { borderColor: brand.primaryTint, backgroundColor: brand.primarySoft }]]}><ActivityIndicator color={brand.primary} /></View> : null}
       {!uploading && photos.length < max ? (
         <>
-          <Pressable onPress={() => void add('camera')} style={[styles.photo, styles.adding]} accessibilityLabel="Take a photo">
-            <Icon name="camera" size={22} color={colors.primary} />
+          <Pressable onPress={() => void add('camera')} style={[styles.photo, [styles.adding, { borderColor: brand.primaryTint, backgroundColor: brand.primarySoft }]]} accessibilityLabel="Take a photo">
+            <Icon name="camera" size={22} color={brand.primary} />
           </Pressable>
-          <Pressable onPress={() => void add('library')} style={[styles.photo, styles.adding]} accessibilityLabel="Choose a photo">
-            <Icon name="image" size={22} color={colors.primary} />
+          <Pressable onPress={() => void add('library')} style={[styles.photo, [styles.adding, { borderColor: brand.primaryTint, backgroundColor: brand.primarySoft }]]} accessibilityLabel="Choose a photo">
+            <Icon name="image" size={22} color={brand.primary} />
           </Pressable>
         </>
       ) : null}

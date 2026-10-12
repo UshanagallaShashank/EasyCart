@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Image, View } from 'react-native';
 import { Text } from '@/components/text';
 import { router } from 'expo-router';
+import { AccountCard } from '@/components/menu-list';
 import { Avatar, Badge, Button, Card, InfoRow, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useConfirmedSignOut } from '@/components/confirm';
@@ -61,16 +62,7 @@ export default function RiderProfile() {
 
   return (
     <Screen>
-      <Card>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.md }}>
-          <Avatar name={rider.full_name} photoUrl={rider.photo_url} size={56} />
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={text.heading}>{rider.full_name}</Text>
-            <Text style={text.small}>{rider.email} · {rider.phone_number}</Text>
-            <Badge tone={status.tone} label={status.label} />
-          </View>
-        </View>
-      </Card>
+      <AccountCard name={rider.full_name} photoUrl={rider.photo_url} detail={`${rider.email} · ${rider.phone_number}`} badge={<Badge tone={status.tone} label={status.label} />} />
       {rider.status !== 'approved' && <ApplicationStatus rider={rider} />}
       {(rider.status === 'draft' || rider.status === 'rejected') && <Button icon="edit-3" label="Edit application" onPress={() => router.push('/rider/application')} />}
 

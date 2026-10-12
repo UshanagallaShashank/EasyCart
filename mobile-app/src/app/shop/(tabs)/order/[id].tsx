@@ -18,6 +18,7 @@ import { DeliverySteps, PICKUP_STEPS, ProgressTimeline, ProofPhoto, RiderCard, o
 import { api, errorMessage } from '@/lib/api';
 import { date, price, shortId } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 // Which pickup step the order is on, from its status.
 function pickupStep(status: string, fulfilment: string) {
@@ -28,6 +29,7 @@ function pickupStep(status: string, fulfilment: string) {
 }
 
 export default function CustomerOrderScreen() {
+  const brand = useBrand();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: order, isLoading, refetch, isRefetching } = useMyOrder(id);
   const isDelivery = order?.fulfillment_method === 'delivery' && order.status !== 'cancelled';
@@ -54,8 +56,8 @@ export default function CustomerOrderScreen() {
     <Screen onRefresh={refetch} refreshing={isRefetching}>
       <Stack.Screen options={{ title: t('Order {id}', { id: shortId(order.id) }) }} />
       <View style={styles.hero}>
-        <View style={styles.heroIcon}>
-          <Icon name={order.status === 'cancelled' ? 'x-circle' : order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={26} color={colors.primary} />
+        <View style={[styles.heroIcon, { backgroundColor: brand.primarySoft }]}>
+          <Icon name={order.status === 'cancelled' ? 'x-circle' : order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={26} color={brand.primary} />
         </View>
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={styles.heroId}>{shortId(order.id)}</Text>
@@ -69,7 +71,7 @@ export default function CustomerOrderScreen() {
         <Card title="Where is my order?" icon="truck">
           <DeliverySteps stage={delivery.stage} offer={delivery.rider_offer_status} />
           {delivery.delivery_code && (
-            <View style={styles.code}>
+            <View style={[styles.code, { backgroundColor: brand.primary }]}>
               <Text style={styles.codeLabel}>YOUR DELIVERY CODE</Text>
               <Text style={styles.codeValue}>{delivery.delivery_code}</Text>
               <Text style={styles.codeHint}>Share it only after you have your order in hand. Never share it on a call.</Text>

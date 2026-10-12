@@ -27,13 +27,13 @@ export default function RiderRegisterScreen() {
   });
 
   return (
-    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Sign in</Link></Text>}>
+    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Sign in</Link></Text>}>
       <Notice icon="shield">After this you add your vehicle, licence, RC and ID. An admin checks them before you can go online.</Notice>
-      <Field label="Full name (as on your licence)" value={form.full_name} onChangeText={set('full_name')} />
-      <Field label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" />
-      <Field label="Mobile number" value={form.phone_number} onChangeText={set('phone_number')} keyboardType="phone-pad" />
-      <Field label="Email" value={form.email} onChangeText={set('email')} autoCapitalize="none" keyboardType="email-address" />
-      <Field label="Password" value={form.password} onChangeText={set('password')} secureTextEntry hint="8–20 characters with a capital letter, a number and a symbol" />
+      <Field icon="user" label="Full name (as on your licence)" value={form.full_name} onChangeText={set('full_name')} />
+      <Field icon="user" label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" />
+      <Field icon="phone" label="Mobile number" value={form.phone_number} onChangeText={set('phone_number')} keyboardType="phone-pad" />
+      <Field icon="mail" label="Email" value={form.email} onChangeText={set('email')} autoCapitalize="none" keyboardType="email-address" />
+      <Field icon="lock" label="Password" value={form.password} onChangeText={set('password')} secureTextEntry hint="8–20 characters with a capital letter, a number and a symbol" />
       <Button label="Continue" onPress={() => register.mutate()} loading={register.isPending} />
     </AuthShell>
   );

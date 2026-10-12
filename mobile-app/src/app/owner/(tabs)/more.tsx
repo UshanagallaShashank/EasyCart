@@ -1,20 +1,18 @@
-// "More": everything else the website's dashboard has, as a simple menu, plus the account and log out.
-import { Pressable, StyleSheet, View } from 'react-native';
+// "More": everything else the website's dashboard has, as one grouped menu, plus the account and log out.
 import { router } from 'expo-router';
-import { Text } from '@/components/text';
-import { Icon, type IconName } from '@/components/icon';
-import { Avatar, Button, Screen, SectionTitle } from '@/components/ui';
+import { Button, Screen, SectionTitle } from '@/components/ui';
+import { AccountCard, MenuList, type MenuItem } from '@/components/menu-list';
 import { useSession } from '@/lib/session';
 import { useConfirmedSignOut } from '@/components/confirm';
-import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { accents } from '@/theme/theme';
 
-const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/owner/earnings' | '/owner/refunds' | '/owner/customers' | '/owner/coupons' | '/owner/categories' | '/owner/store-settings'; fg: string; bg: string }[] = [
-  { icon: 'wallet', title: 'Earnings', subtitle: 'What you keep after the platform fee', href: '/owner/earnings', fg: '#059669', bg: '#d1fae5' },
-  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests from customers', href: '/owner/refunds', fg: '#e11d48', bg: '#ffe4e6' },
-  { icon: 'users', title: 'Customers', subtitle: 'Who has ordered, and how much', href: '/owner/customers', fg: '#7c3aed', bg: '#ede9fe' },
-  { icon: 'ticket', title: 'Coupons', subtitle: 'Discount codes for your shoppers', href: '/owner/coupons', fg: '#d97706', bg: '#fef3c7' },
-  { icon: 'tags', title: 'Categories', subtitle: 'Group your products', href: '/owner/categories', fg: '#0284c7', bg: '#e0f2fe' },
-  { icon: 'store', title: 'Store settings', subtitle: 'Name, delivery fee, announcement, publish', href: '/owner/store-settings', fg: '#059669', bg: '#d1fae5' }
+const ITEMS: MenuItem[] = [
+  { icon: 'wallet', title: 'Earnings', subtitle: 'What you keep after the platform fee', color: accents.green.fg, onPress: () => router.push('/owner/earnings') },
+  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests from customers', color: accents.rose.fg, onPress: () => router.push('/owner/refunds') },
+  { icon: 'users', title: 'Customers', subtitle: 'Who has ordered, and how much', color: accents.violet.fg, onPress: () => router.push('/owner/customers') },
+  { icon: 'ticket', title: 'Coupons', subtitle: 'Discount codes for your shoppers', color: accents.amber.fg, onPress: () => router.push('/owner/coupons') },
+  { icon: 'tags', title: 'Categories', subtitle: 'Group your products', color: accents.sky.fg, onPress: () => router.push('/owner/categories') },
+  { icon: 'store', title: 'Store settings', subtitle: 'Name, delivery fee, announcement, publish', color: accents.teal.fg, onPress: () => router.push('/owner/store-settings') }
 ];
 
 export default function OwnerMore() {
@@ -22,34 +20,10 @@ export default function OwnerMore() {
   const logout = useConfirmedSignOut();
   return (
     <Screen>
-      <View style={styles.account}>
-        <Avatar name={user?.username ?? '?'} size={52} />
-        <View style={{ flex: 1 }}>
-          <Text style={text.heading} numberOfLines={1}>{user?.username}</Text>
-          <Text style={text.small} numberOfLines={1}>{user?.email}</Text>
-        </View>
-      </View>
-
+      <AccountCard name={user?.username ?? '?'} detail={user?.email ?? ''} />
       <SectionTitle>Manage your store</SectionTitle>
-      {ITEMS.map((item) => (
-        <Pressable key={item.href} accessibilityRole="button" onPress={() => router.push(item.href)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}>
-          <View style={[styles.icon, { backgroundColor: item.bg }]}><Icon name={item.icon} size={20} color={item.fg} /></View>
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={text.small}>{item.subtitle}</Text>
-          </View>
-          <Icon name="chevron-right" size={18} color={colors.textFaint} />
-        </Pressable>
-      ))}
-
+      <MenuList items={ITEMS} />
       <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  account: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
-  icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 16, fontWeight: '700', color: colors.text }
-});

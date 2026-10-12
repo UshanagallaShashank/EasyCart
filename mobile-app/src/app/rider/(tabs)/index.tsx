@@ -22,11 +22,8 @@ export default function RiderHome() {
 
   return (
     <Screen onRefresh={() => void home.refetch()} refreshing={home.isRefetching}>
-      <HeroHeader
-        title={`Hi, ${rider.full_name.split(' ')[0]}`}
-        subtitle={!approved ? 'Finish your application to start delivering' : (home.data?.rider ?? rider).is_online ? 'You are online and getting orders' : 'You are offline. Go online to get orders'}
-        icon="bike"
-      />
+      {/* Once approved, the online card greets the rider, so the banner is only for riders still applying. */}
+      {!approved && <HeroHeader title={`Hi, ${rider.full_name.split(' ')[0]}`} subtitle="Finish your application to start delivering" icon="bike" />}
       {!approved && (
         <>
           <ApplicationStatus rider={rider} />

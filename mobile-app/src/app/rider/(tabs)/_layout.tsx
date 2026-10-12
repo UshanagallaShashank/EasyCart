@@ -1,4 +1,5 @@
 import { Pressable } from 'react-native';
+import { RoleLookProvider } from '@/lib/brand';
 import { Tabs, router } from 'expo-router';
 import { Avatar } from '@/components/ui';
 import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
@@ -29,7 +30,8 @@ export default function RiderTabs() {
   const offers = home.data?.offers ?? [];
   useOfferAlert(home.data?.offers);
   return (
-    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <ProfileButton /> }}>
+    <RoleLookProvider look="electric">
+    <Tabs backBehavior="history" tabBar={tabOptions.tabBar} screenOptions={{ ...tabOptions, headerRight: () => <ProfileButton /> }}>
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: tabIcon('bike'), tabBarBadge: offers.length > 0 ? offers.length : undefined }} />
       {/* History and earnings only matter once the rider can deliver. */}
       <Tabs.Screen name="history" options={{ title: 'History', tabBarIcon: tabIcon('clock'), href: approved ? undefined : null }} />
@@ -38,5 +40,6 @@ export default function RiderTabs() {
       <Tabs.Screen name="order/[id]" options={hiddenPage('Delivery')} />
       <Tabs.Screen name="application" options={hiddenPage('Partner application')} />
     </Tabs>
+    </RoleLookProvider>
   );
 }

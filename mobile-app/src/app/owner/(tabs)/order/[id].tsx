@@ -15,6 +15,7 @@ import { errorMessage } from '@/lib/api';
 import { dateTime, price, shortId } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 import type { Order } from '@/types/order';
+import { useBrand } from '@/lib/brand';
 
 function NextStep({ order }: { order: Order }) {
   const toast = useToast();
@@ -47,6 +48,7 @@ function NextStep({ order }: { order: Order }) {
 }
 
 function DeliveryCard({ order }: { order: Order }) {
+  const brand = useBrand();
   const { data: delivery } = useOrderDelivery(order.id, true);
   const action = useOwnerAction(ownerCalls.delivery);
   const settle = useOwnerAction(ownerCalls.settle);
@@ -71,8 +73,8 @@ function DeliveryCard({ order }: { order: Order }) {
       {delivery.stage === 'ready_for_delivery' && (delivery.declined_count ?? 0) > 0 && <Notice tone="warning" icon="alert-circle">{delivery.declined_count} riders passed on or gave back this order. Others nearby can still take it. Pull down to refresh, or tap Search again, to alert every rider again.</Notice>}
       {delivery.rider && <RiderCard rider={delivery.rider} caption={delivery.stage === 'delivered' ? 'Delivered by' : 'Your rider'} />}
       {delivery.pickup_code && (
-        <View style={styles.pickup}>
-          <Text style={[text.label, { color: colors.primaryDark }]}>Pickup code</Text>
+        <View style={[styles.pickup, { backgroundColor: brand.primarySoft }]}>
+          <Text style={[text.label, { color: brand.primaryDark }]}>Pickup code</Text>
           <Text style={styles.pickupCode}>{delivery.pickup_code}</Text>
           <Text style={[text.small, { textAlign: 'center' }]}>{waitingPickup ? 'Check the rider matches the photo and plate, then tell them this code.' : 'Give this only to the rider who comes to collect.'}</Text>
         </View>

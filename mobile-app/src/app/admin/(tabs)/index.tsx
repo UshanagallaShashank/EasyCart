@@ -8,7 +8,8 @@ import { Card, InfoRow, Loading, Screen, SectionTitle, StatCard } from '@/compon
 import { useRiders, useStats, useTenants } from '@/features/admin/admin-api';
 import { useSession } from '@/lib/session';
 import { price } from '@/lib/format';
-import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { colors, glow, radius, shadow, space, text } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -17,6 +18,7 @@ function greeting() {
 
 export default function AdminOverview() {
   const { user } = useSession();
+  const brand = useBrand();
   const stats = useStats();
   const tenants = useTenants();
   const riders = useRiders();
@@ -28,7 +30,7 @@ export default function AdminOverview() {
 
   return (
     <Screen onRefresh={() => { void stats.refetch(); void tenants.refetch(); void riders.refetch(); }} refreshing={stats.isRefetching}>
-      <LinearGradient colors={['#e0f2fe', '#e0f4ff', '#dbeafe']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.banner}>
+      <LinearGradient colors={brand.mesh} locations={[0, 0.4, 0.75, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.banner, glow(brand.glow)]}>
         <Text style={styles.hello}>{greeting()}, {user?.username}</Text>
         <Text style={styles.bannerTitle}>Platform at a glance</Text>
       </LinearGradient>
@@ -65,9 +67,9 @@ function Action({ icon, one, many, idle, count, done, href }: { icon: IconName; 
 }
 
 const styles = StyleSheet.create({
-  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.xs, overflow: 'hidden', borderWidth: 1, borderColor: '#bae6fd' },
-  hello: { color: '#0284c7', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  bannerTitle: { color: '#0f172a', fontSize: 24, fontWeight: '900', letterSpacing: -0.6 },
+  banner: { borderRadius: radius.xl, padding: space.xl, gap: space.xs, overflow: 'hidden' },
+  hello: { color: 'rgba(255,255,255,0.85)', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+  bannerTitle: { color: colors.white, fontSize: 24, fontWeight: '900', letterSpacing: -0.6 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
   action: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   actionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }

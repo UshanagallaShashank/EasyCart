@@ -1,3 +1,4 @@
+import { RoleLookProvider } from '@/lib/brand';
 import { Tabs } from 'expo-router';
 import { SignOutButton, hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { useRiders, useTenants } from '@/features/admin/admin-api';
@@ -11,7 +12,8 @@ const ACTIVE_FOR = {
   themes: 'more',
   users: 'more',
   sales: 'more',
-  growth: 'more'
+  growth: 'more',
+  status: 'more'
 };
 
 export default function AdminTabs() {
@@ -21,7 +23,8 @@ export default function AdminTabs() {
   const { data: stores } = useTenants();
   const requests = (stores ?? []).filter((store) => store.status === 'pending').length;
   return (
-    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <SignOutButton /> }}>
+    <RoleLookProvider look="cosmos">
+    <Tabs backBehavior="history" tabBar={tabOptions.tabBar} screenOptions={{ ...tabOptions, headerRight: () => <SignOutButton /> }}>
       <Tabs.Screen name="index" options={{ title: 'Overview', tabBarIcon: tabIcon('grid') }} />
       <Tabs.Screen name="stores" options={{ title: 'Stores', tabBarIcon: tabIcon('store'), tabBarBadge: requests > 0 ? requests : undefined }} />
       <Tabs.Screen name="partners" options={{ title: 'Partners', tabBarIcon: tabIcon('bike'), tabBarBadge: waiting > 0 ? waiting : undefined }} />
@@ -35,6 +38,8 @@ export default function AdminTabs() {
       <Tabs.Screen name="users" options={hiddenPage('Users')} />
       <Tabs.Screen name="sales" options={hiddenPage('Sales')} />
       <Tabs.Screen name="growth" options={hiddenPage('Growth')} />
+      <Tabs.Screen name="status" options={hiddenPage('System status')} />
     </Tabs>
+    </RoleLookProvider>
   );
 }

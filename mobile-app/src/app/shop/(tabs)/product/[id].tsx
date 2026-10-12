@@ -17,6 +17,7 @@ import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
 import { colors, radius, space, text } from '@/theme/theme';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
+import { ProductPlaceholder } from '@/components/product-placeholder';
 
 const PHOTO_HEIGHT = 300;
 
@@ -105,13 +106,13 @@ export default function ProductScreen() {
 
   const footer = existingCartLine ? (
     <View style={styles.footerRow}>
-      <View style={styles.stepper}>
+      <View style={[styles.stepper, { borderColor: brand.primaryTint, backgroundColor: brand.primarySoft }]}>
         <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity - 1)} style={styles.stepButton} accessibilityLabel={existingCartLine.quantity === 1 ? 'Remove from cart' : 'Less'}>
-          <Icon name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={existingCartLine.quantity === 1 ? colors.danger : colors.primaryDark} />
+          <Icon name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={existingCartLine.quantity === 1 ? colors.danger : brand.primaryDark} />
         </PressScale>
         <Text style={styles.qty}>{existingCartLine.quantity}</Text>
         <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity + 1)} disabled={existingCartLine.quantity >= stock} style={[styles.stepButton, existingCartLine.quantity >= stock && { opacity: 0.35 }]} accessibilityLabel="More">
-          <Icon name="plus" size={16} color={colors.primaryDark} />
+          <Icon name="plus" size={16} color={brand.primaryDark} />
         </PressScale>
       </View>
       <View style={{ flex: 1 }}>
@@ -173,7 +174,7 @@ export default function ProductScreen() {
           </View>
         ) : (
           <View style={{ width: cardWidth, height: PHOTO_HEIGHT, alignItems: 'center', justifyContent: 'center' }}>
-            <Icon name="image" size={36} color={colors.textFaint} />
+            <ProductPlaceholder name={product.name} size="lg" />
           </View>
         )}
 
@@ -216,7 +217,7 @@ export default function ProductScreen() {
             {images.map((_, idx) => (
               <View
                 key={idx}
-                style={[styles.dot, idx === photo && styles.dotActive]}
+                style={[styles.dot, idx === photo && [styles.dotActive, { backgroundColor: brand.primary }]]}
               />
             ))}
           </View>
@@ -232,7 +233,7 @@ export default function ProductScreen() {
               <Pressable
                 key={`${uri}-${index}`}
                 onPress={() => handleThumbnailPress(index)}
-                style={[styles.thumb, active && styles.thumbActive]}
+                style={[styles.thumb, active && [styles.thumbActive, { borderColor: brand.primary }]]}
                 accessibilityLabel={`View photo ${index + 1}`}
               >
                 <Image source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit="contain" />
@@ -268,8 +269,8 @@ export default function ProductScreen() {
             {product.variants.map((v) => {
               const active = v.label === variantLabel;
               return (
-                <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && styles.variantActive, v.stock <= 0 && { opacity: 0.4 }]}>
-                  <Text style={[styles.variantText, active && { color: colors.primaryDark }]}>{v.label}</Text>
+                <PressScale key={v.label} disabled={v.stock <= 0} onPress={() => { setVariantLabel(v.label); setQuantity(1); }} style={[styles.variant, active && [styles.variantActive, { borderColor: brand.primary, backgroundColor: brand.primarySoft }], v.stock <= 0 && { opacity: 0.4 }]}>
+                  <Text style={[styles.variantText, active && { color: brand.primaryDark }]}>{v.label}</Text>
                 </PressScale>
               );
             })}
@@ -280,17 +281,17 @@ export default function ProductScreen() {
       {!needsVariant && stock > 0 && !existingCartLine && (
         <View style={styles.stepperRow}>
           <Text style={text.heading}>{t('Quantity')}</Text>
-          <View style={styles.stepper}>
-            <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={colors.primaryDark} /></PressScale>
+          <View style={[styles.stepper, { borderColor: brand.primaryTint, backgroundColor: brand.primarySoft }]}>
+            <PressScale onPress={() => setQuantity((q) => Math.max(1, q - 1))} style={styles.stepButton} accessibilityLabel="Less"><Icon name="minus" size={16} color={brand.primaryDark} /></PressScale>
             <Text style={styles.qty}>{quantity}</Text>
-            <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={colors.primaryDark} /></PressScale>
+            <PressScale onPress={() => setQuantity((q) => Math.min(stock, q + 1))} style={styles.stepButton} accessibilityLabel="More"><Icon name="plus" size={16} color={brand.primaryDark} /></PressScale>
           </View>
         </View>
       )}
 
-      <View style={styles.trust}>
-        <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
-        <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
+      <View style={[styles.trust, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
+        <View style={styles.trustRow}><Icon name="truck" size={16} color={brand.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
+        <View style={styles.trustRow}><Icon name="shield-check" size={16} color={brand.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
       </View>
     </Screen>
   );

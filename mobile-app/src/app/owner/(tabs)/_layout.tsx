@@ -24,7 +24,7 @@ export default function OwnerTabs() {
   const fresh = (orders ?? []).filter((order) => order.status === 'pending').length;
   return (
     <BrandProvider themeId={store?.color_theme}>
-    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <SignOutButton /> }}>
+    <Tabs backBehavior="history" tabBar={tabOptions.tabBar} screenOptions={{ ...tabOptions, headerRight: () => <SignOutButton /> }}>
       <Tabs.Screen name="index" options={{ title: 'Overview', tabBarIcon: tabIcon('grid') }} />
       <Tabs.Screen name="orders" options={{ title: 'Orders', tabBarIcon: tabIcon('clipboard'), tabBarBadge: fresh > 0 ? fresh : undefined }} />
       <Tabs.Screen name="delivery" options={{ title: 'Delivery', tabBarIcon: tabIcon('truck') }} />

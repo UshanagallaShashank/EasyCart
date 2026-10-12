@@ -10,8 +10,11 @@ import { productCalls, useOwnCategories, useOwnerProducts, useRefreshingAction, 
 import { pickPhotos } from '@/lib/device';
 import { errorMessage, fileUrl } from '@/lib/api';
 import { colors, radius, space, text } from '@/theme/theme';
+import { AiDescribeButton } from '@/features/ai/ai-describe-button';
+import { useBrand } from '@/lib/brand';
 
 function OwnerProduct() {
+  const brand = useBrand();
   const { id } = useLocalSearchParams<{ id: string }>();
   const isNew = id === 'new';
   const products = useOwnerProducts();
@@ -164,7 +167,7 @@ function OwnerProduct() {
                     key={`${imgUri}-${index}`}
                     style={[
                       styles.imageItem,
-                      isCover && { borderColor: colors.primary, borderWidth: 2 }
+                      isCover && { borderColor: brand.primary, borderWidth: 2 }
                     ]}
                   >
                     {uri ? (
@@ -174,7 +177,7 @@ function OwnerProduct() {
                     )}
 
                     {isCover && (
-                      <View style={styles.coverBadge}>
+                      <View style={[styles.coverBadge, { backgroundColor: brand.primary }]}>
                         <Text style={styles.coverBadgeText}>Cover</Text>
                       </View>
                     )}
@@ -236,6 +239,7 @@ function OwnerProduct() {
         <Field label="Product name" value={form.name} onChangeText={set('name')} placeholder="e.g. Dove Beauty Moisture Bar" />
         <Field label="Price (Rs.)" value={form.price} onChangeText={set('price')} keyboardType="decimal-pad" placeholder="0.00" />
         <Field label="Description (optional)" value={form.description} onChangeText={set('description')} multiline placeholder="What makes it special?" />
+        <AiDescribeButton name={form.name} notes={form.description} category={categories.data?.find((category) => category.id === form.categoryId)?.name} onWritten={set('description')} />
         {isNew && <Field label="SKU (optional)" hint="Your own product code" value={form.sku} onChangeText={set('sku')} autoCapitalize="characters" placeholder="e.g. SOAP-100" />}
       </Card>
 

@@ -34,7 +34,7 @@ export function ThemePicker({ current }: { current: string | null | undefined })
           const active = id === chosen;
           return (
             <Pressable key={id} onPress={() => pick(id)} style={[styles.option, active && { borderColor: brand.primary }]} accessibilityRole="button" accessibilityState={{ selected: active }} accessibilityLabel={brand.name} disabled={save.isPending}>
-              <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.swatch}>
+              <LinearGradient colors={brand.mesh} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.swatch}>
                 {active ? <Icon name="check" size={18} color={colors.white} strokeWidth={3} /> : null}
               </LinearGradient>
               <Text style={[styles.name, active && { color: brand.primaryDark }]}>{brand.name}</Text>

@@ -1,20 +1,22 @@
-// "More" for the admin: the rest of the website's admin pages, plus the account and log out.
-import { Pressable, StyleSheet, View } from 'react-native';
+// "More" for the admin: the rest of the website's admin pages as one grouped menu, plus the account and log out.
 import { router } from 'expo-router';
-import { Text } from '@/components/text';
-import { Icon, type IconName } from '@/components/icon';
-import { Avatar, Button, Screen, SectionTitle } from '@/components/ui';
+import { Button, Screen, SectionTitle } from '@/components/ui';
+import { AccountCard, MenuList, type MenuItem } from '@/components/menu-list';
 import { useSession } from '@/lib/session';
 import { useConfirmedSignOut } from '@/components/confirm';
-import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { accents } from '@/theme/theme';
 
-const ITEMS: { icon: IconName; title: string; subtitle: string; href: '/admin/earnings' | '/admin/refunds' | '/admin/themes' | '/admin/users' | '/admin/sales' | '/admin/growth'; fg: string; bg: string }[] = [
-  { icon: 'wallet', title: 'Earnings', subtitle: 'Commission, rider pay and what each shop owes', href: '/admin/earnings', fg: '#059669', bg: '#d1fae5' },
-  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests across all shops', href: '/admin/refunds', fg: '#e11d48', bg: '#ffe4e6' },
-  { icon: 'sparkles', title: 'Shop themes', subtitle: 'Colours owners can pick for their shop', href: '/admin/themes', fg: '#7c3aed', bg: '#ede9fe' },
-  { icon: 'users', title: 'Users', subtitle: 'Store owners, customers, delivery partners, admins', href: '/admin/users', fg: '#7c3aed', bg: '#ede9fe' },
-  { icon: 'dollar-sign', title: 'Sales', subtitle: 'Orders and revenue, day by day', href: '/admin/sales', fg: '#059669', bg: '#d1fae5' },
-  { icon: 'sparkles', title: 'Growth', subtitle: 'New stores and people joining', href: '/admin/growth', fg: '#d97706', bg: '#fef3c7' }
+const MONEY: MenuItem[] = [
+  { icon: 'wallet', title: 'Earnings', subtitle: 'Commission, rider pay and what each shop owes', color: accents.green.fg, onPress: () => router.push('/admin/earnings') },
+  { icon: 'dollar-sign', title: 'Sales', subtitle: 'Orders and revenue, day by day', color: accents.teal.fg, onPress: () => router.push('/admin/sales') },
+  { icon: 'rotate-ccw', title: 'Refunds', subtitle: 'Money-back requests across all shops', color: accents.rose.fg, onPress: () => router.push('/admin/refunds') }
+];
+
+const PLATFORM: MenuItem[] = [
+  { icon: 'users', title: 'Users', subtitle: 'Store owners, customers, delivery partners, admins', color: accents.violet.fg, onPress: () => router.push('/admin/users') },
+  { icon: 'sparkles', title: 'Growth', subtitle: 'New stores and people joining', color: accents.amber.fg, onPress: () => router.push('/admin/growth') },
+  { icon: 'sparkles', title: 'Shop themes', subtitle: 'Colours owners can pick for their shop', color: accents.pink.fg, onPress: () => router.push('/admin/themes') },
+  { icon: 'activity', title: 'System status', subtitle: 'Server uptime, answer time and outages', color: accents.sky.fg, onPress: () => router.push('/admin/status') }
 ];
 
 export default function AdminMore() {
@@ -22,34 +24,12 @@ export default function AdminMore() {
   const logout = useConfirmedSignOut();
   return (
     <Screen>
-      <View style={styles.account}>
-        <Avatar name={user?.username ?? '?'} size={52} />
-        <View style={{ flex: 1 }}>
-          <Text style={text.heading} numberOfLines={1}>{user?.username}</Text>
-          <Text style={text.small} numberOfLines={1}>{user?.email} · Platform admin</Text>
-        </View>
-      </View>
-
-      <SectionTitle>Insights and people</SectionTitle>
-      {ITEMS.map((item) => (
-        <Pressable key={item.href} accessibilityRole="button" onPress={() => router.push(item.href)} style={({ pressed }) => [styles.row, pressed && { opacity: 0.85 }]}>
-          <View style={[styles.icon, { backgroundColor: item.bg }]}><Icon name={item.icon} size={20} color={item.fg} /></View>
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={text.small}>{item.subtitle}</Text>
-          </View>
-          <Icon name="chevron-right" size={18} color={colors.textFaint} />
-        </Pressable>
-      ))}
-
+      <AccountCard name={user?.username ?? '?'} detail={`${user?.email ?? ''} · Platform admin`} />
+      <SectionTitle>Money</SectionTitle>
+      <MenuList items={MONEY} />
+      <SectionTitle>Platform</SectionTitle>
+      <MenuList items={PLATFORM} />
       <Button variant="danger" icon="log-out" label="Log out" onPress={() => void logout()} />
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  account: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
-  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
-  icon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 16, fontWeight: '700', color: colors.text }
-});

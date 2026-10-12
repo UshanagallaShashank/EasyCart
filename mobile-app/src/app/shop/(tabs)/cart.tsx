@@ -13,8 +13,12 @@ import { price } from '@/lib/format';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
 import { ContentText } from '@/components/content-text';
+import { ProductPlaceholder } from '@/components/product-placeholder';
+import { CartSuggestions } from '@/features/shop/cart-suggestions';
+import { useBrand } from '@/lib/brand';
 
 function CartRow({ line }: { line: CartLine }) {
+  const brand = useBrand();
   const { setQuantity } = useShop();
   const atMax = line.quantity >= line.max;
   const t = useT();
@@ -33,13 +37,13 @@ function CartRow({ line }: { line: CartLine }) {
         onPress={() => router.push({ pathname: '/shop/product/[id]', params: { id: line.product_id, variant: line.variant_label ?? '' } })}
       >
         <View style={styles.thumb}>
-          {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <Icon name="image" size={20} color={colors.textFaint} />}
+          {line.image ? <Image source={{ uri: line.image }} style={{ width: '100%', height: '100%' }} /> : <ProductPlaceholder name={line.name} size="sm" />}
         </View>
         <View style={{ flex: 1, gap: 3 }}>
           <ContentText value={line.name} style={text.heading} numberOfLines={2} />
           {line.variant_label ? (
-            <View style={styles.variantBadge}>
-              <Text style={styles.variantBadgeText}>Option: {line.variant_label}</Text>
+            <View style={[styles.variantBadge, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
+              <Text style={[styles.variantBadgeText, { color: brand.primaryDark }]}>Option: {line.variant_label}</Text>
             </View>
           ) : null}
           <Text style={text.small}>{price(line.price)} each</Text>
@@ -48,13 +52,13 @@ function CartRow({ line }: { line: CartLine }) {
 
       <View style={styles.rightCol}>
         <Text style={styles.lineTotal}>{price(line.price * line.quantity)}</Text>
-        <View style={styles.stepper}>
+        <View style={[styles.stepper, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
           <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)} style={styles.stepButton} accessibilityLabel={line.quantity === 1 ? 'Remove item' : 'Less'}>
-            <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={line.quantity === 1 ? colors.danger : colors.primaryDark} />
+            <Icon name={line.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={line.quantity === 1 ? colors.danger : brand.primaryDark} />
           </PressScale>
           <Text style={styles.qty}>{line.quantity}</Text>
           <PressScale onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity + 1)} disabled={atMax} style={[styles.stepButton, atMax && { opacity: 0.3 }]} accessibilityLabel="More">
-            <Icon name="plus" size={16} color={colors.primaryDark} />
+            <Icon name="plus" size={16} color={brand.primaryDark} />
           </PressScale>
         </View>
         {atMax ? <Text style={styles.maxHint}>{t('Max available')}</Text> : null}
@@ -69,7 +73,7 @@ export default function CartScreen() {
   const t = useT();
 
   if (lines.length === 0) {
-    return <Screen><EmptyState icon="shopping-cart" message={t('Your cart is empty. Add something you like and it will show up here.')} action={<Button label={t('Browse products')} variant="outline" onPress={() => router.navigate('/shop')} />} /></Screen>;
+    return <Screen><EmptyState icon="shopping-cart" message={t('Your cart is empty. Add something you like and it will show up here.')} action={<Button label={t('Browse products')} variant="outline" onPress={() => router.navigate('/shop')} />} /><CartSuggestions emptyCart /></Screen>;
   }
 
   return (
@@ -87,6 +91,8 @@ export default function CartScreen() {
         <InfoRow label={t('Subtotal')} value={price(subtotal)} strong />
         <Text style={text.small}>{t('Delivery fee and coupon are added at checkout.')}</Text>
       </Card>
+
+      <CartSuggestions />
     </Screen>
   );
 }

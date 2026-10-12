@@ -7,10 +7,12 @@ import { PressScale } from '@/components/motion';
 import { Button, Card } from '@/components/ui';
 import { accents, colors, radius, space, text } from '@/theme/theme';
 import type { OwnerStore } from './owner-api';
+import { useBrand } from '@/lib/brand';
 
 interface Step { label: string; hint: string; done: boolean; href: Href }
 
 export function SetupChecklist({ store, productCount }: { store: OwnerStore; productCount: number }) {
+  const brand = useBrand();
   const steps: Step[] = [
     { label: 'Add your first products', hint: 'Customers need something to buy', done: productCount > 0, href: '/owner/products' },
     { label: 'Add your shop address', hint: 'Shown to customers and used for pickup', done: Boolean(store.address), href: '/owner/store-settings' },
@@ -21,8 +23,8 @@ export function SetupChecklist({ store, productCount }: { store: OwnerStore; pro
   if (finished === steps.length) return null;
 
   return (
-    <Card title="Set up your shop" icon="sparkles" right={<Text style={styles.count}>{finished} of {steps.length}</Text>}>
-      <View style={styles.track}><View style={[styles.fill, { width: `${(finished / steps.length) * 100}%` }]} /></View>
+    <Card title="Set up your shop" icon="sparkles" right={<Text style={[styles.count, { color: brand.primary }]}>{finished} of {steps.length}</Text>}>
+      <View style={styles.track}><View style={[[styles.fill, { backgroundColor: brand.primary }], { width: `${(finished / steps.length) * 100}%` }]} /></View>
       {steps.map((step) => (
         <PressScale key={step.label} onPress={() => router.push(step.href)} style={styles.row} accessibilityRole="button">
           <View style={[styles.check, step.done && styles.checkDone]}>
@@ -41,6 +43,7 @@ export function SetupChecklist({ store, productCount }: { store: OwnerStore; pro
 
 // The shop code is how customers open this shop in the app, so sharing it brings people in.
 export function ShareShopCard({ store }: { store: OwnerStore }) {
+  const brand = useBrand();
   function share() {
     void Share.share({ message: `Shop at ${store.name} on EasyCart. Open the EasyCart app, choose "Open a shop by its code" and enter: ${store.slug}` });
   }
@@ -49,7 +52,7 @@ export function ShareShopCard({ store }: { store: OwnerStore }) {
     <Card title="Share your shop" icon="send">
       <View style={styles.codeBox}>
         <Text style={styles.codeLabel}>Your shop code</Text>
-        <Text style={styles.code}>{store.slug}</Text>
+        <Text style={[styles.code, { color: brand.primaryDark }]}>{store.slug}</Text>
       </View>
       <Text style={text.small}>Customers enter this code in the app to open your shop.</Text>
       <Button icon="send" label="Share with customers" variant="outline" onPress={share} />

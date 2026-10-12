@@ -13,11 +13,13 @@ import { errorMessage, fileUrl } from '@/lib/api';
 import { DOCUMENT_INFO, REQUIRED_DOCUMENT_KINDS, VEHICLE_LABELS } from '@/lib/delivery-labels';
 import { colors, radius, space, text } from '@/theme/theme';
 import type { DocumentKind, Rider, RiderProfileFields, VehicleType } from '@/types/delivery';
+import { useBrand } from '@/lib/brand';
 
 const FIELDS: (keyof RiderProfileFields)[] = ['full_name', 'date_of_birth', 'vehicle_type', 'vehicle_number', 'license_number', 'license_expiry', 'address_line', 'area', 'city', 'pincode', 'emergency_contact_name', 'emergency_contact_phone', 'upi_id'];
 const pick = (rider: Rider) => Object.fromEntries(FIELDS.map((key) => [key, rider[key] ?? ''])) as unknown as RiderProfileFields;
 
 function DocumentSlot({ kind, rider, editable }: { kind: DocumentKind; rider: Rider; editable: boolean }) {
+  const brand = useBrand();
   const info = DOCUMENT_INFO[kind];
   const current = rider.documents.find((doc) => doc.kind === kind);
   const upload = useRiderAction(riderCalls.uploadDocument);
@@ -34,15 +36,15 @@ function DocumentSlot({ kind, rider, editable }: { kind: DocumentKind; rider: Ri
 
   return (
     <View style={styles.doc}>
-      <View style={[styles.docPreview, current && { borderColor: '#a7f3d0' }]}>
-        {upload.isPending ? <ActivityIndicator color={colors.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Icon name={current ? 'file' : 'camera'} size={24} color={current ? colors.success : colors.primary} />}
+      <View style={[[styles.docPreview, { backgroundColor: brand.primarySoft }], current && { borderColor: '#a7f3d0' }]}>
+        {upload.isPending ? <ActivityIndicator color={brand.primary} /> : current?.url && current.type === 'image' ? <Image source={{ uri: fileUrl(current.url)! }} style={{ width: '100%', height: '100%' }} /> : <Icon name={current ? 'file' : 'camera'} size={24} color={current ? colors.success : brand.primary} />}
         {current && <View style={styles.tick}><Icon name="check" size={14} color={colors.white} /></View>}
       </View>
       <Text style={styles.docTitle} numberOfLines={2}>{info.title}{info.required ? ' *' : ''}</Text>
       {editable && (
         <View style={{ flexDirection: 'row', gap: 6 }}>
-          <Pressable onPress={() => choose('camera')} style={styles.docButton} accessibilityLabel={`Take photo of ${info.title}`}><Icon name="camera" size={14} color={colors.primary} /></Pressable>
-          <Pressable onPress={() => choose('library')} style={styles.docButton} accessibilityLabel={`Choose ${info.title} from gallery`}><Icon name="image" size={14} color={colors.primary} /></Pressable>
+          <Pressable onPress={() => choose('camera')} style={styles.docButton} accessibilityLabel={`Take photo of ${info.title}`}><Icon name="camera" size={14} color={brand.primary} /></Pressable>
+          <Pressable onPress={() => choose('library')} style={styles.docButton} accessibilityLabel={`Choose ${info.title} from gallery`}><Icon name="image" size={14} color={brand.primary} /></Pressable>
         </View>
       )}
     </View>

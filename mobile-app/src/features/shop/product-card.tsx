@@ -16,6 +16,7 @@ import { useProductRatings, type StarSummary } from './shop-api';
 import { useToast } from '@/components/toast';
 import { useT, useContent } from '@/lib/i18n';
 import { useBrand } from '@/lib/brand';
+import { ProductPlaceholder } from '@/components/product-placeholder';
 
 export function productStock(product: Product) {
   return product.variants.length > 0 ? product.variants.reduce((sum, v) => sum + v.stock, 0) : product.stock_quantity;
@@ -72,7 +73,7 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
     <FadeIn index={index} style={{ width }}>
       <PressScale onPress={() => router.push(`/shop/product/${product.id}`)} style={styles.card} accessibilityLabel={product.name}>
         <View style={styles.imageWrap}>
-          {image ? <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} cachePolicy="memory-disk" recyclingKey={product.id} /> : <Icon name="image" size={28} color={colors.textFaint} />}
+          {image ? <Image source={{ uri: image }} style={styles.image} contentFit="cover" transition={150} cachePolicy="memory-disk" recyclingKey={product.id} /> : <ProductPlaceholder name={product.name} />}
           <View style={styles.heart}><FavouriteButton productId={product.id} size={30} /></View>
           {stock <= 0 ? (
             <View style={[styles.badge, { backgroundColor: 'rgba(15,23,42,0.85)' }]}><Text style={[styles.badgeText, { color: colors.white }]}>{t('Sold out')}</Text></View>

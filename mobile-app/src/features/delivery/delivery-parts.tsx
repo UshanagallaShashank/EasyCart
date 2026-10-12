@@ -10,6 +10,7 @@ import { dateTime, price } from '@/lib/format';
 import { VEHICLE_LABELS } from '@/lib/delivery-labels';
 import { colors, radius, space, text } from '@/theme/theme';
 import type { DeliveryStage, DeliveryTimeline, HandoverRider } from '@/types/delivery';
+import { useBrand } from '@/lib/brand';
 
 interface Step { title: string; hint: string; icon: IconName }
 
@@ -38,16 +39,18 @@ function stepIndex(stage: DeliveryStage, offer: 'offered' | 'accepted' | null) {
 
 // The dot of the step that is happening now: a soft ring that pulses.
 function PulseRing() {
+  const brand = useBrand();
   const scale = useSharedValue(1);
   useEffect(() => {
     scale.value = withRepeat(withTiming(1.5, { duration: 1100 }), -1, true);
   }, [scale]);
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }], opacity: 1.6 - scale.value }));
-  return <Animated.View style={[styles.pulse, style]} />;
+  return <Animated.View style={[[styles.pulse, { backgroundColor: brand.primaryTint }], style]} />;
 }
 
 // A vertical list of steps: finished ones in green, the current one highlighted with its hint, the rest greyed.
 export function ProgressTimeline({ steps, current, finished }: { steps: Step[]; current: number; finished: boolean }) {
+  const brand = useBrand();
   return (
     <View>
       {steps.map((step, index) => {
@@ -57,9 +60,9 @@ export function ProgressTimeline({ steps, current, finished }: { steps: Step[]; 
         return (
           <View key={step.title} style={styles.stepRow}>
             <View style={styles.rail}>
-              <View style={[styles.dot, done && styles.dotDone, active && styles.dotActive]}>
+              <View style={[styles.dot, done && styles.dotDone, active && [styles.dotActive, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]]}>
                 {active && <PulseRing />}
-                <Icon name={done ? 'check' : step.icon} size={done ? 14 : 15} color={done ? colors.white : active ? colors.primary : colors.textFaint} strokeWidth={2.4} />
+                <Icon name={done ? 'check' : step.icon} size={done ? 14 : 15} color={done ? colors.white : active ? brand.primary : colors.textFaint} strokeWidth={2.4} />
               </View>
               {!last && <View style={[styles.line, done && styles.lineDone]} />}
             </View>

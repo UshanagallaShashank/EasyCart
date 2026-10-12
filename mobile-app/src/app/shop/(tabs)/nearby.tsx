@@ -16,8 +16,10 @@ import { estimateDelivery } from '@/lib/eta';
 import { price } from '@/lib/format';
 import { accents, colors, radius, space, text } from '@/theme/theme';
 import { useT } from '@/lib/i18n';
+import { useBrand } from '@/lib/brand';
 
 export default function NearbyShops() {
+  const brand = useBrand();
   const { slug, setSlug, location, setLocation } = useShop();
   const t = useT();
   const [locating, setLocating] = useState(false);
@@ -83,7 +85,7 @@ export default function NearbyShops() {
             const logo = fileUrl(shop.logo_url);
             return (
               <PressScale key={shop.slug} onPress={() => open(shop.slug)} style={styles.row} accessibilityRole="button" accessibilityLabel={`Open ${shop.name}`}>
-                {logo ? <Image source={{ uri: logo }} style={styles.logo} /> : <View style={styles.logo}><Icon name="store" size={22} color={colors.primary} /></View>}
+                {logo ? <Image source={{ uri: logo }} style={[styles.logo, { backgroundColor: brand.primarySoft }]} /> : <View style={[styles.logo, { backgroundColor: brand.primarySoft }]}><Icon name="store" size={22} color={brand.primary} /></View>}
                 <View style={{ flex: 1, gap: 4 }}>
                   <View style={styles.titleRow}>
                     <Text style={styles.name} numberOfLines={1}>{shop.name}</Text>

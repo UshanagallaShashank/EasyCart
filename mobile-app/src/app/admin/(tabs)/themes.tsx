@@ -49,7 +49,7 @@ export default function AdminThemes() {
           const on = enabled.includes(id);
           return (
             <View key={id} style={styles.row}>
-              <LinearGradient colors={brand.gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.swatch} />
+              <LinearGradient colors={brand.mesh} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.swatch} />
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={text.heading}>{brand.name}</Text>
                 {chosenDefault === id ? <Badge tone="primary" label="Default" /> : on ? <Button small variant="ghost" label="Make default" onPress={() => setChosenDefault(id)} /> : <Text style={text.small}>Off</Text>}

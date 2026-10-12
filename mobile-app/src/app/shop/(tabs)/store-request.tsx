@@ -17,6 +17,7 @@ import { useToast } from '@/components/toast';
 import { useSession } from '@/lib/session';
 import { api, errorMessage } from '@/lib/api';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { useBrand } from '@/lib/brand';
 
 const STORE_TYPES = [
   'Grocery & Supermarket',
@@ -68,6 +69,7 @@ function toSlug(str: string) {
 }
 
 export default function StoreRequestScreen() {
+  const brand = useBrand();
   const { user } = useSession();
   const queryClient = useQueryClient();
   const toast = useToast();
@@ -205,7 +207,7 @@ export default function StoreRequestScreen() {
             </View>
 
             <Text style={text.small}>
-              Shop link: <Text style={{ fontWeight: '700', color: colors.primary }}>/{request.slug}</Text>
+              Shop link: <Text style={{ fontWeight: '700', color: brand.primary }}>/{request.slug}</Text>
             </Text>
 
             <Notice tone="warning" icon="clock">
@@ -342,7 +344,7 @@ export default function StoreRequestScreen() {
             {idProof ? (
               <View style={styles.uploadedBox}>
                 <View style={styles.uploadedIcon}>
-                  <Icon name="file-text" size={18} color="#0284c7" />
+                  <Icon name="file-text" size={18} color={brand.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.uploadedName} numberOfLines={1}>{idProof.name}</Text>
@@ -357,7 +359,7 @@ export default function StoreRequestScreen() {
                 style={styles.uploadBox}
                 onPress={() => void pickDocument('id')}
               >
-                <Icon name="upload-cloud" size={24} color="#0284c7" />
+                <Icon name="upload-cloud" size={24} color={brand.primary} />
                 <Text style={styles.uploadTitle}>Click to upload (PDF or Image)</Text>
                 <Text style={styles.uploadSubtitle}>PDF, Aadhaar, PAN, passport... · max 3MB</Text>
               </Pressable>
@@ -372,7 +374,7 @@ export default function StoreRequestScreen() {
             {businessProof ? (
               <View style={styles.uploadedBox}>
                 <View style={styles.uploadedIcon}>
-                  <Icon name="file-text" size={18} color="#0284c7" />
+                  <Icon name="file-text" size={18} color={brand.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.uploadedName} numberOfLines={1}>{businessProof.name}</Text>
@@ -387,7 +389,7 @@ export default function StoreRequestScreen() {
                 style={styles.uploadBox}
                 onPress={() => void pickDocument('business')}
               >
-                <Icon name="upload-cloud" size={24} color="#0284c7" />
+                <Icon name="upload-cloud" size={24} color={brand.primary} />
                 <Text style={styles.uploadTitle}>Click to upload (PDF or Image)</Text>
                 <Text style={styles.uploadSubtitle}>PDF, GST, licence, registration... · max 3MB</Text>
               </Pressable>
@@ -398,7 +400,7 @@ export default function StoreRequestScreen() {
         {/* ROW 5: Business Address Card */}
         <View style={styles.addressCard}>
           <View style={styles.addressHeader}>
-            <Icon name="map-pin" size={16} color="#0284c7" />
+            <Icon name="map-pin" size={16} color={brand.primary} />
             <Text style={styles.addressTitle}>
               BUSINESS ADDRESS <Text style={styles.required}>*</Text>
             </Text>
@@ -546,7 +548,7 @@ export default function StoreRequestScreen() {
                   >
                     {cat}
                   </Text>
-                  {storeType === cat && <Icon name="check" size={18} color="#0284c7" />}
+                  {storeType === cat && <Icon name="check" size={18} color={brand.primary} />}
                 </Pressable>
               ))}
             </ScrollView>
@@ -590,7 +592,7 @@ export default function StoreRequestScreen() {
                   >
                     {st}
                   </Text>
-                  {state === st && <Icon name="check" size={18} color="#0284c7" />}
+                  {state === st && <Icon name="check" size={18} color={brand.primary} />}
                 </Pressable>
               ))}
             </ScrollView>

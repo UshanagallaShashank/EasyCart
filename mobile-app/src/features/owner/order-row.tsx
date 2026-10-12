@@ -9,12 +9,14 @@ import { dateTime, price, shortId } from '@/lib/format';
 import { colors, radius, shadow, space, text } from '@/theme/theme';
 import type { Order } from '@/types/order';
 import { orderStage } from './owner-api';
+import { useBrand } from '@/lib/brand';
 
 export function OrderRow({ order }: { order: Order }) {
+  const brand = useBrand();
   const stage = orderStage(order);
   return (
     <PressScale onPress={() => router.push(`/owner/order/${order.id}`)} style={styles.row} accessibilityRole="button">
-      <View style={styles.tile}><Icon name={order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={colors.primary} /></View>
+      <View style={[styles.tile, { backgroundColor: brand.primarySoft }]}><Icon name={order.fulfillment_method === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={brand.primary} /></View>
       <View style={{ flex: 1, gap: 6 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm, flexWrap: 'wrap' }}>
           <Text style={styles.id}>{shortId(order.id)}</Text>

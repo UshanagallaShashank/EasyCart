@@ -29,11 +29,11 @@ export default function LoginScreen() {
   return (
     <AuthShell
       title="Sign in to Easy Cart"
-      subtitle="Your effortless shopping companion."
+      subtitle="One sign-in for shoppers, store owners, delivery partners and admins."
       footer={
         <>
-          <Text style={{ fontSize: 13, color: colors.textMuted }}>New here? <Link href="/register" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Create an account</Link></Text>
-          <Text style={{ fontSize: 12, color: colors.textFaint }}>Ride a bike? <Link href="/rider-register" style={{ color: colors.primary, fontFamily: 'Inter_600SemiBold' }}>Become a delivery partner</Link></Text>
+          <Text style={{ fontSize: 13, color: colors.textMuted }}>New here? <Link href="/register" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Create an account</Link></Text>
+          <Text style={{ fontSize: 12, color: colors.textFaint }}>Ride a bike? <Link href="/rider-register" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Become a delivery partner</Link></Text>
         </>
       }
     >

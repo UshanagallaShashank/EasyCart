@@ -10,11 +10,14 @@ import { currentPosition } from '@/lib/device';
 import { errorMessage } from '@/lib/api';
 import { dateTime, distance, price, shortId } from '@/lib/format';
 import { RIDER_ORDER_STAGE } from '@/lib/delivery-labels';
-import { colors, radius, shadow, space, text } from '@/theme/theme';
+import { colors, glow, radius, shadow, space, text } from '@/theme/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { Rider, RiderOrder } from '@/types/delivery';
 import { riderCalls, useRiderAction } from './rider-api';
+import { useBrand } from '@/lib/brand';
 
 export function OnlineCard({ rider }: { rider: Rider }) {
+  const brand = useBrand();
   const toast = useToast();
   const toggle = useRiderAction(riderCalls.setOnline);
 
@@ -39,14 +42,15 @@ export function OnlineCard({ rider }: { rider: Rider }) {
 
   const online = rider.is_online;
   return (
-    <View style={[styles.online, online ? styles.onlineOn : styles.onlineOff]}>
+    <View style={[styles.online, online ? [styles.onlineOn, glow(colors.success)] : styles.onlineOff]}>
+      {online && <LinearGradient colors={['#047857', '#059669', '#14b8a6']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[StyleSheet.absoluteFill, { borderRadius: radius.lg }]} />}
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={[text.label, { color: online ? '#d1fae5' : colors.textFaint }]}>Status</Text>
+        <Text style={[text.label, { color: online ? '#d1fae5' : colors.textFaint }]}>Hi, {rider.full_name.split(' ')[0]}</Text>
         <Text style={[styles.onlineTitle, { color: online ? colors.white : colors.text }]}>{online ? 'You are online' : 'You are offline'}</Text>
         <Text style={{ fontSize: 12, color: online ? '#ecfdf5' : colors.textMuted }}>{online ? 'Nearby orders show here. The first rider to accept gets them.' : 'Go online to start getting orders'}</Text>
       </View>
       <Pressable onPress={flip} disabled={toggle.isPending} accessibilityRole="switch" accessibilityState={{ checked: online }} accessibilityLabel={online ? 'Go offline' : 'Go online'}
-        style={[styles.power, { backgroundColor: online ? colors.white : colors.primary }, toggle.isPending && { opacity: 0.6 }]}>
+        style={[styles.power, { backgroundColor: online ? colors.white : brand.primary }, toggle.isPending && { opacity: 0.6 }]}>
         <Icon name="power" size={26} color={online ? colors.success : colors.white} />
       </Pressable>
     </View>
@@ -80,6 +84,7 @@ export function ColorSectionTitle({ kind, title, caption, count }: { kind: keyof
 
 // `passed`: an order this rider passed on. It shows calmer, without Decline, and can still be taken.
 export function OfferCard({ order, passed = false }: { order: RiderOrder; passed?: boolean }) {
+  const brand = useBrand();
   const toast = useToast();
   const accept = useRiderAction(riderCalls.accept);
   const decline = useRiderAction(riderCalls.decline);
@@ -110,11 +115,12 @@ export function OfferCard({ order, passed = false }: { order: RiderOrder; passed
 }
 
 export function ActiveOrderRow({ order }: { order: RiderOrder }) {
+  const brand = useBrand();
   const stage = RIDER_ORDER_STAGE[order.stage];
   const toStore = order.stage === 'to_pickup';
   return (
     <Pressable onPress={() => router.push(`/rider/order/${order.id}`)} style={[styles.row, { borderColor: SECTION_COLORS.mine.border, borderLeftWidth: 5 }]}>
-      <View style={[styles.rowIcon, { backgroundColor: SECTION_COLORS.mine.bg }]}><Icon name={toStore ? 'shopping-bag' : 'map-pin'} size={20} color={SECTION_COLORS.mine.fg} /></View>
+      <View style={[[styles.rowIcon, { backgroundColor: brand.primarySoft }], { backgroundColor: SECTION_COLORS.mine.bg }]}><Icon name={toStore ? 'shopping-bag' : 'map-pin'} size={20} color={SECTION_COLORS.mine.fg} /></View>
       <View style={{ flex: 1, gap: 3 }}>
         <View style={{ flexDirection: 'row', gap: space.sm, alignItems: 'center' }}><Badge tone={stage.tone} label={stage.label} /><Text style={text.small}>{shortId(order.id)}</Text></View>
         <Text style={text.heading} numberOfLines={1}>{toStore ? order.store.name : order.delivery_address}</Text>
