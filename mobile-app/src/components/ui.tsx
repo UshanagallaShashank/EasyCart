@@ -10,6 +10,7 @@ import { useScreen } from '@/lib/responsive';
 import { useKeyboardTop } from '@/lib/keyboard';
 import { useT } from '@/lib/i18n';
 import { useBrand } from '@/lib/brand';
+import { useIsFocused } from 'expo-router';
 import { PressScale, Skeleton } from './motion';
 
 export type { IconName } from './icon';
@@ -27,7 +28,9 @@ export function Screen({
   onScroll,
   scrollEventThrottle,
   stickyHeaderIndices,
-  noPadding
+  noPadding,
+  scrollRef: externalScrollRef,
+  preserveScroll = false
 }: {
   children: ReactNode;
   onRefresh?(): void;
@@ -37,13 +40,28 @@ export function Screen({
   scrollEventThrottle?: number;
   stickyHeaderIndices?: number[];
   noPadding?: boolean;
+  scrollRef?: any;
+  preserveScroll?: boolean;
 }) {
   const { pagePadding } = useScreen();
   const rootRef = useRef<View>(null);
-  const scrollRef = useRef<ScrollView>(null);
+  const internalScrollRef = useRef<ScrollView>(null);
+  const scrollRef = externalScrollRef ?? internalScrollRef;
   const keyboardTop = useKeyboardTop();
+  const isFocused = useIsFocused();
   // How much of this page the keyboard covers. It is measured, so phones that already shrink the window get no extra gap.
   const [covered, setCovered] = useState(0);
+
+  // When returning to this screen from another page, reset scroll to top (except where preserveScroll is enabled)
+  useEffect(() => {
+    if (isFocused && !preserveScroll) {
+      scrollRef.current?.scrollTo({ y: 0, animated: false });
+      const frame = requestAnimationFrame(() => {
+        scrollRef.current?.scrollTo({ y: 0, animated: false });
+      });
+      return () => cancelAnimationFrame(frame);
+    }
+  }, [isFocused, preserveScroll]);
 
   useEffect(() => {
     if (keyboardTop === null) {

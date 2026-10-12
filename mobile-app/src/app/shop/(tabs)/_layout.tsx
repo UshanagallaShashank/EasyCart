@@ -1,6 +1,6 @@
 import { View } from 'react-native';
 import { Tabs } from 'expo-router';
-import { hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
+import { BackButton, hiddenPage, tabIcon, useTabOptions } from '@/components/nav';
 import { ProfileMenu } from '@/components/profile-menu';
 import { FavouritesButton } from '@/components/favourites-button';
 import { useShop } from '@/features/shop/shop-context';
@@ -45,15 +45,15 @@ export default function ShopTabs() {
     <BrandProvider themeId={store.data?.color_theme}>
     <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
       <Tabs.Screen name="index" options={{ title: t('Shop'), headerShown: false, tabBarIcon: tabIcon('home') }} />
-      <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: cartCount > 0 ? cartCount : undefined }} />
-      <Tabs.Screen name="orders" options={{ title: t('My orders'), tabBarLabel: t('Orders'), tabBarIcon: tabIcon('clipboard') }} />
-      <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user') }} />
+      <Tabs.Screen name="cart" options={{ title: t('Cart'), tabBarIcon: tabIcon('shopping-cart'), tabBarBadge: cartCount > 0 ? cartCount : undefined, tabBarStyle: { display: 'none' }, headerLeft: () => <BackButton /> }} />
+      <Tabs.Screen name="orders" options={{ title: t('My orders'), tabBarLabel: t('Orders'), tabBarIcon: tabIcon('clipboard'), tabBarStyle: { display: 'none' }, headerLeft: () => <BackButton /> }} />
+      <Tabs.Screen name="account" options={{ title: t('Account'), tabBarIcon: tabIcon('user'), tabBarStyle: { display: 'none' }, headerLeft: () => <BackButton /> }} />
       <Tabs.Screen name="product/[id]" options={{ title: t('Product'), headerShown: false, tabBarStyle: { display: 'none' }, href: null }} />
       <Tabs.Screen name="checkout" options={hiddenPage(t('Checkout'))} />
       <Tabs.Screen name="pay" options={hiddenPage(t('Pay online'))} />
       <Tabs.Screen name="nearby" options={hiddenPage(t('Shops near you'))} />
       <Tabs.Screen name="order/[id]" options={hiddenPage(t('Order'))} />
-      <Tabs.Screen name="order-placed" options={{ title: t('Order placed'), href: null, headerShown: false }} />
+      <Tabs.Screen name="order-placed" options={{ title: t('Order placed'), href: null, headerShown: false, tabBarStyle: { display: 'none' } }} />
       <Tabs.Screen name="addresses" options={hiddenPage(t('Delivery addresses'))} />
       <Tabs.Screen name="store-request" options={hiddenPage(t('Request a store'))} />
       <Tabs.Screen name="favourites" options={hiddenPage(t('Favourites'))} />

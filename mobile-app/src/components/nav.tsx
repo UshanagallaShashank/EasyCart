@@ -52,17 +52,17 @@ export function tabIcon(name: IconName) {
   return ({ color, focused }: { color: ColorValue; focused: boolean; size: number }) => <Icon name={name} size={22} color={color} strokeWidth={focused ? 2.4 : 2} />;
 }
 
-function BackButton() {
+export function BackButton() {
   return (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={12} accessibilityLabel="Go back" style={{ marginLeft: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' }}>
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/shop'))} hitSlop={12} accessibilityLabel="Go back" style={{ marginLeft: 16, width: 38, height: 38, borderRadius: 19, backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' }}>
       <Icon name="arrow-left" size={20} color={colors.text} />
     </Pressable>
   );
 }
 
-// A page that is not a tab button but still keeps the bottom bar on screen, with a back button in its header.
+// A page that is not a tab button, with a back button in its header and hidden tab bar.
 export function hiddenPage(title: string) {
-  return { title, href: null, headerLeft: () => <BackButton /> };
+  return { title, href: null, headerLeft: () => <BackButton />, tabBarStyle: { display: 'none' as const } };
 }
 
 export function SignOutButton() {

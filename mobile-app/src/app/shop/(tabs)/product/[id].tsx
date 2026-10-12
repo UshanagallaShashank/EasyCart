@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, Pressable, ScrollView, Share, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/text';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { Icon } from '@/components/icon';
 import { FadeIn, PressScale } from '@/components/motion';
 import { useT, useContent } from '@/lib/i18n';
@@ -52,9 +52,23 @@ export default function ProductScreen() {
   const [variantLabel, setVariantLabel] = useState<string | undefined>(queryVariant);
   const [photo, setPhoto] = useState(0);
   const pagerRef = useRef<ScrollView>(null);
+  const mainScrollRef = useRef<ScrollView>(null);
 
   // Animated scroll value for sticky header transitions
   const scrollY = useRef(new Animated.Value(0)).current;
+
+  // Reset scroll position and header animation when opening or refocusing the product page
+  useFocusEffect(
+    useCallback(() => {
+      mainScrollRef.current?.scrollTo({ y: 0, animated: false });
+      scrollY.setValue(0);
+      const frame = requestAnimationFrame(() => {
+        mainScrollRef.current?.scrollTo({ y: 0, animated: false });
+        scrollY.setValue(0);
+      });
+      return () => cancelAnimationFrame(frame);
+    }, [id])
+  );
 
   // Header product title starts coming in slowly as soon as user begins scrolling down the image
   const headerTitleOpacity = scrollY.interpolate({
@@ -80,6 +94,8 @@ export default function ProductScreen() {
     setVariantLabel(queryVariant);
     setPhoto(0);
     pagerRef.current?.scrollTo({ x: 0, animated: false });
+    mainScrollRef.current?.scrollTo({ y: 0, animated: false });
+    scrollY.setValue(0);
   }, [id, queryVariant]);
 
   useEffect(() => {
@@ -169,8 +185,8 @@ export default function ProductScreen() {
   const footer = existingCartLine ? (
     <View style={styles.footerRow}>
       <View style={styles.stepper}>
-        <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity - 1)} style={styles.stepButton} accessibilityLabel={existingCartLine.quantity === 1 ? 'Remove from cart' : 'Less'}>
-          <Icon name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={existingCartLine.quantity === 1 ? colors.danger : colors.primaryDark} />
+        <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity - 1)} style={styles.stepButton} accessibilityLabel="Less">
+          <Icon name="minus" size={16} color={colors.primaryDark} />
         </PressScale>
         <Text style={styles.qty}>{existingCartLine.quantity}</Text>
         <PressScale onPress={() => changeCartQuantity(existingCartLine.quantity + 1)} disabled={existingCartLine.quantity >= stock} style={[styles.stepButton, existingCartLine.quantity >= stock && { opacity: 0.35 }]} accessibilityLabel="More">
@@ -242,6 +258,8 @@ export default function ProductScreen() {
       </View>
 
       <Screen
+        key={id}
+        scrollRef={mainScrollRef}
         noPadding
         footer={footer}
         onScroll={Animated.event(
@@ -455,16 +473,17 @@ export default function ProductScreen() {
               </View>
 
               {existingCartLine ? (
-                <View style={[styles.stepper, { backgroundColor: brand.primarySoft, borderColor: brand.primaryTint }]}>
+                <View style={[styles.stepperPill, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]}>
                   <PressScale
                     onPress={() => changeCartQuantity(existingCartLine.quantity - 1)}
                     style={styles.stepButton}
-                    accessibilityLabel={existingCartLine.quantity === 1 ? 'Remove from cart' : 'Less'}
+                    accessibilityLabel="Less"
                   >
                     <Icon
-                      name={existingCartLine.quantity === 1 ? 'trash-2' : 'minus'}
+                      name="minus"
                       size={15}
-                      color={existingCartLine.quantity === 1 ? colors.danger : colors.primaryDark}
+                      color={brand.primaryDark}
+                      strokeWidth={2.8}
                     />
                   </PressScale>
                   <Text style={styles.qty}>{existingCartLine.quantity}</Text>
@@ -474,18 +493,18 @@ export default function ProductScreen() {
                     style={[styles.stepButton, existingCartLine.quantity >= stock && { opacity: 0.35 }]}
                     accessibilityLabel="More"
                   >
-                    <Icon name="plus" size={15} color={colors.primaryDark} />
+                    <Icon name="plus" size={15} color={brand.primaryDark} strokeWidth={2.8} />
                   </PressScale>
                 </View>
               ) : (
                 <PressScale
                   onPress={handleAddToCart}
-                  style={[styles.addBtn, { backgroundColor: brand.primary }]}
+                  style={[styles.addBtn, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]}
                   accessibilityRole="button"
                   accessibilityLabel={`Add ${variant?.label ?? name} to cart`}
                 >
-                  <Icon name="plus" size={15} color={colors.white} strokeWidth={2.8} />
-                  <Text style={styles.addBtnText}>{t('Add')}</Text>
+                  <Icon name="plus" size={14} color={brand.primaryDark} strokeWidth={3} />
+                  <Text style={[styles.addBtnText, { color: brand.primaryDark }]}>ADD</Text>
                 </PressScale>
               )}
             </View>
@@ -679,8 +698,30 @@ const styles = StyleSheet.create({
   optionInfo: { flex: 1, justifyContent: 'center' },
   optionName: { fontSize: 14, fontWeight: '700', color: colors.text },
   optionPrice: { fontSize: 18, fontWeight: '800', color: colors.primaryDark, letterSpacing: -0.3 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 18, height: 38, borderRadius: radius.pill, shadowColor: '#000', shadowOffset: { width: 0, height: 1.5 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2 },
-  addBtnText: { fontSize: 14, fontWeight: '700', color: colors.white },
+  addBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+    paddingHorizontal: 16,
+    height: 34,
+    borderRadius: radius.pill,
+    borderWidth: 1.5
+  },
+  addBtnText: {
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 0.5
+  },
+  stepperPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    borderWidth: 1.5,
+    borderRadius: radius.pill,
+    paddingHorizontal: 4,
+    height: 34
+  },
   footerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   stepperRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderColor: colors.primaryTint, borderRadius: radius.pill, backgroundColor: colors.primarySoft, paddingHorizontal: 4 },

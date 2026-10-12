@@ -139,6 +139,7 @@ export default function ShopHome() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg, paddingTop: insets.top }}>
       <Screen
+        preserveScroll
         onRefresh={() => { void store.refetch(); void products.refetch(); }}
         refreshing={products.isRefetching}
         onScroll={Animated.event(
