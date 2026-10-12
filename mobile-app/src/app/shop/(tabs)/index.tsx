@@ -14,6 +14,7 @@ import { FavouritesButton } from '@/components/favourites-button';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
 import { useAddresses, type SavedAddress } from '@/features/shop/addresses';
 import { checkDeliveryRange } from '@/lib/delivery-radius';
+import { useSession } from '@/lib/session';
 import { useShop } from '@/features/shop/shop-context';
 import { useCategories, useProducts, useStore, useStoreReviews } from '@/features/shop/shop-api';
 import { ReviewsStrip } from '@/features/shop/reviews-strip';
@@ -55,6 +56,7 @@ function getDeliveryTarget(address?: SavedAddress | null): string | null {
 type View_ = 'all' | 'rating' | 'low' | 'high';
 
 export default function ShopHome() {
+  const { user } = useSession();
   const { slug, favourites, recent, location } = useShop();
   const cardActions = useCardActions();
   const t = useT();
@@ -152,7 +154,7 @@ export default function ShopHome() {
             <ShopSwitcher name={store.data?.name ?? 'Shop'} logoUrl={fileUrl(store.data?.logo_url)} />
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
               <FavouritesButton />
-              <ProfileMenu />
+              <ProfileMenu photoUrl={user?.avatar_url} />
             </View>
           </View>
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Text } from '@/components/text';
@@ -11,11 +11,13 @@ import { FavouriteButton } from '@/features/shop/favourite-button';
 import { Button, EmptyState, Loading, Screen } from '@/components/ui';
 import { useToast } from '@/components/toast';
 import { useShop } from '@/features/shop/shop-context';
-import { useProduct, useProductRatings } from '@/features/shop/shop-api';
+import { useCategories, useProduct, useProductRatings, useProducts } from '@/features/shop/shop-api';
+import { ProductRail } from '@/features/shop/product-rail';
+import { productStock, useCardActions } from '@/features/shop/product-card';
 import { StarRating } from '@/components/star-rating';
 import { fileUrl } from '@/lib/api';
 import { price } from '@/lib/format';
-import { colors, radius, space, text } from '@/theme/theme';
+import { accents, colors, radius, space, text } from '@/theme/theme';
 import { FloatingCartBar } from '@/components/floating-cart-bar';
 
 const PHOTO_HEIGHT = 300;
@@ -27,6 +29,13 @@ export default function ProductScreen() {
   const t = useT();
   const brand = useBrand();
   const { data: product, isLoading } = useProduct(slug, id);
+  const { data: categories } = useCategories(slug);
+  const currentCategory = categories?.find((c) => c.id === product?.category_id);
+  const categoryName = currentCategory?.name;
+
+  const { data: categoryProducts } = useProducts(slug, '', product?.category_id ?? '');
+  const { data: allProducts } = useProducts(slug, '', '');
+  const cardActions = useCardActions();
   const name = useContent(product?.name);
   const productRating = useProductRatings(slug).data?.[id];
   const description = useContent(product?.description);
@@ -69,6 +78,27 @@ export default function ProductScreen() {
       setQuantity(existingCartLine.quantity);
     }
   }, [existingCartLine?.quantity, variantLabel]);
+
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
+
+    // Prioritize products strictly matching the current product's category
+    if (product.category_id) {
+      const source = categoryProducts ?? allProducts?.filter((p) => p.category_id === product.category_id) ?? [];
+      const sameCategory = source.filter(
+        (p) => p.id !== product.id && p.is_active !== false && productStock(p) > 0
+      );
+      if (sameCategory.length > 0) {
+        return sameCategory.slice(0, 10);
+      }
+    }
+
+    // Fallback if product has no category or no other available items in same category
+    const all = allProducts ?? [];
+    return all
+      .filter((p) => p.id !== product.id && p.is_active !== false && productStock(p) > 0)
+      .slice(0, 10);
+  }, [product, categoryProducts, allProducts]);
 
   if (isLoading) return <Loading />;
   if (!product) return <Screen><EmptyState message="This product is no longer available." /></Screen>;
@@ -292,6 +322,19 @@ export default function ProductScreen() {
         <View style={styles.trustRow}><Icon name="truck" size={16} color={colors.primary} /><Text style={styles.trustText}>Delivery or in-store pickup at checkout</Text></View>
         <View style={styles.trustRow}><Icon name="shield-check" size={16} color={colors.primary} /><Text style={styles.trustText}>Secure checkout, code-verified handover</Text></View>
       </View>
+
+      {relatedProducts.length > 0 && (
+        <View style={{ marginTop: space.sm, marginBottom: space.sm }}>
+          <ProductRail
+            actions={cardActions}
+            title={categoryName ? t('Related in {category}', { category: categoryName }) : t('Related products')}
+            subtitle={categoryName ? t('More available items from {category}', { category: categoryName }) : t('More available items you might like')}
+            icon="tags"
+            accent={accents.teal}
+            products={relatedProducts}
+          />
+        </View>
+      )}
     </Screen>
   );
 }

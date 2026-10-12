@@ -37,6 +37,7 @@ export function ProfileMenu({
   const insets = useSafeAreaInsets();
 
   const displayName = name || user?.username || 'User';
+  const avatarPhoto = photoUrl !== undefined ? photoUrl : user?.avatar_url;
 
   return (
     <>
@@ -46,7 +47,7 @@ export function ProfileMenu({
         hitSlop={8}
         style={styles.trigger}
       >
-        <Avatar name={displayName} photoUrl={photoUrl} size={34} />
+        <Avatar name={displayName} photoUrl={avatarPhoto} size={34} />
       </Pressable>
 
       <Modal
