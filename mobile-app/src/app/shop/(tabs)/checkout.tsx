@@ -152,7 +152,7 @@ export default function CheckoutScreen() {
                   {line.variant_label ? (
                     <View style={styles.orderItemOptionBadge}>
                       <Text style={styles.orderItemOptionText}>
-                        Option: {line.variant_label}
+                        {line.variant_label}
                       </Text>
                     </View>
                   ) : null}

@@ -22,11 +22,10 @@ export const stackOptions = {
   headerBackButtonDisplayMode: 'minimal' as const
 };
 
-// Logo + page name, matching specs: Logo 30px, Brand text 20px.
+// Page name in header: Brand text 20px.
 export function BrandTitle({ children }: { children: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, height: 48, flexShrink: 1 }}>
-      <Image source={require('../../assets/logo-mark.png')} style={{ width: 30, height: 30 }} resizeMode="contain" />
+    <View style={{ flexDirection: 'row', alignItems: 'center', height: 48, flexShrink: 1 }}>
       <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text, letterSpacing: -0.4, flexShrink: 1 }} numberOfLines={1}>{children}</Text>
     </View>
   );
