@@ -79,6 +79,32 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
           ) : fewLeft ? (
             <View style={[styles.badge, { backgroundColor: colors.warningSoft }]}><Text style={[styles.badgeText, { color: colors.warning }]}>{t('Only {n} left', { n: stock })}</Text></View>
           ) : null}
+
+          {/* Plus / Stepper on top right corner touching edges */}
+          {stock > 0 && (
+            <View style={styles.topRightAction}>
+              {inCart ? (
+                <View style={[styles.stepper, { backgroundColor: brand.primary }]}>
+                  <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity - 1); }} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
+                    <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={14} color={colors.white} strokeWidth={2.5} />
+                  </PressScale>
+                  <Text style={styles.qty}>{inCart.quantity}</Text>
+                  <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity + 1); }} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
+                    <Icon name="plus" size={14} color={colors.white} strokeWidth={2.5} />
+                  </PressScale>
+                </View>
+              ) : (
+                <PressScale
+                  onPress={quickAdd}
+                  style={styles.add}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add ${product.name}`}
+                >
+                  <Icon name="plus" size={18} color={brand.primary} strokeWidth={2.8} />
+                </PressScale>
+              )}
+            </View>
+          )}
         </View>
 
         <View style={styles.body}>
@@ -93,25 +119,6 @@ function ProductCardView({ product, width, index = 0, line, rating, onAdd, onSet
             <Text style={styles.meta} numberOfLines={1}>{needsChoice ? t(product.variants.length === 1 ? '{n} option' : '{n} options', { n: product.variants.length }) : ' '}</Text>
           </View>
           <Text style={styles.price} numberOfLines={1}>{needsChoice ? <Text style={styles.from}>{t('From')} </Text> : null}{price(from)}</Text>
-
-          {stock <= 0 ? (
-            <View style={[styles.action, styles.soldOut]}><Text style={styles.soldOutText}>{t('Sold out')}</Text></View>
-          ) : inCart ? (
-            <View style={[styles.action, styles.stepper, { backgroundColor: brand.primary }]}>
-              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity - 1); }} style={styles.stepButton} accessibilityLabel={`Remove one ${product.name}`}>
-                <Icon name={inCart.quantity === 1 ? 'trash-2' : 'minus'} size={16} color={colors.white} strokeWidth={2.5} />
-              </PressScale>
-              <Text style={styles.qty}>{inCart.quantity}</Text>
-              <PressScale onPress={(e) => { e?.stopPropagation?.(); onSetQuantity(product.id, inCart.quantity + 1); }} disabled={inCart.quantity >= inCart.max} style={[styles.stepButton, inCart.quantity >= inCart.max && { opacity: 0.4 }]} accessibilityLabel={`Add one more ${product.name}`}>
-                <Icon name="plus" size={16} color={colors.white} strokeWidth={2.5} />
-              </PressScale>
-            </View>
-          ) : (
-            <PressScale onPress={quickAdd} style={[styles.action, styles.add, { borderColor: brand.primary, backgroundColor: brand.primarySoft }]} accessibilityRole="button" accessibilityLabel={`Add ${product.name}`}>
-              <Text style={[styles.addText, { color: brand.primary }]}>{t('ADD')}</Text>
-              <Icon name="plus" size={14} color={brand.primary} strokeWidth={3} />
-            </PressScale>
-          )}
         </View>
       </PressScale>
     </FadeIn>
@@ -125,23 +132,54 @@ const styles = StyleSheet.create({
   card: { backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: 8, ...shadow },
   imageWrap: { aspectRatio: 1, borderRadius: radius.md, overflow: 'hidden', backgroundColor: colors.borderSoft, alignItems: 'center', justifyContent: 'center' },
   image: { width: '100%', height: '100%' },
-  heart: { position: 'absolute', top: 6, right: 6, zIndex: 2 },
+  heart: { position: 'absolute', top: 6, left: 6, zIndex: 2 },
+  topRightAction: { position: 'absolute', top: 0, right: 0, zIndex: 2 },
   badge: { position: 'absolute', left: 6, bottom: 6, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.pill },
   badgeText: { fontSize: 11, fontWeight: '700' },
-  body: { paddingHorizontal: 4, paddingTop: 10, paddingBottom: 2, gap: 2 },
+  body: { paddingHorizontal: 4, paddingTop: 10, paddingBottom: 6, gap: 2 },
   name: { fontSize: 14, fontWeight: '700', color: colors.text, minHeight: 36, lineHeight: 18 },
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   rating: { flexDirection: 'row', alignItems: 'center', gap: 2, backgroundColor: accents.amber.bg, borderRadius: radius.pill, paddingHorizontal: 6, paddingVertical: 1 },
   ratingText: { fontSize: 11, fontWeight: '800', color: '#92400e' },
   meta: { fontSize: 11, color: colors.textMuted, flexShrink: 1 },
   from: { fontSize: 11, fontWeight: '600', color: colors.textMuted },
-  price: { fontSize: 16, fontWeight: '800', color: colors.text, marginTop: 2, marginBottom: 8 },
-  action: { height: 38, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6 },
-  add: { borderWidth: 1.5, borderColor: colors.primary, backgroundColor: colors.primarySoft },
-  addText: { fontSize: 13, fontWeight: '800', color: colors.primary, letterSpacing: 0.6 },
-  stepper: { backgroundColor: colors.primary, justifyContent: 'space-between', paddingHorizontal: 4 },
-  stepButton: { width: 40, height: 38, alignItems: 'center', justifyContent: 'center' },
-  qty: { fontSize: 15, fontWeight: '800', color: colors.white },
-  soldOut: { backgroundColor: colors.borderSoft },
-  soldOutText: { fontSize: 12, fontWeight: '700', color: colors.textFaint }
+  price: { fontSize: 16, fontWeight: '800', color: colors.text, marginTop: 2, marginBottom: 2 },
+  add: {
+    width: 36,
+    height: 36,
+    borderTopRightRadius: radius.md,
+    borderBottomLeftRadius: radius.md,
+    borderTopLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderLeftWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: colors.cardBorder,
+    shadowColor: '#000',
+    shadowOffset: { width: -1, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 3
+  },
+  stepper: {
+    height: 36,
+    borderTopRightRadius: radius.md,
+    borderBottomLeftRadius: radius.md,
+    borderTopLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: -1, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 3,
+    elevation: 3
+  },
+  stepButton: { width: 28, height: 36, alignItems: 'center', justifyContent: 'center' },
+  qty: { fontSize: 13, fontWeight: '800', color: colors.white, paddingHorizontal: 4 }
 });

@@ -34,7 +34,6 @@ function ProductGridSkeleton({ width }: { width: number }) {
           <Skeleton height={width - 16} rounded={radius.md} />
           <Skeleton width="85%" height={14} />
           <Skeleton width="45%" height={16} />
-          <Skeleton height={38} rounded={radius.pill} />
         </View>
       ))}
     </View>
@@ -295,7 +294,7 @@ export default function ShopHome() {
           {showRails && (
             <>
               <ProductRail actions={cardActions} title={t('Almost gone')} subtitle={t('Grab them before they sell out')} icon="zap" accent={accents.orange} products={almostGone} />
-              <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} />
+              <ProductRail actions={cardActions} title={t('Recently viewed')} icon="clock" accent={accents.violet} products={recentlyViewed} compact />
               <ReviewsStrip reviews={reviews.data} />
             </>
           )}
