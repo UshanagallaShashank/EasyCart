@@ -19,6 +19,7 @@ import { useT } from '@/lib/i18n';
 import { useBrand } from '@/lib/brand';
 import { estimateDelivery } from '@/lib/eta';
 import type { Order } from '@/types/order';
+import { deliveryFeeFor } from '@/lib/delivery-fee';
 
 type Method = 'delivery' | 'pickup';
 
@@ -38,7 +39,9 @@ export default function CheckoutScreen() {
   const [coupon, setCoupon] = useState('');
   const [discount, setDiscount] = useState<{ code: string; amount: number } | null>(null);
 
-  const fee = method === 'delivery' ? store?.delivery_fee ?? 0 : 0;
+  // What delivery would cost for this order (free once it reaches the shop's free-delivery amount).
+  const deliveryCost = deliveryFeeFor(store?.delivery_fee, store?.free_delivery_above, subtotal - (discount?.amount ?? 0));
+  const fee = method === 'delivery' ? deliveryCost : 0;
   const total = Math.max(0, subtotal - (discount?.amount ?? 0)) + fee;
 
   const applyCoupon = useMutation({
@@ -122,7 +125,7 @@ export default function CheckoutScreen() {
                 <Icon name={option === 'delivery' ? 'truck' : 'shopping-bag'} size={20} color={method === option ? brand.primary : colors.textMuted} />
               </View>
               <Text style={[styles.methodText, method === option && { color: brand.primaryDark }]}>{option === 'delivery' ? t('Delivery') : t('Pick up')}</Text>
-              <Text style={text.small}>{option === 'delivery' ? (store?.delivery_fee ? price(store.delivery_fee) : t('Free')) : t('Free')}</Text>
+              <Text style={text.small}>{option === 'delivery' && deliveryCost > 0 ? price(deliveryCost) : t('Free')}</Text>
             </PressScale>
           ))}
         </View>

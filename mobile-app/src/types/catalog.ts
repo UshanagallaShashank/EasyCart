@@ -5,6 +5,8 @@ export interface PublicStore {
   logo_url: string | null;
   banner_url: string | null;
   delivery_fee: number;
+  // Orders worth at least this much (after coupons) get free delivery; null means the shop does not offer it.
+  free_delivery_above?: number | null;
   max_delivery_radius_km?: number;
   pincode?: string | null;
   address?: string | null;

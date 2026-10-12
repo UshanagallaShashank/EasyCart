@@ -15,6 +15,8 @@ import { useT } from '@/lib/i18n';
 import { ContentText } from '@/components/content-text';
 import { ProductPlaceholder } from '@/components/product-placeholder';
 import { CartSuggestions } from '@/features/shop/cart-suggestions';
+import { FreeDeliveryProgress } from '@/features/shop/free-delivery-progress';
+import { useStore } from '@/features/shop/shop-api';
 import { useBrand } from '@/lib/brand';
 
 function CartRow({ line }: { line: CartLine }) {
@@ -68,7 +70,8 @@ function CartRow({ line }: { line: CartLine }) {
 }
 
 export default function CartScreen() {
-  const { lines, subtotal, count, clear } = useShop();
+  const { lines, subtotal, count, clear, slug } = useShop();
+  const { data: store } = useStore(slug);
   const askConfirm = useConfirm();
   const t = useT();
 
@@ -82,6 +85,8 @@ export default function CartScreen() {
         <Text style={text.heading}>{t(count === 1 ? '{count} product in your cart' : '{count} products in your cart', { count })}</Text>
         <Pressable onPress={async () => { if (await askConfirm({ title: t('Clear your cart?'), message: t(count === 1 ? 'All {count} product will be removed.' : 'All {count} products will be removed.', { count }), confirmLabel: t('Clear cart'), cancelLabel: t('Keep items'), icon: 'trash-2' })) clear(); }} hitSlop={10} accessibilityRole="button"><Text style={styles.clear}>{t('Clear cart')}</Text></Pressable>
       </View>
+
+      <FreeDeliveryProgress subtotal={subtotal} fee={store?.delivery_fee ?? 0} freeAbove={store?.free_delivery_above} />
 
       <View style={{ gap: space.md }}>
         {lines.map((line) => <CartRow key={`${line.product_id}-${line.variant_label ?? ''}`} line={line} />)}

@@ -16,7 +16,7 @@ export default function OwnerStoreSettings() {
   const save = useRefreshingAction(manageCalls.saveStore, ['store']);
   const publish = useRefreshingAction(manageCalls.setPublished, ['store']);
   const toast = useToast();
-  const [form, setForm] = useState({ name: '', delivery_fee: '', radius: '', pincode: '', address: '', banner: '' });
+  const [form, setForm] = useState({ name: '', delivery_fee: '', free_above: '', radius: '', pincode: '', address: '', banner: '' });
   // Where the shop is on the map. Customers' "Shops near you" list and rider dispatch both use it.
   const [pin, setPin] = useState<Coords | null>(null);
   const [mapStart, setMapStart] = useState<Coords | null>(null);
@@ -27,6 +27,7 @@ export default function OwnerStoreSettings() {
     setForm({
       name: store.name,
       delivery_fee: String(store.delivery_fee ?? 0),
+      free_above: store.free_delivery_above ? String(store.free_delivery_above) : '',
       radius: String(store.max_delivery_radius_km ?? 5),
       pincode: store.pincode ?? '',
       address: store.address ?? '',
@@ -75,9 +76,12 @@ export default function OwnerStoreSettings() {
     const radius = Number(form.radius);
     if (form.name.trim().length < 2) { toast('The store name needs at least 2 letters', 'error'); return; }
     if (Number.isNaN(fee) || fee < 0) { toast('Delivery fee must be 0 or more', 'error'); return; }
+    // Empty means "no free delivery offer".
+    const freeAbove = form.free_above.trim() === '' ? null : Number(form.free_above);
+    if (freeAbove !== null && (Number.isNaN(freeAbove) || freeAbove <= 0)) { toast('Free delivery amount must be more than 0, or left empty', 'error'); return; }
     if (Number.isNaN(radius) || radius < 0.5 || radius > 100) { toast('Delivery radius must be between 0.5 and 100 km', 'error'); return; }
     save.mutate(
-      { name: form.name.trim(), delivery_fee: fee, max_delivery_radius_km: radius, pincode: form.pincode.trim(), address: form.address.trim(), promotion_banner_text: form.banner.trim(), ...(pin ? { latitude: pin.latitude, longitude: pin.longitude } : {}) },
+      { name: form.name.trim(), delivery_fee: fee, free_delivery_above: freeAbove, max_delivery_radius_km: radius, pincode: form.pincode.trim(), address: form.address.trim(), promotion_banner_text: form.banner.trim(), ...(pin ? { latitude: pin.latitude, longitude: pin.longitude } : {}) },
       { onSuccess: () => toast('Store settings saved', 'success'), onError: (e) => toast(errorMessage(e), 'error') }
     );
   }
@@ -118,6 +122,7 @@ export default function OwnerStoreSettings() {
 
       <Card title="Delivery and announcement" icon="truck">
         <Field label="Standard delivery fee (Rs.)" value={form.delivery_fee} onChangeText={set('delivery_fee')} keyboardType="decimal-pad" placeholder="0" />
+        <Field label="Free delivery above (Rs., optional)" hint="Orders worth this much or more pay no delivery fee. Leave empty to always charge it." value={form.free_above} onChangeText={set('free_above')} keyboardType="decimal-pad" placeholder="e.g. 499" />
         <Field label="Max delivery radius (km)" value={form.radius} onChangeText={set('radius')} keyboardType="decimal-pad" placeholder="5" />
         <Field label="Storefront announcement" hint="Shown to shoppers at the top of your shop" value={form.banner} onChangeText={set('banner')} multiline placeholder="e.g. Free delivery this weekend!" />
       </Card>
