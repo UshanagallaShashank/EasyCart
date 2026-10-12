@@ -57,6 +57,43 @@ so running it again never adds or changes anything. All sample accounts use the 
 
 Create an admin with the website's admin sign-up (needs `ADMIN_SIGNUP_PASSCODE`).
 
+## Look and feel
+
+Clean and airy: white pages, soft grey-filled cards with no borders or heavy shadows, pill-shaped buttons,
+the **Plus Jakarta Sans** font, quiet headers (just the page name), and a dark floating tab bar where a bubble in the
+area's colours slides to the active tab. All tokens live in `src/theme/theme.ts`.
+
+Each area has its own colours, so you always know where you are: customers and store owners see their shop's theme,
+delivery partners see **Electric** (indigo to cyan) and admins see **Cosmos** (violet to pink to amber).
+Every theme has a multi-colour gradient (`mesh` in `src/theme/brands.ts`) used on banners, main buttons and the tab bubble.
+Products without a photo show a soft tile with their initials. Buttons, tabs and toasts give a small buzz on phones
+(`src/lib/feedback.ts`); toasts on phones use **sonner-native**.
+
+## Downtime, logs and optional features
+
+Everything here is free (no trials, no card) and switched off until you set it.
+
+| Feature | How to switch it on |
+|---|---|
+| **Downtime banner** | Always on. When the server stops answering, a banner shows "away 0:42" with Retry, then "Back online". |
+| **System status** (admin → More) | Always on. Server uptime, answer time, outages this phone has seen, which features are on. |
+| **Outage history while nobody is using the app** | Add a free monitor for `https://<your-backend>/api/health` on Better Stack Uptime or UptimeRobot. |
+| **Outside logs** | Create two "Logs" sources on Better Stack's free plan: one for the backend (`LOG_INGEST_URL` / `LOG_INGEST_TOKEN` in `backend/.env`), one for this app (`EXPO_PUBLIC_LOG_INGEST_URL` / `EXPO_PUBLIC_LOG_INGEST_TOKEN`). Entries carry `app: backend` or `app: mobile`. Only warnings, errors and slow requests are sent; never passwords, tokens or bodies. |
+| **Offline copy (SQLite)** | `EXPO_PUBLIC_OFFLINE_CACHE=true`. Phones only. Needs a development build (`npx expo run:ios`), not Expo Go. |
+| **AI product descriptions** | Backend: `AI_ENABLED=true`, `GEMINI_API_KEY=...` (free Google AI Studio key). The "Write with AI" button then appears on the owner's product page. |
+
+## UX and responsiveness tests (Playwright)
+
+The tests run the web build of the app at phone, small-phone, tablet and desktop sizes. Every server call is answered by a fake
+(`e2e/mock-api.ts`), so they never touch the real backend or database.
+
+```bash
+npm run e2e:build     # build the web version against the fake server address
+npm run e2e           # run the tests (first time: npx playwright install chromium)
+npm run e2e:report    # open the HTML report
+# The screen tour also saves a screenshot of every screen to e2e/.screens/<size>/ for review.
+```
+
 ## Layout
 
 ```
