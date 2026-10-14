@@ -27,7 +27,7 @@ export default function RiderRegisterScreen() {
   });
 
   return (
-    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Sign in</Link></Text>}>
+    <AuthShell title="Deliver with Easy Cart" subtitle="Earn on every order you deliver near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already a partner? <Link href="/login" style={{ color: '#047857', fontFamily: 'PlusJakartaSans_700Bold' }}>Sign in</Link></Text>}>
       <Notice icon="shield">After this you add your vehicle, licence, RC and ID. An admin checks them before you can go online.</Notice>
       <Field icon="user" label="Full name (as on your licence)" value={form.full_name} onChangeText={set('full_name')} />
       <Field icon="user" label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" />

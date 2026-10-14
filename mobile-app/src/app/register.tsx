@@ -29,7 +29,7 @@ export default function RegisterScreen() {
   });
 
   return (
-    <AuthShell title="Create your account" subtitle="Shop from independent stores near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already have an account? <Link href="/login" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Log in</Link></Text>}>
+    <AuthShell title="Create your account" subtitle="Shop from independent stores near you." footer={<Text style={{ fontSize: 13, color: colors.textMuted }}>Already have an account? <Link href="/login" style={{ color: '#047857', fontFamily: 'PlusJakartaSans_700Bold' }}>Log in</Link></Text>}>
       <Field icon="user" label="Username" value={form.username} onChangeText={set('username')} autoCapitalize="none" placeholder="Letters, numbers, _" />
       <Field icon="phone" label="Mobile number" value={form.phone_number} onChangeText={set('phone_number')} keyboardType="phone-pad" placeholder="10 digits" />
       <Field icon="mail" label="Email" value={form.email} onChangeText={set('email')} autoCapitalize="none" keyboardType="email-address" placeholder="you@example.com" />

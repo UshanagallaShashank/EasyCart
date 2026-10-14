@@ -1,5 +1,6 @@
 // One sign-in for customers, store owners, delivery partners and admins.
 import { useState } from 'react';
+import { View } from 'react-native';
 import { Text } from '@/components/text';
 import { Link, router } from 'expo-router';
 import { useMutation } from '@tanstack/react-query';
@@ -28,12 +29,12 @@ export default function LoginScreen() {
 
   return (
     <AuthShell
-      title="Sign in to Easy Cart"
-      subtitle="One sign-in for shoppers, store owners, delivery partners and admins."
+      title="Welcome back"
+      subtitle="Sign in to shop, run your store or deliver."
       footer={
         <>
-          <Text style={{ fontSize: 13, color: colors.textMuted }}>New here? <Link href="/register" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Create an account</Link></Text>
-          <Text style={{ fontSize: 12, color: colors.textFaint }}>Ride a bike? <Link href="/rider-register" style={{ color: colors.primary, fontFamily: 'PlusJakartaSans_600SemiBold' }}>Become a delivery partner</Link></Text>
+          <View style={{ width: '100%' }}><Button variant="outline" label="New here? Create an account" onPress={() => router.push('/register')} /></View>
+          <Text style={{ fontSize: 13, color: colors.textMuted }}>Ride a bike? <Link href="/rider-register" style={{ color: '#047857', fontFamily: 'PlusJakartaSans_700Bold' }}>Become a delivery partner</Link></Text>
         </>
       }
     >

@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('sign-in card shows its fields and a waiting button', async ({ page }) => {
-  await expect(page.getByText('Sign in to Easy Cart')).toBeVisible();
+  await expect(page.getByText('Welcome back')).toBeVisible();
   await expect(page.getByPlaceholder('Email address')).toBeVisible();
   await expect(page.getByPlaceholder('Password')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeDisabled();
@@ -36,7 +36,7 @@ test('password can be shown and hidden', async ({ page }) => {
 });
 
 test('links lead to customer and partner sign-up', async ({ page }) => {
-  await page.getByText('Create an account').click();
+  await page.getByRole('button', { name: 'New here? Create an account' }).click();
   await expect(page).toHaveURL(/register/);
   await page.goto('/login');
   await page.getByText('Become a delivery partner').click();
