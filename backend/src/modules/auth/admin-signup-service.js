@@ -22,5 +22,5 @@ export async function create_platform_admin(payload) {
   if (await find_user_by_email(email)) throw new AppError('User already exists', 409);
   const user = await save_user({ id: randomUUID(), username: String(payload.username).trim(), email, phone_number: '0000000000', password_hash: await hash_password(payload.password), role: 'platform_admin', tenant_id: null });
   const token = sign_token({ sub: user.id, email: user.email, username: user.username, role: user.role, tenant_id: null });
-  return { user: { id: user.id, username: user.username, email: user.email, phone_number: user.phone_number, role: user.role }, token };
+  return { user: { id: user.id, username: user.username, email: user.email, phone_number: user.phone_number, role: user.role, avatar_url: user.avatar_url ?? null }, token };
 }

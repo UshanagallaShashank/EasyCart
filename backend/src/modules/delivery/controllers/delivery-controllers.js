@@ -35,12 +35,14 @@ export const handle_list_rider_history = respond(async (req) => ({ orders: await
 export const handle_get_rider_earnings = respond(async (req) => rider_delivery.get_rider_earnings(req.user.id));
 export const handle_accept_offer = respond(async (req) => ({ order: await rider_delivery.accept_offer(req.user.id, req.params.id) }));
 export const handle_decline_offer = respond(async (req) => rider_delivery.decline_offer(req.user.id, req.params.id));
+export const handle_drop_delivery = respond(async (req) => rider_delivery.drop_delivery(req.user.id, req.params.id));
 export const handle_confirm_pickup = respond(async (req) => ({ order: await rider_delivery.confirm_pickup(req.user.id, req.params.id, req.body) }));
 export const handle_complete_delivery = respond(async (req) => ({ order: await rider_delivery.complete_delivery(req.user.id, req.params.id, req.body) }));
 
 // Store owner
 export const handle_get_store_order_delivery = respond(async (req) => ({ delivery: await handover.get_store_order_delivery(req.tenant_id, req.params.id) }));
 export const handle_request_rider = respond(async (req) => ({ delivery: await handover.request_rider(req.tenant_id, req.params.id) }));
+export const handle_request_riders_for_waiting = respond(async (req) => handover.request_riders_for_waiting_orders(req.tenant_id));
 export const handle_cancel_rider_request = respond(async (req) => ({ delivery: await handover.cancel_rider_request(req.tenant_id, req.params.id) }));
 export const handle_reissue_pickup_code = respond(async (req) => ({ delivery: await handover.reissue_pickup_code(req.tenant_id, req.params.id) }));
 export const handle_reissue_delivery_code = respond(async (req) => ({ delivery: await handover.reissue_delivery_code(req.tenant_id, req.params.id) }));

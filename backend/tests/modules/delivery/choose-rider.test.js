@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { choose_rider } from '../../../src/modules/delivery/services/dispatch-service.js';
+import { can_see_order, why_rider_cannot_take } from '../../../src/modules/delivery/services/dispatch-service.js';
 import { sort_riders_by_distance } from '../../../src/modules/delivery/lib/sort-riders-by-distance.js';
 import { haversine_km } from '../../../src/modules/delivery/lib/haversine-km.js';
 
@@ -28,30 +28,44 @@ describe('sort_riders_by_distance', () => {
   });
 });
 
-describe('choose_rider', () => {
-  it('picks the nearest available rider', () => {
-    const chosen = choose_rider([rider('far', 17.5, 78.6), rider('near', 17.386, 78.487)], new Map(), [], store, now);
-    expect(chosen.id).toBe('near');
+describe('can_see_order (first come, first served)', () => {
+  const waiting = { id: 'o1', fulfillment_status: 'ready_for_delivery', rider_id: null, declined_rider_ids: [] };
+
+  it('shows a waiting order to every free rider near the store', () => {
+    expect(can_see_order(rider('near', 17.386, 78.487), waiting, 0, store, now)).toBe(true);
+    expect(can_see_order(rider('also-near', 17.45, 78.55), waiting, 0, store, now)).toBe(true);
   });
 
-  it('skips riders who declined, are offline, stale, unapproved or full', () => {
-    const riders = [
-      rider('declined', 17.3851, 78.4868),
-      rider('offline', 17.3852, 78.4868, { is_online: false }),
-      rider('stale', 17.3853, 78.4868, { last_seen_at: new Date(now - 3 * 60 * 60 * 1000).toISOString() }),
-      rider('pending', 17.3854, 78.4868, { status: 'pending' }),
-      rider('full', 17.3855, 78.4868),
-      rider('ok', 17.45, 78.55)
-    ];
-    const chosen = choose_rider(riders, new Map([['full', 2]]), ['declined'], store, now);
-    expect(chosen.id).toBe('ok');
+  it('hides it from riders who declined, are offline, stale, unapproved or full', () => {
+    expect(can_see_order(rider('declined', 17.3851, 78.4868), { ...waiting, declined_rider_ids: ['declined'] }, 0, store, now)).toBe(false);
+    expect(can_see_order(rider('offline', 17.3852, 78.4868, { is_online: false }), waiting, 0, store, now)).toBe(false);
+    expect(can_see_order(rider('stale', 17.3853, 78.4868, { last_seen_at: new Date(now - 3 * 60 * 60 * 1000).toISOString() }), waiting, 0, store, now)).toBe(false);
+    expect(can_see_order(rider('pending', 17.3854, 78.4868, { status: 'pending' }), waiting, 0, store, now)).toBe(false);
+    expect(can_see_order(rider('full', 17.3855, 78.4868), waiting, 2, store, now)).toBe(false);
   });
 
-  it('returns null when nobody is free', () => {
-    expect(choose_rider([rider('a', 17.4, 78.5, { is_online: false })], new Map(), [], store, now)).toBeNull();
+  it('still shows it when the store or rider has no location', () => {
+    expect(can_see_order(rider('a', 17.4, 78.5), waiting, 0, null, now)).toBe(true);
+    expect(can_see_order(rider('b', null, null), waiting, 0, store, now)).toBe(true);
+  });
+});
+
+describe('why_rider_cannot_take', () => {
+  const waiting = { id: 'o1', fulfillment_status: 'ready_for_delivery', rider_id: null, declined_rider_ids: [] };
+
+  it('says the real reason instead of always "another rider took it"', () => {
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), waiting, 0, store, now)).toBeNull();
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), waiting, 2, store, now)).toMatch(/already have 2 orders/);
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), { ...waiting, rider_id: 'b', fulfillment_status: 'rider_assigned' }, 0, store, now)).toMatch(/Another rider/);
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), { ...waiting, status: 'cancelled' }, 0, store, now)).toMatch(/cancelled/);
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), { ...waiting, rider_id: 'a', fulfillment_status: 'rider_assigned' }, 0, store, now)).toMatch(/already accepted/);
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487, { is_online: false }), waiting, 0, store, now)).toMatch(/Go online/);
+    expect(why_rider_cannot_take(rider('a', 18.5, 79.5), waiting, 0, store, now)).toMatch(/too far/);
   });
 
-  it('still finds a rider when the store has no location', () => {
-    expect(choose_rider([rider('a', null, null)], new Map(), [], null, now).id).toBe('a');
+  it('still lets a rider take an order they passed on (it only moves to their "passed on" list)', () => {
+    const passed = { ...waiting, declined_rider_ids: ['a'] };
+    expect(why_rider_cannot_take(rider('a', 17.386, 78.487), passed, 0, store, now)).toBeNull();
+    expect(can_see_order(rider('a', 17.386, 78.487), passed, 0, store, now)).toBe(false);
   });
 });

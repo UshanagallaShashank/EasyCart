@@ -1,4 +1,4 @@
-// While the rider is online, sends their GPS position every two minutes so the nearest-rider match stays accurate.
+// While the rider is online, sends their GPS position every two minutes so they see the orders near where they are.
 import { useEffect } from 'react';
 import { updateLocation } from '@/features/delivery/api/rider-api';
 import { readCurrentPosition } from '@/features/delivery/lib/use-current-position';

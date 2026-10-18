@@ -7,7 +7,7 @@ const STEPS = ['New offer', 'Go to store', 'Deliver', 'Done'];
 const CURRENT: Partial<Record<RiderOrderStage, number>> = { offered: 0, to_pickup: 1, to_customer: 2, delivered: 3 };
 
 const HINT: Record<string, string> = {
-  offered: 'A new delivery. Accept it within 2 minutes, or it goes to the next rider.',
+  offered: 'A new delivery nearby. Other riders see it too, so the first to accept gets it.',
   to_pickup: 'Go to the store. When you arrive, ask for the 4-digit pickup code.',
   to_customer: 'Take it to the customer. Ask for their 6-digit code, take a photo at the door, and collect the exact cash.',
   delivered: 'Delivered. Well done!',

@@ -1,15 +1,31 @@
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Image } from 'expo-image';
+import Animated, { useAnimatedStyle, useSharedValue, withSequence, withSpring, withTiming } from 'react-native-reanimated';
+import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { useShop } from '@/features/shop/shop-context';
+import { useBrand } from '@/lib/brand';
 
 export function FloatingCartBar() {
   const { lines } = useShop();
-  const insets = useSafeAreaInsets();
+  const brand = useBrand();
 
-  const totalItems = lines.reduce((sum, line) => sum + line.quantity, 0);
+  const totalItems = lines.length;
+
+  // The pill gives a little pop and a tap when something is added.
+  const pop = useSharedValue(1);
+  const previousTotal = useRef(0);
+  useEffect(() => {
+    if (totalItems > previousTotal.current && previousTotal.current > 0) {
+      pop.value = withSequence(withTiming(1.07, { duration: 90 }), withSpring(1, { damping: 10, stiffness: 260 }));
+      void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    }
+    previousTotal.current = totalItems;
+  }, [totalItems, pop]);
+  const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.value }] }));
 
   if (totalItems <= 0) return null;
 
@@ -19,16 +35,19 @@ export function FloatingCartBar() {
     <View
       style={[
         styles.outerWrap,
-        { bottom: Math.max(insets.bottom, 14) + 10 }
+        // The tab bar below already clears the home indicator, so only a small gap is needed.
+        { bottom: 12 }
       ]}
       pointerEvents="box-none"
     >
+      <Animated.View style={popStyle}>
       <Pressable
         style={({ pressed }) => [
           styles.pill,
+          { backgroundColor: brand.primary },
           pressed && styles.pillPressed
         ]}
-        onPress={() => router.navigate('/shop/cart')}
+        onPress={() => router.push('/shop/checkout')}
         accessibilityLabel={`View cart, ${totalItems} items`}
       >
         {/* Overlapping circular product thumbnails */}
@@ -45,7 +64,7 @@ export function FloatingCartBar() {
                 <Image
                   source={{ uri: item.image }}
                   style={styles.thumbnailImg}
-                  resizeMode="cover"
+                  contentFit="cover"
                 />
               ) : (
                 <View style={styles.thumbnailPlaceholder}>
@@ -69,6 +88,7 @@ export function FloatingCartBar() {
           <Icon name="chevron-right" size={20} color="#ffffff" strokeWidth={2.8} />
         </View>
       </Pressable>
+      </Animated.View>
     </View>
   );
 }

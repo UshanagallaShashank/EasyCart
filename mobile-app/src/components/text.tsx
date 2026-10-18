@@ -1,6 +1,7 @@
 // Text in the website's font (Inter). Custom fonts ignore fontWeight on Android, so the weight picks the matching Inter file.
 import { StyleSheet, Text as NativeText, TextInput as NativeTextInput, type TextInputProps, type TextProps, type TextStyle } from 'react-native';
 import { forwardRef } from 'react';
+import { useT } from '@/lib/i18n';
 
 const INTER: Record<string, string> = {
   '400': 'Inter_400Regular',
@@ -19,10 +20,13 @@ export function inter(style: TextProps['style']): TextStyle | undefined {
   return { fontFamily: INTER[String(flat.fontWeight ?? '400')] ?? INTER['400'], fontWeight: 'normal' };
 }
 
-export function Text({ style, ...props }: TextProps) {
-  return <NativeText {...props} style={[style, inter(style)]} />;
+// A plain string child is looked up in the translation table; anything not in it shows as written.
+export function Text({ style, children, ...props }: TextProps) {
+  const t = useT();
+  return <NativeText {...props} style={[style, inter(style)]}>{typeof children === 'string' ? t(children) : children}</NativeText>;
 }
 
-export const TextInput = forwardRef<NativeTextInput, TextInputProps>(function TextInput({ style, ...props }, ref) {
-  return <NativeTextInput ref={ref} {...props} style={[style, inter(style)]} />;
+export const TextInput = forwardRef<NativeTextInput, TextInputProps>(function TextInput({ style, placeholder, ...props }, ref) {
+  const t = useT();
+  return <NativeTextInput ref={ref} {...props} placeholder={placeholder === undefined ? undefined : t(placeholder)} style={[style, inter(style)]} />;
 });

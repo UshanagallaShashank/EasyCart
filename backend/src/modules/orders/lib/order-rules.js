@@ -20,6 +20,10 @@ export function status_change_problem(order, next, { rider_handled }) {
     if (order.status === 'fulfilled') return 'This order is already complete';
     return `An order cannot go from ${order.status} to ${next}`;
   }
+  // An online order is only worked on once it is paid. Until then the store can only cancel it.
+  if (order.payment_method === 'online' && order.payment_status !== 'paid' && (next === 'confirmed' || next === 'fulfilled')) {
+    return 'The customer has not paid online yet. Wait for the payment, or cancel the order.';
+  }
   if (next === 'cancelled' && rider_handled && order.fulfillment_status === 'dispatched') {
     return 'The rider already has this order. Call them to bring it back before cancelling.';
   }

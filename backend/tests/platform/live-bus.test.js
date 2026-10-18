@@ -32,6 +32,21 @@ describe('live bus', () => {
     stop();
   });
 
+  it('sends the small status change with an order message, and nothing private', () => {
+    const tab = fake_stream();
+    const stop = subscribe([channel.customer('c1')], tab);
+    publish_order_change({
+      id: 'o1', tenant_id: 't1', customer_id: 'c1', status: 'confirmed', fulfillment_status: 'not_started', payment_status: 'paid',
+      delivery_code: '482913', delivery_address: '12 Market Road', items: [{ name: 'Milk' }], total: 55
+    });
+    const message = JSON.parse(tab.lines[0].slice(6));
+    expect(message.patch).toEqual({ status: 'confirmed', fulfillment_status: 'not_started', payment_status: 'paid' });
+    expect(tab.lines[0]).not.toContain('482913');
+    expect(tab.lines[0]).not.toContain('Market Road');
+    expect(tab.lines[0]).not.toContain('Milk');
+    stop();
+  });
+
   it('tells the rider an order was taken from', () => {
     const old_rider = fake_stream();
     const stop = subscribe([channel.rider('r1')], old_rider);

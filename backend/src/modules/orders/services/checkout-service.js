@@ -5,6 +5,7 @@ import { get_own_store } from '../../stores/services/store-service.js';
 import { resolve_active_coupon, apply_coupon_discount } from '../../coupons/services/coupon-service.js';
 import { create_order } from './order-service.js';
 import { merge_cart_lines } from '../lib/order-rules.js';
+import { assert_payment_method_available } from '../../payments/payment-config.js';
 
 function resolve_unit_price_and_stock(product, variant_label) {
   if (!variant_label) {
@@ -22,6 +23,9 @@ export async function checkout(tenant_id, customer_id, payload) {
   if (!parsed.success) {
     throw new AppError(parsed.error.issues.map((issue) => issue.message).join(', '), 400);
   }
+
+  // Refuse online payment before anything is created or any stock is taken.
+  assert_payment_method_available(parsed.data.payment_method);
 
   const line_items = [];
   let subtotal = 0;

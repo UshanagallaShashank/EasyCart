@@ -1,7 +1,7 @@
 // Business logic for platform-admin tenant management.
 import { AppError } from '../../../platform/shared/app-error.js';
 import { find_all_tenants, find_tenant_by_id, update_tenant_status, update_many_tenant_statuses } from '../../tenants/repositories/tenant-repository.js';
-import { find_stores_by_tenant_ids } from '../../stores/repositories/store-repository.js';
+import { find_stores_by_tenant_ids, update_store } from '../../stores/repositories/store-repository.js';
 import { find_users_by_ids, update_user_role_and_tenant } from '../../users/repositories/user-repository.js';
 import { orders_snapshot } from './admin-data-cache.js';
 import { platform_stats_cache } from './platform-stats-service.js';
@@ -145,6 +145,21 @@ export async function approve_store_request(tenant_id) {
 
   await update_tenant_status(tenant_id, 'active');
   await update_user_role_and_tenant(tenant.owner_id, 'tenant_owner', tenant.id);
+
+  try {
+    const details = await read_request_details(tenant.owner_id);
+    if (details?.business_address) {
+      const pin = details.business_address.match(/\b\d{6}\b/)?.[0] || null;
+      await update_store(tenant_id, {
+        address: details.business_address,
+        business_address: details.business_address,
+        ...(pin ? { pincode: pin } : {})
+      });
+    }
+  } catch (err) {
+    console.error('Failed to copy business address on store approval:', err);
+  }
+
   clear_tenants_cache();
   return { success: true, message: `Store "${tenant.name}" approved successfully` };
 }

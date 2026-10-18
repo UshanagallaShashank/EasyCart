@@ -1,13 +1,19 @@
 // Store owner data and actions.
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { findInCachedLists } from '@/lib/instant';
+import type { EarningsDay, EarningsTotals } from '@/components/earnings-view';
 import type { Order } from '@/types/order';
+import type { Refund } from '@/types/refund';
 import type { Product } from '@/types/catalog';
 import type { StoreDeliveryRow, StoreOrderDelivery, StoreSettlementSummary, NearbyRider } from '@/types/delivery';
 
 export interface OwnerStore {
   name: string;
   slug: string;
+  logo_url?: string | null;
+  banner_url?: string | null;
+  theme?: string | null;
   is_published: boolean;
   delivery_fee: number;
   max_delivery_radius_km?: number;
@@ -16,16 +22,52 @@ export interface OwnerStore {
   latitude?: number | null;
   longitude?: number | null;
   promotion_banner_text: string | null;
+  color_theme?: string | null;
 }
 
 export const useOwnStore = () => useQuery({ queryKey: ['store'], queryFn: async () => (await api<{ store: OwnerStore }>('/stores/me')).store });
 export const useOrders = () => useQuery({ queryKey: ['orders'], queryFn: async () => (await api<{ orders: Order[] }>('/orders')).orders });
-export const useOrder = (id: string) => useQuery({ queryKey: ['orders', id], queryFn: async () => (await api<{ order: Order }>(`/orders/${id}`)).order });
-export const useOrderDelivery = (id: string, enabled: boolean) => useQuery({ queryKey: ['orders', id, 'delivery'], queryFn: async () => (await api<{ delivery: StoreOrderDelivery }>(`/orders/${id}/delivery`)).delivery, enabled });
+export function useOrder(id: string) {
+  const queryClient = useQueryClient();
+  return useQuery({
+    queryKey: ['orders', id],
+    queryFn: async () => (await api<{ order: Order }>(`/orders/${id}`)).order,
+    // Shown at once from the order list already on the phone.
+    placeholderData: () => findInCachedLists<Order>(queryClient, ['orders'], id)
+  });
+}
+export const useOrderDelivery = (id: string, enabled: boolean) => useQuery({ queryKey: ['orders', id, 'delivery'], queryFn: async () => (await api<{ delivery: StoreOrderDelivery }>(`/orders/${id}/delivery`)).delivery, enabled, refetchInterval: 10_000 });
 export const useStoreDeliveries = () => useQuery({ queryKey: ['store-deliveries'], queryFn: async () => (await api<{ deliveries: StoreDeliveryRow[] }>('/delivery/orders')).deliveries });
 export const useStoreSettlements = () => useQuery({ queryKey: ['store-settlements'], queryFn: () => api<StoreSettlementSummary>('/delivery/settlements') });
 export const useRidersNearby = () => useQuery({ queryKey: ['store-deliveries', 'riders'], queryFn: () => api<{ riders: NearbyRider[] }>('/delivery/riders-nearby') });
 export const useCustomerCount = () => useQuery({ queryKey: ['customers'], queryFn: async () => (await api<{ customers: unknown[] }>('/customers')).customers.length });
+export interface OwnerEarnings {
+  commission_percent: number;
+  all_time: EarningsTotals;
+  last_7_days: EarningsTotals;
+  by_day: EarningsDay[];
+}
+export const useEarnings = () => useQuery({ queryKey: ['earnings'], queryFn: async () => (await api<{ earnings: OwnerEarnings }>('/earnings')).earnings });
+
+export interface StoreRefund extends Refund {
+  order: { total: number; payment_method: string; created_at: string; item_count: number } | null;
+}
+// retry is off so a server without the refunds table just shows none.
+export const useStoreRefunds = () => useQuery({ queryKey: ['refunds'], queryFn: async () => (await api<{ refunds: StoreRefund[] }>('/refunds')).refunds, retry: false });
+
+export const refundCalls = {
+  decide: ({ id, approve, note, manual }: { id: string; approve: boolean; note?: string; manual?: boolean }) => api(`/refunds/${id}/decision`, { method: 'POST', body: { approve, note, manual } }),
+  refundCancelled: ({ orderId, manual }: { orderId: string; manual?: boolean }) => api(`/orders/${orderId}/refund`, { method: 'POST', body: { manual } })
+};
+
+export interface RatingsSummary {
+  count: number;
+  average_store: number | null;
+  average_delivery: number | null;
+  recent: { store_stars: number; delivery_stars: number | null; comment: string | null; photo_urls?: string[]; created_at: string }[];
+}
+// retry is off so a server without the ratings tables just shows no card instead of retrying.
+export const useRatingsSummary = () => useQuery({ queryKey: ['ratings-summary'], queryFn: async () => (await api<{ summary: RatingsSummary }>('/ratings/summary')).summary, retry: false });
 export const useOwnerProducts = () => useQuery({ queryKey: ['products', 'own'], queryFn: async () => (await api<{ products: Product[] }>('/products')).products });
 
 // Any owner action refreshes orders, deliveries, settlements and products.
@@ -101,8 +143,12 @@ export const manageCalls = {
   deleteCoupon: (id: string) => api(`/coupons/${id}`, { method: 'DELETE' }),
   createCategory: (name: string) => api('/categories', { method: 'POST', body: { name } }),
   deleteCategory: (id: string) => api(`/categories/${id}`, { method: 'DELETE' }),
-  saveStore: (payload: Partial<{ name: string; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string }>) => api('/stores/me', { method: 'PATCH', body: payload }),
-  setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' })
+  saveStore: (payload: Partial<{ name: string; logo_url: string | null; banner_url: string | null; delivery_fee: number; max_delivery_radius_km: number; pincode: string; address: string; promotion_banner_text: string; latitude: number; longitude: number }>) => api('/stores/me', { method: 'PATCH', body: payload }),
+  uploadStoreLogo: (file: string) => api<{ url: string }>('/stores/me/upload-image', { method: 'POST', body: { file, type: 'logo' } }),
+  updateProfile: (payload: Partial<{ username: string; email: string; phone_number: string }>) => api<{ user: { id: string; username: string; email: string; phone_number: string; role: string } }>('/profile', { method: 'PATCH', body: payload }),
+  setPublished: (published: boolean) => api(`/stores/me/${published ? 'publish' : 'unpublish'}`, { method: 'POST' }),
+  // One of the colour themes the platform admin switched on (or null for the platform default).
+  setColorTheme: (color_theme: string | null) => api('/stores/me/color-theme', { method: 'PUT', body: { color_theme } })
 };
 
 // ---- Adding and editing products (same calls and fields as the website's product form) ----

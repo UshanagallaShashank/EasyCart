@@ -6,16 +6,38 @@ import { Text } from '@/components/text';
 import { Icon } from '@/components/icon';
 import { Avatar } from '@/components/ui';
 import { useSession } from '@/lib/session';
+import { useConfirmedSignOut } from './confirm';
 import { useShop } from '@/features/shop/shop-context';
 import { colors, radius, shadow } from '@/theme/theme';
 import { CustomerSupportModal } from '@/components/customer-support-modal';
+import { NotificationModal } from '@/components/notification-button';
 
-export function ProfileMenu() {
+export interface ProfileMenuProps {
+  profileHref?: string;
+  name?: string;
+  photoUrl?: string | null;
+  roleSubtitle?: string;
+  showSupport?: boolean;
+  showStoreRequest?: boolean;
+}
+
+export function ProfileMenu({
+  profileHref = '/shop/account',
+  name,
+  photoUrl,
+  roleSubtitle,
+  showSupport = true,
+  showStoreRequest = true
+}: ProfileMenuProps = {}) {
   const [open, setOpen] = useState(false);
   const [supportOpen, setSupportOpen] = useState(false);
-  const { user, signOut } = useSession();
-  const { count } = useShop();
+  const [notificationOpen, setNotificationOpen] = useState(false);
+  const { user } = useSession();
+  const logout = useConfirmedSignOut();
   const insets = useSafeAreaInsets();
+
+  const displayName = name || user?.username || 'User';
+  const avatarPhoto = photoUrl !== undefined ? photoUrl : user?.avatar_url;
 
   return (
     <>
@@ -25,7 +47,7 @@ export function ProfileMenu() {
         hitSlop={8}
         style={styles.trigger}
       >
-        <Avatar name={user?.username ?? 'U'} size={34} />
+        <Avatar name={displayName} photoUrl={avatarPhoto} size={34} />
       </Pressable>
 
       <Modal
@@ -39,11 +61,16 @@ export function ProfileMenu() {
             {/* User name & email */}
             <View style={styles.userHeader}>
               <Text style={styles.userName} numberOfLines={1}>
-                {user?.username ?? 'Customer'}
+                {displayName}
               </Text>
               <Text style={styles.userEmail} numberOfLines={1}>
                 {user?.email ?? ''}
               </Text>
+              {roleSubtitle ? (
+                <Text style={[styles.userEmail, { color: colors.primary, fontWeight: '600' }]} numberOfLines={1}>
+                  {roleSubtitle}
+                </Text>
+              ) : null}
             </View>
 
             <View style={styles.divider} />
@@ -53,48 +80,53 @@ export function ProfileMenu() {
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                router.navigate('/shop/account');
+                router.navigate(profileHref as any);
               }}
             >
-              <Icon name="user" size={17} color="#0ea5e9" />
+              <Icon name="user" size={16} color="#0ea5e9" />
               <Text style={styles.itemLabel}>View profile</Text>
             </Pressable>
 
-            {/* My orders */}
+            {/* Notifications */}
             <Pressable
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                router.navigate('/shop/orders');
+                setNotificationOpen(true);
               }}
             >
-              <Icon name="package" size={17} color="#0ea5e9" />
-              <Text style={styles.itemLabel}>My orders</Text>
+              <Icon name="bell" size={16} color="#0ea5e9" />
+              <Text style={styles.itemLabel}>Notifications</Text>
+              <View style={styles.notificationDot} />
             </Pressable>
 
             {/* Customer support */}
-            <Pressable
-              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
-              onPress={() => {
-                setOpen(false);
-                setSupportOpen(true);
-              }}
-            >
-              <Icon name="headphones" size={17} color="#0284c7" />
-              <Text style={styles.itemLabel}>Customer support</Text>
-            </Pressable>
+            {showSupport && (
+              <Pressable
+                style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+                onPress={() => {
+                  setOpen(false);
+                  setSupportOpen(true);
+                }}
+              >
+                <Icon name="headphones" size={16} color="#0284c7" />
+                <Text style={styles.itemLabel}>Customer support</Text>
+              </Pressable>
+            )}
 
             {/* Request to create a store */}
-            <Pressable
-              style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
-              onPress={() => {
-                setOpen(false);
-                router.push('/shop/store-request');
-              }}
-            >
-              <Icon name="store" size={17} color="#f59e0b" />
-              <Text style={styles.itemLabel}>Request to create a store</Text>
-            </Pressable>
+            {showStoreRequest && (
+              <Pressable
+                style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
+                onPress={() => {
+                  setOpen(false);
+                  router.push('/shop/store-request');
+                }}
+              >
+                <Icon name="store" size={16} color="#f59e0b" />
+                <Text style={styles.itemLabel}>Request to create a store</Text>
+              </Pressable>
+            )}
 
             <View style={styles.divider} />
 
@@ -103,10 +135,10 @@ export function ProfileMenu() {
               style={({ pressed }) => [styles.item, pressed && styles.itemPressed]}
               onPress={() => {
                 setOpen(false);
-                void signOut();
+                setTimeout(() => void logout(), 300);
               }}
             >
-              <Icon name="log-out" size={17} color="#ef4444" />
+              <Icon name="log-out" size={16} color="#ef4444" />
               <Text style={[styles.itemLabel, { color: '#ef4444', fontWeight: '600' }]}>Log out</Text>
             </Pressable>
           </View>
@@ -114,6 +146,7 @@ export function ProfileMenu() {
       </Modal>
 
       <CustomerSupportModal visible={supportOpen} onClose={() => setSupportOpen(false)} />
+      <NotificationModal visible={notificationOpen} onClose={() => setNotificationOpen(false)} />
     </>
   );
 }
@@ -191,5 +224,11 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: '#92400e'
+  },
+  notificationDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: '#0284c7'
   }
 });

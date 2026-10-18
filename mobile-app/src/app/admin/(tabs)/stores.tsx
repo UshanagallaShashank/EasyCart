@@ -59,6 +59,6 @@ export default function Stores() {
 }
 
 const styles = StyleSheet.create({
-  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  row: { gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md }
 });

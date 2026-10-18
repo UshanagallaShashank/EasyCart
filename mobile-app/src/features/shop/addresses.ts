@@ -2,7 +2,7 @@
 // One of them is "active": checkout uses it.
 import { useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { getItem, setItem } from '@/lib/storage';
+import { getLocal as getItem, setLocal as setItem } from '@/lib/storage';
 import { useSession } from '@/lib/session';
 
 export interface SavedAddress {
@@ -15,6 +15,9 @@ export interface SavedAddress {
   city: string;
   state: string;
   zip: string;
+  // The exact spot on the map, when the customer used their location or dropped a pin.
+  latitude?: number;
+  longitude?: number;
 }
 
 interface AddressBook {
@@ -53,9 +56,10 @@ export function useAddresses() {
   const book = query.data ?? { list: [], activeId: null };
   const active = book.list.find((address) => address.id === book.activeId) ?? book.list[0] ?? null;
 
+  // The screen updates straight away; saving to the phone happens in the background.
   const write = useCallback(async (next: AddressBook) => {
     queryClient.setQueryData(['addresses', userId], next);
-    await setItem(`easycart.addresses.${userId}`, JSON.stringify(next));
+    setItem(`easycart.addresses.${userId}`, JSON.stringify(next)).catch(() => undefined);
   }, [queryClient, userId]);
 
   // Saving a new address makes it the active one, like the website.

@@ -42,7 +42,9 @@ export async function register_customer(payload) {
       id: saved_user.id,
       username: saved_user.username,
       email: saved_user.email,
-      phone_number: saved_user.phone_number
+      phone_number: saved_user.phone_number,
+      role: 'customer',
+      avatar_url: saved_user.avatar_url ?? null
     },
     token
   };
@@ -74,7 +76,9 @@ export async function login_customer(payload) {
       id: user.id,
       username: user.username,
       email: user.email,
-      phone_number: user.phone_number
+      phone_number: user.phone_number,
+      role: 'customer',
+      avatar_url: user.avatar_url ?? null
     },
     token
   };
@@ -122,13 +126,19 @@ export async function request_store_creation(customer_id, payload) {
     status: 'pending'
   });
 
+  const pin = payload.business_address?.pincode || (business_address.match(/\b\d{6}\b/)?.[0] ?? null);
+
   await save_store({
     id: randomUUID(),
     tenant_id: tenant.id,
     name: store_name,
     slug,
     is_published: false,
-    promotion_banner_text: null
+    promotion_banner_text: null,
+    business_address,
+    address_line: business_address,
+    address: business_address,
+    ...(pin ? { pincode: pin } : {})
   });
 
   const store_description = String(payload.store_description || payload.description || '').trim();

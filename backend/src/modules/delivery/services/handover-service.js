@@ -10,7 +10,7 @@ import { ACTIVE_RIDER_STAGES, delivery_stage, has_confirmed_rider, is_rider_avai
 import { sort_riders_by_distance } from '../lib/sort-riders-by-distance.js';
 import { estimate_arrival } from '../lib/estimate-arrival.js';
 import { to_handover_rider } from '../lib/rider-views.js';
-import { dispatch_order, store_point } from './dispatch-service.js';
+import { store_point } from './dispatch-service.js';
 import { delivery_file_url } from './delivery-file-service.js';
 import { calculate_order_settlement } from './order-settlement-service.js';
 
@@ -70,28 +70,39 @@ export async function get_store_order_delivery(tenant_id, order_id) {
   };
 }
 
-// The store says the order is packed: a pickup code is made and the nearest free rider gets the offer.
-// Calling it again while waiting starts a fresh search, including riders who passed before.
+// The store says the order is packed: a pickup code is made and every free rider nearby sees the order.
+// The first to accept gets it. Calling it again while waiting alerts riders again; riders who passed on it
+// keep seeing it in their own "passed on" section.
 export async function request_rider(tenant_id, order_id) {
   const order = await find_store_order(tenant_id, order_id);
   if (order.status === 'cancelled') throw new AppError('This order was cancelled', 400);
   if (order.status === 'fulfilled') throw new AppError('This order is already complete', 400);
   if (!['not_started', 'ready_for_delivery'].includes(order.fulfillment_status)) throw new AppError('A rider is already handling this order', 400);
 
-  const ready = await update_order(order.id, tenant_id, {
+  await update_order(order.id, tenant_id, {
     fulfillment_status: 'ready_for_delivery',
     status: order.status === 'pending' ? 'confirmed' : order.status,
     ready_at: order.ready_at ?? new Date().toISOString(),
     pickup_code: order.pickup_code ?? create_pickup_code(),
     pickup_code_attempts: 0,
-    declined_rider_ids: [],
+    declined_rider_ids: order.fulfillment_status === 'ready_for_delivery' ? (order.declined_rider_ids ?? []) : [],
     rider_id: null,
     rider_offer_status: null,
     rider_offer_expires_at: null,
     delivery_code: order.delivery_code ?? create_delivery_code()
   });
-  await dispatch_order(ready);
   return get_store_order_delivery(tenant_id, order_id);
+}
+
+// Pull-to-refresh on the store's order screens: every order still waiting for a rider is sent to all nearby
+// riders again, so their screens update and alert them at once. Riders who passed on it see it in their "passed on" section.
+export async function request_riders_for_waiting_orders(tenant_id) {
+  const orders = await find_orders_by_tenant(tenant_id);
+  const waiting = orders.filter((order) => order.status !== 'cancelled' && order.fulfillment_status === 'ready_for_delivery' && !order.rider_id);
+  for (const order of waiting) {
+    await update_order(order.id, tenant_id, { ready_at: order.ready_at ?? new Date().toISOString() });
+  }
+  return { sent: waiting.length };
 }
 
 // Takes the order back from riders before pickup, for example to deliver it with the store's own staff.

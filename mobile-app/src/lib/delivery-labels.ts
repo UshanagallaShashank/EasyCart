@@ -73,7 +73,7 @@ export function mapsLink(point: { latitude: number | null; longitude: number | n
 
 const WHOLE_RUPEES = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 });
 
-// Short rupee amount for small tiles: "Rs. 2,450" (paise only shown when there are any).
+// Short rupee amount for small tiles: "₹2,450" (paise only shown when there are any).
 export function formatRupeesShort(amount: number): string {
-  return Number.isInteger(amount) ? `Rs. ${WHOLE_RUPEES.format(amount)}` : `Rs. ${amount.toFixed(2)}`;
+  return Number.isInteger(amount) ? `₹${WHOLE_RUPEES.format(amount)}` : `₹${amount.toFixed(2)}`;
 }

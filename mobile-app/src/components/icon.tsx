@@ -5,10 +5,12 @@ import {
   Clock, CloudUpload, CreditCard, Eye, EyeOff, Lock, Mail, File, Image, FileText, Gift, Heart, House, IndianRupee, Info, Key, List, LoaderCircle, LogOut, Map, MapPin,
   MessageSquare, Minus, Navigation, Package, Phone, Plus, Power, Radio, RefreshCw, RotateCcw, Save, Search, Send, Shield,
   ShieldCheck, ShoppingBag, ShoppingCart, SquareCheck, Store, Trash2, TriangleAlert, Truck, Upload, User, Users, WifiOff, X, Zap,
-  Headphones, LayoutGrid, Pencil, Settings, Sparkles, Tags, Ticket, Wallet, type LucideIcon
+  Headphones, LayoutGrid, Pencil, Settings, Share2, Sparkles, Star, Tags, Ticket, Wallet, Filter, SlidersHorizontal, type LucideIcon
 } from 'lucide-react-native';
 
 const ICONS = {
+  filter: Filter,
+  sliders: SlidersHorizontal,
   'alert-circle': CircleAlert,
   'alert-triangle': TriangleAlert,
   'arrow-left': ArrowLeft,
@@ -62,8 +64,11 @@ const ICONS = {
   save: Save,
   search: Search,
   send: Send,
+  share: Share2,
+  'share-2': Share2,
   shield: Shield,
   'shield-check': ShieldCheck,
+  star: Star,
   'shopping-bag': ShoppingBag,
   'shopping-cart': ShoppingCart,
   settings: Settings,
@@ -87,7 +92,9 @@ const ICONS = {
 
 export type IconName = keyof typeof ICONS;
 
-export function Icon({ name, size = 18, color, strokeWidth = 2, style }: { name: IconName; size?: number; color?: ColorValue; strokeWidth?: number; style?: StyleProp<ViewStyle> }) {
+export function Icon({ name, size = 18, color, strokeWidth = 2, fill, style }: { name: IconName; size?: number; color?: ColorValue; strokeWidth?: number; fill?: ColorValue; style?: StyleProp<ViewStyle> }) {
   const Glyph = ICONS[name];
-  return <Glyph size={size} color={color as string} strokeWidth={strokeWidth} style={style} />;
+  // Only pass `fill` when it is set. Passing undefined would override the icon's default of no fill and paint it solid black.
+  const fillProps = fill === undefined ? {} : { fill: fill as string };
+  return <Glyph size={size} color={color as string} strokeWidth={strokeWidth} style={style} {...fillProps} />;
 }

@@ -15,7 +15,7 @@ import { ProofPhoto } from './proof-photo';
 import { OrderSettlementCard } from './order-settlement-card';
 
 const DONE_MESSAGE: Record<StoreAction, string> = {
-  'request-rider': 'Sent for delivery. Looking for the nearest rider.',
+  'request-rider': 'Sent for delivery. Every free rider nearby can see it now.',
   'cancel-rider': 'Rider request cancelled',
   'new-pickup-code': 'New pickup code made',
   'new-delivery-code': 'The customer now sees a new delivery code'

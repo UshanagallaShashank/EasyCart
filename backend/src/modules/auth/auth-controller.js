@@ -56,3 +56,31 @@ export async function handle_update_profile(req, res, next) {
   }
 }
 
+export async function handle_upload_avatar(req, res, next) {
+  try {
+    const { file } = req.body;
+    if (!file) throw new AppError('Image file data is required', 400);
+    const { upload_store_asset_to_supabase } = await import('../stores/services/store-storage-service.js');
+    const result = await upload_store_asset_to_supabase({
+      user_id: req.user.id,
+      file,
+      type: 'avatar'
+    });
+    const user = await update_current_profile(req.user.id, { avatar_url: result.url });
+    if (req.user?.role === 'delivery_partner') {
+      try {
+        const { find_rider_by_user_id, update_rider } = await import('../delivery/repositories/rider-repository.js');
+        const rider = await find_rider_by_user_id(req.user.id);
+        if (rider) {
+          const documents = { ...(rider.documents ?? {}) };
+          documents.partner_photo = result.url;
+          await update_rider(rider.id, { documents });
+        }
+      } catch (_) {}
+    }
+    res.status(200).json({ url: result.url, user, message: 'Avatar uploaded successfully' });
+  } catch (err) {
+    next(err);
+  }
+}
+

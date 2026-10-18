@@ -112,7 +112,7 @@ function HowItWorks() {
   return (
     <div className="flex items-start gap-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
       <Bike className="mt-0.5 size-5 shrink-0 text-sky-600" />
-      <p className="flex-1">How it works: pack the order, open it and tap <strong>Packed, send for delivery</strong>. We find the nearest rider automatically, you give them the pickup code, and they can only finish the delivery with the customer's own code.</p>
+      <p className="flex-1">How it works: pack the order, open it and tap <strong>Packed, send for delivery</strong>. Every free rider nearby sees it and the first to accept takes it, you give them the pickup code, and they can only finish the delivery with the customer's own code.</p>
       <button type="button" onClick={close} aria-label="Close" className="rounded-lg p-1 text-sky-500 hover:bg-sky-100 hover:text-sky-700"><X className="size-4" /></button>
     </div>
   );

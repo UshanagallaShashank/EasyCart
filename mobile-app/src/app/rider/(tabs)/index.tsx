@@ -1,13 +1,10 @@
 // Rider home: application status until approved; then the online switch, new offers and current deliveries.
-import { Text } from '@/components/text';
 import { router } from 'expo-router';
-import { Button, Card, EmptyState, Loading, Notice, Screen, SectionTitle, StatStrip } from '@/components/ui';
+import { Button, Card, EmptyState, HeroHeader, Loading, Notice, Screen, StatStrip } from '@/components/ui';
 import { useMyRider, useRiderHome } from '@/features/rider/rider-api';
-import { ActiveOrderRow, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
-import { useOfferAlert } from '@/features/rider/use-offer-alert';
+import { ActiveOrderRow, ColorSectionTitle, OfferCard, OnlineCard } from '@/features/rider/rider-cards';
 import { ApplicationStatus } from '@/features/rider/application-status';
 import { price } from '@/lib/format';
-import { text } from '@/theme/theme';
 
 const RULES = [
   "Never hand over an order without the customer's 6-digit code.",
@@ -20,13 +17,16 @@ export default function RiderHome() {
   const { data: rider, isLoading } = useMyRider();
   const approved = rider?.status === 'approved';
   const home = useRiderHome(approved);
-  useOfferAlert(home.data?.offers);
 
   if (isLoading || !rider) return <Loading />;
 
   return (
     <Screen onRefresh={() => void home.refetch()} refreshing={home.isRefetching}>
-      <Text style={text.title}>Hi, {rider.full_name.split(' ')[0]}</Text>
+      <HeroHeader
+        title={`Hi, ${rider.full_name.split(' ')[0]}`}
+        subtitle={!approved ? 'Finish your application to start delivering' : (home.data?.rider ?? rider).is_online ? 'You are online and getting orders' : 'You are offline. Go online to get orders'}
+        icon="bike"
+      />
       {!approved && (
         <>
           <ApplicationStatus rider={rider} />
@@ -43,13 +43,22 @@ export default function RiderHome() {
           ]} />
           {home.isLoading ? <Loading /> : (
             <>
+              {home.data?.at_order_limit && (
+                <Notice tone="warning" icon="package">You are carrying {home.data.max_active_orders ?? 2} orders, the most at one time. New orders show here again once you deliver one.</Notice>
+              )}
               {(home.data?.offers.length ?? 0) > 0 && (
                 <>
-                  <SectionTitle>New offers</SectionTitle>
+                  <ColorSectionTitle kind="offer" title="New offers" count={home.data!.offers.length} caption="Waiting for a rider. The first to accept gets it." />
                   {home.data!.offers.map((order) => <OfferCard key={order.id} order={order} />)}
                 </>
               )}
-              <SectionTitle>Current deliveries</SectionTitle>
+              {(home.data?.passed?.length ?? 0) > 0 && (
+                <>
+                  <ColorSectionTitle kind="passed" title="You passed on" count={home.data!.passed!.length} caption="Nobody has taken these yet. You can still take one." />
+                  {home.data!.passed!.map((order) => <OfferCard key={order.id} order={order} passed />)}
+                </>
+              )}
+              <ColorSectionTitle kind="mine" title="Your deliveries" count={home.data?.active.length ?? 0} caption="Orders you accepted. Tap one to see the next step." />
               {(home.data?.active.length ?? 0) > 0
                 ? home.data!.active.map((order) => <ActiveOrderRow key={order.id} order={order} />)
                 : <EmptyState icon="navigation" message={home.data?.rider.is_online ? 'Waiting for orders near you. This screen updates by itself.' : 'You are offline. Go online to get orders.'} />}

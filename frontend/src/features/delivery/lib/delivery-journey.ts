@@ -31,8 +31,8 @@ export function getJourneyHint(role: JourneyRole, index: number, riderName: stri
   const rider = riderName ?? 'Your delivery partner';
 
   if (role === 'store') {
-    if (index === 0) return 'Pack the order, then tap "Packed, send for delivery". We find the nearest rider for you.';
-    if (index === 1) return 'Looking for the nearest rider. If one does not answer within 2 minutes, we try the next one automatically.';
+    if (index === 0) return 'Pack the order, then tap "Packed, send for delivery". Every free rider nearby sees it.';
+    if (index === 1) return 'Waiting for a rider. Every free rider nearby sees this order, and the first to accept gets it.';
     if (index === 2) return `${rider} is on the way to your store${arrivalText(arrival)}. Check their photo and number plate, then give them the pickup code.`;
     if (index === 3) return `${rider} has the order and is taking it to the customer.`;
     return 'Delivered. The proof photo and the cash collected are shown below.';

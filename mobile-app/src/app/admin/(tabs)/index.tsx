@@ -69,6 +69,6 @@ const styles = StyleSheet.create({
   hello: { color: '#0284c7', fontSize: 13, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
   bannerTitle: { color: '#0f172a', fontSize: 24, fontWeight: '900', letterSpacing: -0.6 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.md },
-  action: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: '#e8edf3', padding: space.lg, ...shadow },
+  action: { flexDirection: 'row', alignItems: 'center', gap: space.md, backgroundColor: colors.card, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.cardBorder, padding: space.lg, ...shadow },
   actionIcon: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }
 });
