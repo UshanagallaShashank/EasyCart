@@ -18,7 +18,7 @@ export const stackOptions = {
   headerShadowVisible: false,
   headerTintColor: colors.text,
   headerTitleStyle: { color: colors.text, fontFamily: 'Inter_700Bold', fontSize: 17 },
-  contentStyle: { backgroundColor: colors.bg },
+  contentStyle: { backgroundColor: 'transparent' },
   headerBackButtonDisplayMode: 'minimal' as const
 };
 
@@ -42,7 +42,7 @@ export function useTabOptions(activeFor?: ActiveFor) {
     // No fixed height here: the header grows by itself to clear the status bar and notch.
     headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.borderSoft },
     tabBar: (props: BottomTabBarProps) => <AppTabBar {...props} activeFor={activeFor} />,
-    sceneStyle: { backgroundColor: colors.bg }
+    sceneStyle: { backgroundColor: 'transparent' }
   };
 }
 

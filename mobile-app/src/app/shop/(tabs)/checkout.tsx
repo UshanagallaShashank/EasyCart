@@ -150,8 +150,8 @@ export default function CheckoutScreen() {
                     {line.name}
                   </Text>
                   {line.variant_label ? (
-                    <View style={styles.orderItemOptionBadge}>
-                      <Text style={styles.orderItemOptionText}>
+                    <View style={[styles.orderItemOptionBadge, { backgroundColor: brand.primarySoft || colors.primarySoft, borderColor: brand.primaryTint || colors.cardBorder }]}>
+                      <Text style={[styles.orderItemOptionText, { color: brand.primaryDark || colors.text }]}>
                         {line.variant_label}
                       </Text>
                     </View>
@@ -163,7 +163,7 @@ export default function CheckoutScreen() {
                   <Text style={styles.orderItemTotal}>
                     {price(line.price * line.quantity)}
                   </Text>
-                  <View style={styles.compactStepper}>
+                  <View style={[styles.compactStepper, { borderColor: brand.primaryTint || colors.cardBorder }]}>
                     <PressScale
                       onPress={() => setQuantity(line.product_id, line.variant_label, line.quantity - 1)}
                       style={styles.compactStepBtn}

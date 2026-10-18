@@ -43,7 +43,11 @@ export default function ShopTabs() {
 
   return (
     <BrandProvider themeId={store.data?.color_theme}>
-    <Tabs backBehavior="history" screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}>
+      <Tabs
+        tabBar={tabOptions.tabBar}
+        backBehavior="history"
+        screenOptions={{ ...tabOptions, headerRight: () => <HeaderRightActions /> }}
+      >
       <Tabs.Screen name="index" options={{ title: t('Shop'), headerShown: false, tabBarIcon: tabIcon('home') }} />
       <Tabs.Screen
         name="cart"
