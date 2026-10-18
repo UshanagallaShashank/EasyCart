@@ -1,49 +1,54 @@
 name: EasyCart Backend CI
 
 on:
-push:
-branches:
-- main
-- "feature/"
-- "fix/"
-paths:
-- "backend/**"
-- ".github/workflows/backend-ci.yml"
-
-pull_request:
-branches:
-- main
-paths:
-- "backend/**"
-- ".github/workflows/backend-ci.yml"
-
-workflow_dispatch:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-ci.yml"
+  workflow_dispatch:
 
 permissions:
-contents: read
+  contents: read
 
 jobs:
-test:
-name: Backend Tests
-runs-on: ubuntu-latest
+  test:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    env:
+      DB_PROVIDER: supabase
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
 
-defaults:
-  run:
-    working-directory: backend
+    defaults:
+      run:
+        working-directory: backend
 
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  - name: Set up Node.js
-    uses: actions/setup-node@v4
-    with:
-      node-version: 22
-      cache: npm
-      cache-dependency-path: backend/package-lock.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-  - name: Install dependencies
-    run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-  - name: Run backend tests
-    run: npm test
+      - name: Check Supabase test configuration
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_SERVICE_ROLE_KEY" ]; then
+            echo "::error::Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY repository secrets for a dedicated Supabase test project. Fork PRs do not receive these secrets."
+            exit 1
+          fi
+
+      - name: Run backend tests
+        run: npm test
