@@ -28,6 +28,8 @@ Successful backend CI on main
 
 Frontend and mobile have CI only for now. Mobile web export does not prove Android or iOS native builds work. Only the backend has a deployment workflow.
 
+The frontend production build requires `VITE_API_BASE_URL`. CI reads it from the GitHub repository variable of the same name, falling back to `https://api.example.invalid` for build validation only. This reserved placeholder does not contact a backend and must not be used for a deployed frontend. To supply a real address, open **Settings → Secrets and variables → Actions → Variables → New repository variable** and set `VITE_API_BASE_URL` to your backend origin. This URL is public configuration, not a secret. A future frontend deployment must require the correct environment-specific URL instead of using this CI fallback.
+
 ## When checks run
 
 All branches, including `feature/*`, receive CI. The top-level workflow always starts, so there is one reliable status to require before merging.
