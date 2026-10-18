@@ -1,16 +1,7 @@
 name: EasyCart Frontend CI
 
 on:
-  push:
-    branches: [main, "feature/**", "fix/**"]
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
-  pull_request:
-    branches: [main]
-    paths:
-      - "frontend/**"
-      - ".github/workflows/frontend-ci.yml"
+  workflow_call:
   workflow_dispatch:
 
 permissions:
@@ -20,6 +11,7 @@ jobs:
   build:
     name: Frontend Quality Checks
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     defaults:
       run:
